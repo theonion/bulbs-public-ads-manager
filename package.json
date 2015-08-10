@@ -1,0 +1,19 @@
+{
+  "description": "Do not install via npm.",
+  "private": true,
+  "scripts": {
+    "build": "mkdir -p build && ./node_modules/.bin/browserify -r ./src/ads-manager.js:adsManager -x adUnits > build/adsManager.js",
+    "test": "./node_modules/.bin/karma start resources/test/karma.conf.js"
+  },
+  "devDependencies": {
+    "browserify": "^11.0.1",
+    "chai": "^3.2.0",
+    "karma": "^0.13.8",
+    "karma-browserify": "^4.3.0",
+    "karma-chai": "^0.1.0",
+    "karma-mocha": "^0.2.0",
+    "karma-phantomjs-launcher": "^0.2.1",
+    "mocha": "^2.2.5",
+    "phantomjs": "^1.9.18"
+  }
+}
