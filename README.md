@@ -1,6 +1,6 @@
 <strong><i>:exclamation: THIS REPO SHOULD NOT BE MADE PUBLIC :exclamation:</i></strong>
 
-# bulbs-public-ads-maanger
+# bulbs-public-ads-manager
 Ads manager for public side of sites. Fills in ad slots.
 
 ## Setup
