@@ -7,7 +7,7 @@ Ads manager for public side of sites. Fills in ad slots.
 
 1. Install via bower, ```<version>``` being the version to depend on:
   ```bash
-  $ bower install --save https://0469c955e10241b40fffe0225e29a3c238aadf69:x-oauth-basic@github.com/theonion/bulbs-public-ads-maanger.git\#\<version>
+  $ bower install --save https://0469c955e10241b40fffe0225e29a3c238aadf69:x-oauth-basic@github.com/theonion/bulbs-public-ads-manager.git\#\<version>
   ```
 
 1. Provide ```adUnits``` module (???????????????)
