@@ -2,7 +2,7 @@
   "description": "Do not install via npm.",
   "private": true,
   "scripts": {
-    "build": "mkdir -p build && ./node_modules/.bin/browserify -r ./src/ads-manager.js:adsManager -x adUnits > build/adsManager.js",
+    "build": "mkdir -p build && ./node_modules/.bin/browserify -s adsManager -r ./src/ads-manager.js:adsManager -x adUnits > build/adsManager.js",
     "test": "./node_modules/.bin/karma start resources/test/karma.conf.js"
   },
   "devDependencies": {
