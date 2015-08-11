@@ -9,13 +9,15 @@
   "description": "Ads manager for public side",
   "license": "MIT",
   "main": [
-    "build/adsManager.js"
+    "src/adsManager.js",
+    "src/dfp.js",
+    "src/utils.js"
   ],
   "ignore": [
     "bower_components",
     "node_modules",
     "resources",
-    "src",
+    "src/**/*.spec.js",
     "**/.*",
     "package.json"
   ]

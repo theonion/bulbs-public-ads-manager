@@ -1,8 +1,8 @@
 // this should be provided externally
 var adUnits = require('bulbs.ads.units');
 
-var googletag = require('bulbs.ads.dfp');
-var utils = require('bulbs.ads.utils');
+var googletag = require('./dfp');
+var utils = require('./utils');
 
 module.exports = {
 

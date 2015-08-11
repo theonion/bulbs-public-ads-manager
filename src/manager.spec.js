@@ -7,7 +7,7 @@ describe('AdsManager', function () {
 
     window.googletag = new MockGoogleTag();
 
-    ads = require('bulbs.ads.manager');
+    ads = require('./manager.js');
     ads.init(false);
   });
 
