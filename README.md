@@ -15,13 +15,7 @@ Ads manager for public side of sites. Fills in ad slots.
     provided to the pipeline browserify setting:
 
   ```python
-  PIPELINE_BROWSERIFY_REQUIREMENTS = (
-    (os.path.join(STATIC_ROOT, "javascript/ads/adUnits.js"), "bulbs.ads.units"),
-  )
-  PIPELINE_BROWSERIFY_ARGUMENTS = " ".join([
-      "-r {}:{}".format(r[0], r[1]) \
-          for r in PIPELINE_BROWSERIFY_REQUIREMENTS
-  ])
+  PIPELINE_BROWSERIFY_ARGUMENTS = "-r {}:{}".format(os.path.join(STATIC_ROOT, "adUnits.js"), "bulbs.ads.units")
   ```
 
 1. Require and initialize the ads manager code via a browserified file (path may differ
