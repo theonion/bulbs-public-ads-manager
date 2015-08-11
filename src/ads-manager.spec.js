@@ -1,10 +1,10 @@
-require('mockGoogleTag');
-
 describe('AdsManager', function () {
 
   var ads;
 
   beforeEach(function () {
+    var MockGoogleTag = require('mockGoogleTag');
+    
     window.googletag = new MockGoogleTag();
 
     ads = require('./ads-manager');

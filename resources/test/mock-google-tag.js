@@ -18,3 +18,5 @@ MockGoogleTag.prototype.pubads = function () {
     addEventListener: function () {},
 	};
 };
+
+module.exports = MockGoogleTag;
