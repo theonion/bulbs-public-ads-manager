@@ -15,7 +15,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'src/**/*.js',
+      'src/manager.spec.js',
     ],
 
     // list of files to exclude
@@ -24,7 +24,7 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'src/**/*.js': 'browserify',
+      'src/manager.spec.js': 'browserify',
     },
 
     plugins : [
@@ -63,8 +63,11 @@ module.exports = function(config) {
     browserify: {
       debug: true,
       configure: function (bundle) {
-        bundle.require('./resources/test/mock-ad-units.js', {expose: 'adUnits'});
-        bundle.require('./resources/test/mock-google-tag.js', {expose: 'mockGoogleTag'});
+        bundle.require('./resources/test/mock-ad-units', {expose: 'bulbs.ads.units'});
+        bundle.require('./resources/test/mock-google-tag', {expose: 'mockGoogleTag'});
+        bundle.require('./src/utils', {expose: 'bulbs.ads.utils'});
+        bundle.require('./src/dfp', {expose: 'bulbs.ads.dfp'});
+        bundle.require('./src/manager', {expose: 'bulbs.ads.manager'});
       }
     }
   });

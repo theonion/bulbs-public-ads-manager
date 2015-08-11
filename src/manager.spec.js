@@ -4,10 +4,10 @@ describe('AdsManager', function () {
 
   beforeEach(function () {
     var MockGoogleTag = require('mockGoogleTag');
-    
+
     window.googletag = new MockGoogleTag();
 
-    ads = require('./ads-manager');
+    ads = require('bulbs.ads.manager');
     ads.init(false);
   });
 

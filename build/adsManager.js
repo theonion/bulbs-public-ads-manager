@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.adsManager = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g=(g.bulbs||(g.bulbs = {}));g=(g.ads||(g.ads = {}));g.manager = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"bulbs.ads.dfp":[function(require,module,exports){
 /**
  * Google-provided DFP code, slight modifications to
  */
@@ -16,58 +16,15 @@ node.parentNode.insertBefore(gads, node);
 
 module.exports = window.googletag;
 
-},{}],2:[function(require,module,exports){
-/**
- * Utility functions for ad loading because we want to load the ads module ASAP,
- *  before any other JS libs that might provide these functions.
- */
-module.exports = {
-
-  /**
-   * Extend given object by given non-parameterized arguments.
-   *
-   * @param {object} out - object to extend.
-   * @returns {object} extended object.
-   */
-  extend: function (out) {
-    out = out || {};
-
-    for (var i = 1; i < arguments.length; i++) {
-      if (!arguments[i])
-        continue;
-
-      for (var key in arguments[i]) {
-        if (arguments[i].hasOwnProperty(key))
-          out[key] = arguments[i][key];
-      }
-    }
-
-    return out;
-  },
-
-  /**
-   * Test if given element has a given class.
-   *
-   * @param {Element} el - element to test.
-   * @param {string} className - class name to test for.
-   * @returns true if element has given class, false otherwise.
-   */
-  hasClass: function (el, className) {
-    return el.className && el.className.toLowerCase().split(' ').indexOf(className) > -1;
-  }
-};
-
-},{}],"adsManager":[function(require,module,exports){
+},{}],"bulbs.ads.manager":[function(require,module,exports){
 (function (global){
 // this should be provided externally
-var adUnits = require('adUnits');
+var adUnits = require('bulbs.ads.units');
 
-var googletag = require('./dfp');
-var utils = require('./utils');
+var googletag = require('bulbs.ads.dfp');
+var utils = require('bulbs.ads.utils');
 
 module.exports = {
-
-  utils: utils,
 
   init: function (debug) {
     if (typeof debug === 'undefined') {
@@ -467,5 +424,46 @@ module.exports = {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./dfp":1,"./utils":2,"adUnits":"adUnits"}]},{},[])("adsManager")
+},{"bulbs.ads.dfp":"bulbs.ads.dfp","bulbs.ads.units":"bulbs.ads.units","bulbs.ads.utils":"bulbs.ads.utils"}],"bulbs.ads.utils":[function(require,module,exports){
+/**
+ * Utility functions for ad loading because we want to load the ads module ASAP,
+ *  before any other JS libs that might provide these functions.
+ */
+module.exports = {
+
+  /**
+   * Extend given object by given non-parameterized arguments.
+   *
+   * @param {object} out - object to extend.
+   * @returns {object} extended object.
+   */
+  extend: function (out) {
+    out = out || {};
+
+    for (var i = 1; i < arguments.length; i++) {
+      if (!arguments[i])
+        continue;
+
+      for (var key in arguments[i]) {
+        if (arguments[i].hasOwnProperty(key))
+          out[key] = arguments[i][key];
+      }
+    }
+
+    return out;
+  },
+
+  /**
+   * Test if given element has a given class.
+   *
+   * @param {Element} el - element to test.
+   * @param {string} className - class name to test for.
+   * @returns true if element has given class, false otherwise.
+   */
+  hasClass: function (el, className) {
+    return el.className && el.className.toLowerCase().split(' ').indexOf(className) > -1;
+  }
+};
+
+},{}]},{},[])("bulbs.ads.utils")
 });

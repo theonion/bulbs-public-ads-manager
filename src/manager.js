@@ -1,12 +1,10 @@
 // this should be provided externally
-var adUnits = require('adUnits');
+var adUnits = require('bulbs.ads.units');
 
-var googletag = require('./dfp');
-var utils = require('./utils');
+var googletag = require('bulbs.ads.dfp');
+var utils = require('bulbs.ads.utils');
 
 module.exports = {
-
-  utils: utils,
 
   init: function (debug) {
     if (typeof debug === 'undefined') {
