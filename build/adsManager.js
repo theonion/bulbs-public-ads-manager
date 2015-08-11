@@ -67,6 +67,8 @@ var utils = require('./utils');
 
 module.exports = {
 
+  utils: utils,
+
   init: function (debug) {
     if (typeof debug === 'undefined') {
       this.debug = window.location.hostname.indexOf('.local') >= 0;
