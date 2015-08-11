@@ -1,10 +1,10 @@
 describe('AdsManager', function () {
 
   var ads;
+  var adUnits = require('bulbs.ads.units');
+  var MockGoogleTag = require('mockGoogleTag');
 
   beforeEach(function () {
-    var MockGoogleTag = require('mockGoogleTag');
-
     window.googletag = new MockGoogleTag();
 
     ads = require('./manager.js');
@@ -40,5 +40,9 @@ describe('AdsManager', function () {
 
     el.innerHTML = '<section class="bullshit"><div class="dfp" data-ad-unit="testing"></div><div class="dfp" data-ad-unit="testing-two"></div></section>';
     expect(ads.findAds(el).length).to.equal(2);
+  });
+
+  it('should use the dfpSite setting from bulbs.ads.units', function () {
+    expect(adUnits.settings.dfpSite).to.equal(ads.targeting.dfp_site);
   });
 });

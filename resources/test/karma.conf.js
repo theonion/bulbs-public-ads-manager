@@ -63,11 +63,13 @@ module.exports = function(config) {
     browserify: {
       debug: true,
       configure: function (bundle) {
-        bundle.require('./resources/test/mock-ad-units', {expose: 'bulbs.ads.units'});
-        bundle.require('./resources/test/mock-google-tag', {expose: 'mockGoogleTag'});
-        bundle.require('./src/utils', {expose: 'bulbs.ads.utils'});
-        bundle.require('./src/dfp', {expose: 'bulbs.ads.dfp'});
-        bundle.require('./src/manager', {expose: 'bulbs.ads.manager'});
+        bundle.on('prebundle', function (bundle) {
+          bundle.require('./resources/test/mock-ad-units', {expose: 'bulbs.ads.units'});
+          bundle.require('./resources/test/mock-google-tag', {expose: 'mockGoogleTag'});
+          bundle.require('./src/utils', {expose: 'bulbs.ads.utils'});
+          bundle.require('./src/dfp', {expose: 'bulbs.ads.dfp'});
+          bundle.require('./src/manager', {expose: 'bulbs.ads.manager'});
+        });
       }
     }
   });

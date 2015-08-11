@@ -16,7 +16,7 @@ module.exports = {
 
     this.slots = {};
     this.adId = 0;
-    this.targeting = utils.extend({dfp_site: 'onion'}, global.TARGETING)
+    this.targeting = utils.extend({dfp_site: adUnits.settings.dfpSite}, global.TARGETING)
     this.initialized = false;
 
     this.debugAds = {};
@@ -125,8 +125,8 @@ module.exports = {
     el.style.removeProperty('height');
     el.style.removeProperty('width');
 
-    if (adUnits[el.dataset.adUnit].onSlotRenderEnded) {
-      adUnits[el.dataset.adUnit].onSlotRenderEnded(e, el);
+    if (adUnits.units[el.dataset.adUnit].onSlotRenderEnded) {
+      adUnits.units[el.dataset.adUnit].onSlotRenderEnded(e, el);
     }
   },
 
@@ -270,7 +270,7 @@ module.exports = {
       return;
     }
 
-    var adUnitConfig = adUnits[element.dataset.adUnit];
+    var adUnitConfig = adUnits.units[element.dataset.adUnit];
     if (adUnitConfig === undefined) {
       return;  // We don't know anything about this ad!
     }
