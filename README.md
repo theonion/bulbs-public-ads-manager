@@ -26,6 +26,8 @@ Ads manager for public side of sites. Fills in ad slots.
 
   adsManager.init();
   ```
+  
+1. Ensure ad code is refrenced as high as possible on the page, preferably as one of the frist things that loads, so that no ad impressions are lost.
 
 ## Development
 
