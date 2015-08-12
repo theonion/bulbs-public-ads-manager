@@ -16,7 +16,7 @@ module.exports = {
 
     this.slots = {};
     this.adId = 0;
-    this.targeting = utils.extend({dfp_site: adUnits.settings.dfpSite}, global.TARGETING)
+    this.targeting = utils.extend({dfp_site: adUnits.settings.dfpSite}, global.TARGETING);
     this.initialized = false;
 
     this.debugAds = {};
@@ -48,7 +48,7 @@ module.exports = {
       }
     });
 
-    googletag.cmd.push(function() {
+    googletag.cmd.push(function () {
       adManager.googletag_log = googletag.debug_log.log;
       adManager.initGoogleTag();
     });
@@ -68,15 +68,15 @@ module.exports = {
     return this.doReloadOnResize;
   },
 
-  initGoogleTag: function() {
+  initGoogleTag: function () {
     var adManager = this;
     if(!this.debug) {
       // We only need the `PubAdsService` in production.
       googletag.pubads().enableSingleRequest();
       googletag.pubads().disableInitialLoad();
-      googletag.pubads().collapseEmptyDivs(true)
+      googletag.pubads().collapseEmptyDivs(true);
 
-      googletag.pubads().addEventListener('slotRenderEnded', function(e) {
+      googletag.pubads().addEventListener('slotRenderEnded', function (e) {
         adManager.onSlotRenderEnded(e);
       });
 
@@ -106,16 +106,16 @@ module.exports = {
       }
     }
 
-    googletag.debug_log.log = function(level, message, service, slot, reference) {
+    googletag.debug_log.log = function (level, message, service, slot, reference) {
       if (message.getMessageId() === 1) {
         // The page has been fully loaded. FULLY. LOADED.
         googletag.pubads().refresh();
       }
       return adManager.googletag_log.apply(this, [level, message, service, slot, reference]);
-    }
+    };
   },
 
-  onSlotRenderEnded: function(e) {
+  onSlotRenderEnded: function (e) {
     this.rendered = true;
 
     var slotId = e.slot.getSlotId().getDomId();
@@ -130,18 +130,18 @@ module.exports = {
     }
   },
 
-  reloadAds: function(el) {
+  reloadAds: function (el) {
     this.unloadAds(el);
     this.loadAds(el);
   },
 
-  generateId: function() {
+  generateId: function () {
     // Generates a unique ad id. For now, just an incrementing integer.
     this.adId += 1;
     return 'dfp-ad-' + this.adId.toString();
   },
 
-  debugAdContent: function(adUnitConfig) {
+  debugAdContent: function (adUnitConfig) {
     /*
       This is only useed on the local, and returns an HTML string suitable for loading
       into an ad slot via the `ContentService.setContent()` method.
@@ -186,7 +186,7 @@ module.exports = {
     }
 
     // Let's make a random placeholder ad!
-    var randomIndex = Math.floor(Math.random() * validSizes.length)
+    var randomIndex = Math.floor(Math.random() * validSizes.length);
     size = validSizes[randomIndex];
 
     var iframe = document.createElement('iframe');
@@ -229,7 +229,7 @@ module.exports = {
 
   findAds: function (el) {
     var ads = [];
-    if (el === undefined) {
+    if (!el) {
       // Let's try to load ads for the whole page
       ads = document.getElementsByClassName('dfp');
     } else if (el instanceof HTMLElement) {
@@ -255,7 +255,7 @@ module.exports = {
     return ads;
   },
 
-  configureAd: function(element) {
+  configureAd: function (element) {
     // Configures a single ad, with the specified targeting
 
     // Set a unique id
@@ -263,15 +263,15 @@ module.exports = {
       return this.slots[element.id]; // This slot has already been loaded!
     }
 
-    element.id = this.generateId()
+    element.id = this.generateId();
 
     // I don't know why this would happen, but if it does, we should watch out
-    if (element.dataset === undefined) {
+    if (!element.dataset) {
       return;
     }
 
     var adUnitConfig = adUnits.units[element.dataset.adUnit];
-    if (adUnitConfig === undefined) {
+    if (!adUnitConfig) {
       return;  // We don't know anything about this ad!
     }
 
@@ -289,8 +289,10 @@ module.exports = {
       return;
     }
 
+    var t;
+
     // Set all the targeting
-    for (var t in this.targeting) {
+    for (t in this.targeting) {
       if(this.targeting[t]) {
         slot.setTargeting(t, this.targeting[t].toString());
       }
@@ -301,7 +303,7 @@ module.exports = {
       slotTargeting = JSON.parse(element.dataset.targeting);
     }
 
-    for (var t in slotTargeting) {
+    for (t in slotTargeting) {
       if(slotTargeting[t]) {
         slot.setTargeting(t, slotTargeting[t].toString());
       }
@@ -322,20 +324,20 @@ module.exports = {
     return slot;
   },
 
-  loadAds: function(el) {
+  loadAds: function (el) {
     if (!this.initialized) {
       return;
     }
 
     // Load all the ads in `el` (or just in the whole document)
     var ads = this.findAds(el);
+    var slot, i;
 
     var slotsToLoad = [];
-    var i;
     for(i = 0; i < ads.length; i++) {
       var element = ads[i];
 
-      var slot = this.configureAd(element);
+      slot = this.configureAd(element);
       if (slot) {
         slotsToLoad.push(slot);
       }
@@ -347,12 +349,11 @@ module.exports = {
 
     // We need to call the slot render ended stuff ourselves in debug mode.
     if (this.debug) {
-      var i;
       for(i = 0; i < slotsToLoad.length; i++) {
-        var slot = slotsToLoad[i];
+        slot = slotsToLoad[i];
         var domId = slot.getSlotId().getDomId();
         var iframe = document.getElementById(domId).getElementsByTagName('iframe')[0];
-        if (iframe === undefined) {
+        if (!iframe) {
           return;
         }
         var fakeEvent = {
@@ -364,18 +365,19 @@ module.exports = {
     }
   },
 
-  unloadAds: function(el) {
+  unloadAds: function (el) {
     if (! this.initialized) {
       return;
     }
     // Unload the ads, likely for performance reasons.
     var ads = this.findAds(el);
+    var ad, i;
     if (!this.debug) {
 
       // If we're not in debug mode, get a list of the slot objects
       var slots = [];
-      for (var i=0; i < ads.length; i++) {
-        var ad = ads[i];
+      for (i = 0; i < ads.length; i++) {
+        ad = ads[i];
         // Lock the height...
         ad.style.height = ad.offsetHeight + 'px';
         ad.style.width = ad.offsetWidth + 'px';
@@ -388,8 +390,8 @@ module.exports = {
       googletag.pubads().clear(slots);
 
     } else {
-      for (var i=0; i < ads.length; i++) {
-        var ad = ads[i];
+      for (i = 0; i < ads.length; i++) {
+        ad = ads[i];
         if (ad.id in this.slots) {
           while (ad.hasChildNodes()) {
             ad.removeChild(ad.firstChild);

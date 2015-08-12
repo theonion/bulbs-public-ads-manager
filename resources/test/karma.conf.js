@@ -1,7 +1,7 @@
 // Karma configuration
 // Generated on Fri Jan 30 2015 20:47:11 GMT+0000 (UTC)
 
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     basePath: '../..',
 
