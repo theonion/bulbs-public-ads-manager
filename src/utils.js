@@ -34,6 +34,6 @@ module.exports = {
    * @returns true if element has given class, false otherwise.
    */
   hasClass: function (el, className) {
-    return el.className && el.className.toLowerCase().split(' ').indexOf(className) > -1;
+    return el.className && !!el.className.match('\\b' + className + '\\b');
   }
 };
