@@ -2,7 +2,7 @@
  * Utility functions for ad loading because we want to load the ads module ASAP,
  *  before any other JS libs that might provide these functions.
  */
-module.exports = {
+var Utils = {
 
   /**
    * Extend given object by given non-parameterized arguments.
@@ -34,7 +34,7 @@ module.exports = {
    * @returns true if element has given class, false otherwise.
    */
   hasClass: function (el, className) {
-    return el.className && !!el.className.match('\\b' + className + '\\b');
+    return el.className && !!el.className.match('(^|\\s)' + className + '($|\\s)');
   },
 
   /**
@@ -44,7 +44,7 @@ module.exports = {
    * @param {string} className - class to remove.
    */
   removeClass: function (el, className) {
-    el.className = el.className.replace(new RegExp('\\b?' + className + '\\b?', 'g'), '');
+    el.className = el.className.replace(new RegExp('(^|\\s)' + className + '($|\\s)', 'g'), ' ');
   },
 
   /**
@@ -54,8 +54,10 @@ module.exports = {
    * @param {string} className - class name to add.
    */
   addClass: function (el, className) {
-    if (!hasClass(el, className)) {
+    if (!Utils.hasClass(el, className)) {
       el.className += ' ' + className;
     }
   }
 };
+
+module.exports = Utils;

@@ -8,7 +8,7 @@ describe('AdsManager', function () {
     window.googletag = new MockGoogleTag();
 
     ads = require('./manager.js');
-    ads.init(false);
+    ads.init();
   });
 
   it('generates sequential ids', function () {
