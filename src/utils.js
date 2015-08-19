@@ -35,5 +35,27 @@ module.exports = {
    */
   hasClass: function (el, className) {
     return el.className && !!el.className.match('\\b' + className + '\\b');
+  },
+
+  /**
+   * Remove a given class from given element.
+   *
+   * @param {Element} el - element to remove class from.
+   * @param {string} className - class to remove.
+   */
+  removeClass: function (el, className) {
+    el.className = el.className.replace(new RegExp('\\b?' + className + '\\b?', 'g'), '');
+  },
+
+  /**
+   * Add a given class to given element.
+   *
+   * @param {Element} el - element to add class to.
+   * @param {string} className - class name to add.
+   */
+  addClass: function (el, className) {
+    if (!hasClass(el, className)) {
+      el.className += ' ' + className;
+    }
   }
 };
