@@ -28,8 +28,7 @@ module.exports = {
     var viewportWidth = 0;
     var oldViewportWidth = null;
     global.addEventListener('resize', function (e) {
-
-      if (this.doReloadOnResize) {
+      if (adManager.doReloadOnResize) {
         viewportWidth = global.document.body.clientWidth;
 
         if (!oldViewportWidth || oldViewportWidth !== viewportWidth) {

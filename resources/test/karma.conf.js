@@ -10,7 +10,8 @@ module.exports = function (config) {
     frameworks: [
       'browserify',
       'chai',
-      'mocha'
+      'mocha',
+      'sinon'
     ],
 
     // list of files / patterns to load in the browser
@@ -31,7 +32,8 @@ module.exports = function (config) {
       'karma-browserify',
       'karma-chai',
       'karma-mocha',
-      'karma-phantomjs-launcher'
+      'karma-phantomjs-launcher',
+      'karma-sinon'
     ],
 
     // test results reporter to use

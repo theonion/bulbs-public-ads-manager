@@ -3,12 +3,17 @@ describe('AdsManager', function () {
   var ads;
   var adUnits = require('bulbs.ads.units');
   var MockGoogleTag = require('mockGoogleTag');
+  var sandbox = sinon.sandbox.create();
 
   beforeEach(function () {
     window.googletag = new MockGoogleTag();
 
     ads = require('./manager.js');
     ads.init();
+  });
+
+  afterEach(function () {
+    sandbox.restore();
   });
 
   it('generates sequential ids', function () {
@@ -45,4 +50,37 @@ describe('AdsManager', function () {
   it('should use the dfpSite setting from bulbs.ads.units', function () {
     expect(adUnits.settings.dfpSite).to.equal(ads.targeting.dfp_site);
   });
+
+  describe('resize event listener', function () {
+
+    var resizeEvent;
+    var setTimeout;
+
+    beforeEach(function () {
+      resizeEvent = document.createEvent('UIEvents');
+      resizeEvent.initUIEvent('resize', false, true, window);
+
+      setTimeout = sandbox.stub(window, 'setTimeout');
+      ads.reloadAds = sandbox.stub();
+    });
+
+    it('should reload ads when reload on resize setting is true', function () {
+      ads.reloadOnResize(true);
+      window.dispatchEvent(resizeEvent);
+
+      var resizeCallback = setTimeout.getCall(0).args[0];
+      resizeCallback();
+
+      expect(ads.reloadAds.calledOnce).to.be.true;
+    });
+
+    it('should not reload ads when reload on resize setting is false', function () {
+      ads.reloadOnResize(false);
+      window.dispatchEvent(resizeEvent);
+
+      expect(setTimeout.calledOnce).to.be.false;
+      expect(ads.reloadAds.calledOnce).to.be.false;
+    });
+  });
+
 });
