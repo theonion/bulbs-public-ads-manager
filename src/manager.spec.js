@@ -40,10 +40,16 @@ describe('AdsManager', function () {
     el.innerHTML = '<div class="dfp" data-slot-name="testing"></div>';
     expect(ads.findAds(el).length).to.equal(1);
 
-    el.innerHTML = '<div class="dfp" data-slot-name="testing"></div><div class="dfp" data-slot-name="testing-two"></div>';
+    el.innerHTML =
+      '<div class="dfp" data-slot-name="testing"></div>' +
+      '<div class="dfp" data-slot-name="testing-two"></div>';
     expect(ads.findAds(el).length).to.equal(2);
 
-    el.innerHTML = '<section class="bullshit"><div class="dfp" data-ad-unit="testing"></div><div class="dfp" data-ad-unit="testing-two"></div></section>';
+    el.innerHTML =
+      '<section class="bullshit">' +
+        '<div class="dfp" data-ad-unit="testing"></div>' +
+        '<div class="dfp" data-ad-unit="testing-two"></div>' +
+      '</section>';
     expect(ads.findAds(el).length).to.equal(2);
   });
 

@@ -2,12 +2,13 @@
   "description": "Do not install via npm.",
   "private": true,
   "scripts": {
-    "build": "mkdir -p build && ./node_modules/.bin/browserify -s bulbs.ads.manager -r ./src/dfp.js:bulbs.ads.dfp -r ./src/utils.js:bulbs.ads.utils -r ./src/manager.js:bulbs.ads.manager -x bulbs.ads.units > build/adsManager.js",
-    "test": "./node_modules/.bin/karma start resources/test/karma.conf.js"
+    "test": "./node_modules/.bin/karma start resources/test/karma.conf.js",
+    "lint": "./node_modules/.bin/eslint src resources"
   },
   "devDependencies": {
     "browserify": "^11.0.1",
     "chai": "^3.2.0",
+    "eslint": "^1.2.1",
     "karma": "^0.13.8",
     "karma-browserify": "^4.3.0",
     "karma-chai": "^0.1.0",
