@@ -29,8 +29,7 @@ module.exports = {
         [[970, 0], [[728, 90], [970, 250], [970, 90], [970, 415]]],
         [[728, 0], [728, 90]],
         [[0, 0], [320, 50]]
-      ],
-      onSlotRenderEnded: function (e, el) {}
+      ]
     },
 
     'article-header': {
@@ -39,29 +38,25 @@ module.exports = {
         [[970, 0], [[728, 90], [970, 250]]],
         [[728, 0], [728, 90]],
         [[0, 0], [320, 50]]
-      ],
-      onSlotRenderEnded: function (e, el) {}
+      ]
     },
 
     'sidebar-primary': {
       sizes: [
         [[0, 0], [300, 250]]
-      ],
-      onSlotRenderEnded: function (e, el) {}
+      ]
     },
 
     'sidebar-secondary': {
       sizes: [
         [[0, 0], [300, 250]]
-      ],
-      onSlotRenderEnded: function (e, el) {}
+      ]
     },
 
     'sidebar-tertiary': {
       sizes: [
         [[0, 0], [300, 250]]
-      ],
-      onSlotRenderEnded: function (e, el) {}
+      ]
     }
   }
 };

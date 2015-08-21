@@ -27,7 +27,7 @@ module.exports = {
     var resizeTimeout = null;
     var viewportWidth = 0;
     var oldViewportWidth = null;
-    global.addEventListener('resize', function (e) {
+    global.addEventListener('resize', function () {
       if (adManager.doReloadOnResize) {
         viewportWidth = global.document.body.clientWidth;
 
@@ -186,7 +186,7 @@ module.exports = {
 
     // Let's make a random placeholder ad!
     var randomIndex = Math.floor(Math.random() * validSizes.length);
-    size = validSizes[randomIndex];
+    var size = validSizes[randomIndex];
 
     var iframe = document.createElement('iframe');
     iframe.scrolling = 'no';
@@ -208,9 +208,16 @@ module.exports = {
       'line-height: ' + size[1] + 'px'
     ];
 
-    iframe.srcdoc = '<html><head><style>body{' + styles.join(';') + '}</style><title>' + sizeLabel + '</title></head><body><b>' + sizeLabel + '</b></body></html>';
+    iframe.srcdoc =
+      '<html><head><style>body{' +
+        styles.join(';') +
+      '}</style><title>' +
+        sizeLabel +
+      '</title></head><body><b>' +
+        sizeLabel +
+      '</b></body></html>';
 
-    var tmp = document.createElement("div");
+    var tmp = document.createElement('div');
     tmp.appendChild(iframe);
 
     return tmp.innerHTML;

@@ -4,19 +4,19 @@ var MockGoogleTag = function MockGoogleTag () {
 };
 
 MockGoogleTag.prototype.content = function () {
-	return {
-		setContent: function (slot, content) {},
+  return {
+    setContent: function () {},
     addEventListener: function () {}
-	};
+  };
 };
 
 MockGoogleTag.prototype.pubads = function () {
-	return {
-		collapseEmptyDivs: function () {},
-		enableSingleRequest: function () {},
+  return {
+    collapseEmptyDivs: function () {},
+    enableSingleRequest: function () {},
     disableInitialLoad: function () {},
-    addEventListener: function () {},
-	};
+    addEventListener: function () {}
+  };
 };
 
 module.exports = MockGoogleTag;
