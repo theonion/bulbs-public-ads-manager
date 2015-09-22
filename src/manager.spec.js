@@ -77,15 +77,15 @@ describe('AdsManager', function () {
       var resizeCallback = setTimeout.getCall(0).args[0];
       resizeCallback();
 
-      expect(ads.reloadAds.calledOnce).to.be.true;
+      expect(ads.reloadAds.calledOnce).to.equal(true);
     });
 
     it('should not reload ads when reload on resize setting is false', function () {
       ads.reloadOnResize(false);
       window.dispatchEvent(resizeEvent);
 
-      expect(setTimeout.calledOnce).to.be.false;
-      expect(ads.reloadAds.calledOnce).to.be.false;
+      expect(setTimeout.calledOnce).to.equal(false);
+      expect(ads.reloadAds.calledOnce).to.equal(false);
     });
   });
 

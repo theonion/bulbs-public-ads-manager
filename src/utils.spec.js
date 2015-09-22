@@ -13,8 +13,8 @@ describe('Utils', function () {
   it('should have a function to check if an element has a class', function () {
     element.className = 'something dfp-ad';
 
-    expect(utils.hasClass(element, 'something')).to.be.true;
-    expect(utils.hasClass(element, 'dfp')).to.be.false;
+    expect(utils.hasClass(element, 'something')).to.equal(true);
+    expect(utils.hasClass(element, 'dfp')).to.equal(false);
   });
 
   it('should have a function to remove a class frome an element', function () {
