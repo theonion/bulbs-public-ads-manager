@@ -53,6 +53,24 @@ describe('AdsManager', function () {
     expect(ads.findAds(el).length).to.equal(2);
   });
 
+  it('can find ads by CSS selector', function () {
+    var el = document.createElement('div');
+
+    el.innerHTML =
+      '<section>'
+        + '<div class="dfp" data-ad-unit="testing"></div>'
+        + '<div class="dfp" data-ad-unit="testing"></div>'
+      + '</section>'
+      + '<section>'
+        + '<div class="dfp" data-ad-unit="testing"></div>'
+        + '<div class="dfp" data-ad-unit="testing"></div>'
+      + '</section>';
+
+    document.body.appendChild(el);
+
+    expect(ads.findAds('section .dfp').length).to.equal(4);
+  });
+
   it('should use the dfpSite setting from bulbs.ads.units', function () {
     expect(adUnits.settings.dfpSite).to.equal(ads.targeting.dfp_site);
   });
