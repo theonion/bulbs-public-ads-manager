@@ -4,6 +4,7 @@
         "quotes": [2, "single"],
         "linebreak-style": [2, "unix"],
         "max-len": [2, 120, 4, {"ignoreUrls": true}],
+        "no-unused-expressions": [2],
         "semi": [2, "always"],
         "space-before-function-paren": [2, "always"]
     },

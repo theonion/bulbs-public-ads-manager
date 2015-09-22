@@ -53,6 +53,24 @@ describe('AdsManager', function () {
     expect(ads.findAds(el).length).to.equal(2);
   });
 
+  it('can find ads by CSS selector', function () {
+    var el = document.createElement('div');
+
+    el.innerHTML =
+      '<section>'
+        + '<div class="dfp" data-ad-unit="testing"></div>'
+        + '<div class="dfp" data-ad-unit="testing"></div>'
+      + '</section>'
+      + '<section>'
+        + '<div class="dfp" data-ad-unit="testing"></div>'
+        + '<div class="dfp" data-ad-unit="testing"></div>'
+      + '</section>';
+
+    document.body.appendChild(el);
+
+    expect(ads.findAds('section .dfp').length).to.equal(4);
+  });
+
   it('should use the dfpSite setting from bulbs.ads.units', function () {
     expect(adUnits.settings.dfpSite).to.equal(ads.targeting.dfp_site);
   });
@@ -77,15 +95,15 @@ describe('AdsManager', function () {
       var resizeCallback = setTimeout.getCall(0).args[0];
       resizeCallback();
 
-      expect(ads.reloadAds.calledOnce).to.be.true;
+      expect(ads.reloadAds.calledOnce).to.equal(true);
     });
 
     it('should not reload ads when reload on resize setting is false', function () {
       ads.reloadOnResize(false);
       window.dispatchEvent(resizeEvent);
 
-      expect(setTimeout.calledOnce).to.be.false;
-      expect(ads.reloadAds.calledOnce).to.be.false;
+      expect(setTimeout.calledOnce).to.equal(false);
+      expect(ads.reloadAds.calledOnce).to.equal(false);
     });
   });
 
