@@ -235,9 +235,9 @@ module.exports = {
 
   findAds: function (el) {
     var ads = [];
-    if (!el) {
-      // Let's try to load ads for the whole page
-      ads = document.getElementsByClassName('dfp');
+
+    if (typeof(el) === 'string') {
+      ads = document.querySelectorAll(el);
     } else if (el instanceof HTMLElement) {
       if (this.isAd(el)) {
         // The element is an ad, I guess that's the whole list
@@ -257,7 +257,11 @@ module.exports = {
           ads = ads.concat(thisEl.getElementsByClassName('dfp'));
         }
       }
+    } else {
+      // not a usable object type, find all ads on page
+      ads = document.getElementsByClassName('dfp');
     }
+
     return ads;
   },
 
