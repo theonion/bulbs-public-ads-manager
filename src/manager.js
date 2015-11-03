@@ -90,7 +90,9 @@ module.exports = {
     this.initialized = true;
 
     this.loadAds();
-    setInterval(adManager.loadAds.bind(adManager), 200);
+    if (adUnits.settings.hasOwnProperty('filterSlotsByViewport')) {
+      setInterval(adManager.loadAds.bind(adManager), 200);
+    }
     googletag.enableServices();
 
     if (this.debug) {
