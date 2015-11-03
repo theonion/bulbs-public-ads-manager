@@ -53,6 +53,23 @@ describe('AdsManager', function () {
     expect(ads.findAds(el).length).to.equal(2);
   });
 
+  it('will not find ads outside the viewport + threshold', function () {
+    var el = document.createElement('div');
+    document.body.appendChild(el);
+
+    el.innerHTML =
+      '<div class="dfp" data-slot-name="testing"></div>' +
+      '<div class="dfp" data-slot-name="testing-two"></div>';
+    expect(ads.findAds(el).length).to.equal(2);
+
+    el.innerHTML =
+      '<div class="dfp" data-slot-name="testing"></div>' +
+      '<div class="dfp" data-slot-name="testing-two"></div>';
+    el.children[1].style.position = 'absolute';
+    el.children[1].style.top = window.innerHeight + 101 + 'px';
+    expect(ads.findAds(el).length).to.equal(1);
+  });
+
   it('can find ads by CSS selector', function () {
     var el = document.createElement('div');
 

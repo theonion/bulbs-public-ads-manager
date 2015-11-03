@@ -90,6 +90,7 @@ module.exports = {
     this.initialized = true;
 
     this.loadAds();
+    setInterval(adManager.loadAds.bind(adManager), 200);
     googletag.enableServices();
 
     if (this.debug) {
@@ -262,7 +263,18 @@ module.exports = {
       ads = document.getElementsByClassName('dfp');
     }
 
-    return ads;
+    var filteredAds = [];
+    var nearViewport;
+    for (var i = 0, l = ads.length; i < l; i ++) {
+      var ad = ads[i];
+      nearViewport = utils.elementNearViewport(ad, {
+        withinDistance: adUnits.settings.screenDistanceLoadThreshload || 0
+      });
+      if (nearViewport) {
+        filteredAds.push(ad);
+      }
+    }
+    return filteredAds;
   },
 
   configureAd: function (element) {
@@ -351,7 +363,10 @@ module.exports = {
       if (slot) {
         slotsToLoad.push(slot);
       }
-      googletag.display(element.id);
+
+      if (!slot.id in this.slots) {
+        googletag.display(element.id);
+      }
     }
     if(!this.debug) {
       googletag.pubads().refresh(slotsToLoad);
