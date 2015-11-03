@@ -32,4 +32,25 @@ describe('Utils', function () {
 
     expect(element.className).to.equal('dfp ads yay');
   });
+
+  it('should be able to tell if an element is close to the viewport', function () {
+    var innerHeight = window.innerHeight;
+
+    expect(utils.elementNearViewport(element, { withinDistance: 0 })).to.equal(true);
+
+    element.style.position = 'absolute';
+    element.style.top = innerHeight + 1 + 'px';
+
+    expect(utils.elementNearViewport(element, { withinDistance: 0 })).to.equal(false);
+
+    element.style.top = innerHeight + 100 + 'px';
+
+    expect(utils.elementNearViewport(element, { withinDistance: 0})).to.equal(false);
+    expect(utils.elementNearViewport(element, { withinDistance: 100 })).to.equal(true);
+
+    element.style.top = '-200px';
+
+    expect(utils.elementNearViewport(element, { withinDistance: 100})).to.equal(false);
+    expect(utils.elementNearViewport(element, { withinDistance: 201})).to.equal(true);
+  });
 });

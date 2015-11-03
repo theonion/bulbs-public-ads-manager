@@ -57,6 +57,23 @@ var Utils = {
     if (!Utils.hasClass(el, className)) {
       el.className += ' ' + className;
     }
+  },
+
+  /**
+   * Check if element is inside visible viewport, within a specific distance.
+   *
+   * @param {Element} el - element to check.
+   * @param {object} options - {withinDistance: {integer}} number of pixels to check.
+   */
+  elementNearViewport: function (el, options) {
+    if (!options) {
+      options = {};
+    }
+    var withinDistance = options.withinDistance || 0;
+    var rect           = el.getBoundingClientRect();
+    var innerHeight    = window.innerHeight || window.document.documentElement.clientHeight;
+
+    return rect.top <= innerHeight + withinDistance && rect.top >= -withinDistance;
   }
 };
 
