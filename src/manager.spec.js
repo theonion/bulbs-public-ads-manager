@@ -14,6 +14,12 @@ describe('AdsManager', function () {
 
   afterEach(function () {
     sandbox.restore();
+    var added = document.querySelectorAll('body > div');
+
+    for (var i = 0, l = added.length; i < l; i ++) {
+      var v = added[i];
+      document.body.removeChild(v);
+    }
   });
 
   it('generates sequential ids', function () {
@@ -122,6 +128,25 @@ describe('AdsManager', function () {
       expect(setTimeout.calledOnce).to.equal(false);
       expect(ads.reloadAds.calledOnce).to.equal(false);
     });
+  });
+
+  it('sets ad-load-state', function () {
+    ads.initialized = true;
+    ads.debug = true;
+    var el = document.createElement('div');
+
+    el.innerHTML = '<div class="dfp" data-ad-unit="testing"></div>';
+
+    document.body.appendChild(el);
+
+    ads.loadAds(el);
+    expect(document.querySelector('.dfp').getAttribute('ad-load-state')).to.equal('loaded');
+
+    ads.unloadAds(el);
+    expect(document.querySelector('.dfp').getAttribute('ad-load-state')).to.equal('unloaded');
+
+    ads.debug = false;
+    ads.initialized = false;
   });
 
 });

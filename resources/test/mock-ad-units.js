@@ -19,7 +19,7 @@ module.exports = {
 
   settings: {
     dfpSite: 'onion',
-    screenDistanceLoadThreshload: 100
+    filterSlotsByViewport: 100
   },
 
   units: {

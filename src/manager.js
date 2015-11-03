@@ -263,18 +263,23 @@ module.exports = {
       ads = document.getElementsByClassName('dfp');
     }
 
-    var filteredAds = [];
-    var nearViewport;
-    for (var i = 0, l = ads.length; i < l; i ++) {
-      var ad = ads[i];
-      nearViewport = utils.elementNearViewport(ad, {
-        withinDistance: adUnits.settings.screenDistanceLoadThreshload || 0
-      });
-      if (nearViewport) {
-        filteredAds.push(ad);
+    if (adUnits.settings.hasOwnProperty('filterSlotsByViewport')) {
+      var filteredAds = [];
+      var nearViewport;
+      for (var i = 0, l = ads.length; i < l; i ++) {
+        var ad = ads[i];
+        nearViewport = utils.elementNearViewport(ad, {
+          withinDistance: adUnits.settings.filterSlotsByViewport
+        });
+        if (nearViewport) {
+          filteredAds.push(ad);
+        }
       }
+      return filteredAds;
     }
-    return filteredAds;
+    else {
+      return ads;
+    }
   },
 
   configureAd: function (element) {
@@ -359,14 +364,16 @@ module.exports = {
     for(i = 0; i < ads.length; i++) {
       var element = ads[i];
 
+      if (element.getAttribute('ad-load-state') === 'loaded') {
+        continue;
+      }
+      element.setAttribute('ad-load-state', 'loaded');
+
       slot = this.configureAd(element);
       if (slot) {
         slotsToLoad.push(slot);
       }
-
-      if (!slot.id in this.slots) {
-        googletag.display(element.id);
-      }
+      googletag.display(element.id);
     }
     if(!this.debug) {
       googletag.pubads().refresh(slotsToLoad);
@@ -411,6 +418,8 @@ module.exports = {
           slots.push(this.slots[ad.id]);
           delete this.slots[ad.id];
         }
+
+        ad.setAttribute('ad-load-state', 'unloaded');
       }
       googletag.pubads().clear(slots);
 
@@ -423,6 +432,7 @@ module.exports = {
           }
           delete this.slots[ad.id];
         }
+        ad.setAttribute('ad-load-state', 'unloaded');
       }
     }
 
