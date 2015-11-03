@@ -128,6 +128,8 @@ module.exports = {
     if (adUnits.units[el.dataset.adUnit].onSlotRenderEnded) {
       adUnits.units[el.dataset.adUnit].onSlotRenderEnded(e, el);
     }
+
+    el.setAttribute('data-ad-load-state', 'loaded');
   },
 
   reloadAds: function (el) {
@@ -263,6 +265,10 @@ module.exports = {
       ads = document.getElementsByClassName('dfp');
     }
 
+    return ads;
+  },
+
+  filterAds: function (ads) {
     if (adUnits.settings.hasOwnProperty('filterSlotsByViewport')) {
       var filteredAds = [];
       var nearViewport;
@@ -357,7 +363,7 @@ module.exports = {
     }
 
     // Load all the ads in `el` (or just in the whole document)
-    var ads = this.findAds(el);
+    var ads = this.filterAds(this.findAds(el));
     var slot, i;
 
     var slotsToLoad = [];
@@ -367,7 +373,6 @@ module.exports = {
       if (element.getAttribute('ad-load-state') === 'loaded') {
         continue;
       }
-      element.setAttribute('ad-load-state', 'loaded');
 
       slot = this.configureAd(element);
       if (slot) {
@@ -419,7 +424,7 @@ module.exports = {
           delete this.slots[ad.id];
         }
 
-        ad.setAttribute('ad-load-state', 'unloaded');
+        ad.setAttribute('data-ad-load-state', 'unloaded');
       }
       googletag.pubads().clear(slots);
 
@@ -432,10 +437,8 @@ module.exports = {
           }
           delete this.slots[ad.id];
         }
-        ad.setAttribute('ad-load-state', 'unloaded');
+        ad.setAttribute('data-ad-load-state', 'unloaded');
       }
     }
-
   }
-
 };

@@ -59,7 +59,7 @@ describe('AdsManager', function () {
     expect(ads.findAds(el).length).to.equal(2);
   });
 
-  it('will not find ads outside the viewport + threshold', function () {
+  it('will filter ads outside the viewport + threshold', function () {
     var el = document.createElement('div');
     document.body.appendChild(el);
 
@@ -73,7 +73,7 @@ describe('AdsManager', function () {
       '<div class="dfp" data-slot-name="testing-two"></div>';
     el.children[1].style.position = 'absolute';
     el.children[1].style.top = window.innerHeight + 101 + 'px';
-    expect(ads.findAds(el).length).to.equal(1);
+    expect(ads.filterAds(ads.findAds(el)).length).to.equal(1);
   });
 
   it('can find ads by CSS selector', function () {
@@ -135,7 +135,7 @@ describe('AdsManager', function () {
     ads.debug = true;
     var el = document.createElement('div');
 
-    el.innerHTML = '<div class="dfp" data-ad-unit="testing"></div>';
+    el.innerHTML = '<div class="dfp" data-ad-unit="header"><iframe></iframe></div>';
 
     document.body.appendChild(el);
 
@@ -145,8 +145,8 @@ describe('AdsManager', function () {
     ads.unloadAds(el);
     expect(document.querySelector('.dfp').getAttribute('ad-load-state')).to.equal('unloaded');
 
-    ads.debug = false;
     ads.initialized = false;
+    ads.debug = false;
   });
 
 });
