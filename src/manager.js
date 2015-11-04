@@ -380,7 +380,7 @@ module.exports = {
     for(i = 0; i < ads.length; i++) {
       var element = ads[i];
 
-      if (element.getAttribute('ad-load-state') === 'loaded') {
+      if (element.getAttribute('data-ad-load-state') === 'loaded') {
         continue;
       }
 
