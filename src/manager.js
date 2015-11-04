@@ -90,6 +90,9 @@ module.exports = {
     this.initialized = true;
 
     this.loadAds();
+    if (adUnits.settings.hasOwnProperty('filterSlotsByViewport')) {
+      setInterval(adManager.loadAds.bind(adManager), 200);
+    }
     googletag.enableServices();
 
     if (this.debug) {
@@ -127,6 +130,8 @@ module.exports = {
     if (adUnits.units[el.dataset.adUnit].onSlotRenderEnded) {
       adUnits.units[el.dataset.adUnit].onSlotRenderEnded(e, el);
     }
+
+    el.setAttribute('data-ad-load-state', 'loaded');
   },
 
   reloadAds: function (el) {
@@ -265,6 +270,26 @@ module.exports = {
     return ads;
   },
 
+  filterAds: function (ads) {
+    if (adUnits.settings.hasOwnProperty('filterSlotsByViewport')) {
+      var filteredAds = [];
+      var nearViewport;
+      for (var i = 0, l = ads.length; i < l; i ++) {
+        var ad = ads[i];
+        nearViewport = utils.elementNearViewport(ad, {
+          withinDistance: adUnits.settings.filterSlotsByViewport
+        });
+        if (nearViewport) {
+          filteredAds.push(ad);
+        }
+      }
+      return filteredAds;
+    }
+    else {
+      return ads;
+    }
+  },
+
   configureAd: function (element) {
     // Configures a single ad, with the specified targeting
 
@@ -334,18 +359,30 @@ module.exports = {
     return slot;
   },
 
+  pause: function () {
+    this.paused = true;
+  },
+
+  unpause: function () {
+    this.paused = false;
+  },
+
   loadAds: function (el) {
-    if (!this.initialized) {
+    if (this.paused || !this.initialized) {
       return;
     }
 
     // Load all the ads in `el` (or just in the whole document)
-    var ads = this.findAds(el);
+    var ads = this.filterAds(this.findAds(el));
     var slot, i;
 
     var slotsToLoad = [];
     for(i = 0; i < ads.length; i++) {
       var element = ads[i];
+
+      if (element.getAttribute('data-ad-load-state') === 'loaded') {
+        continue;
+      }
 
       slot = this.configureAd(element);
       if (slot) {
@@ -396,6 +433,8 @@ module.exports = {
           slots.push(this.slots[ad.id]);
           delete this.slots[ad.id];
         }
+
+        ad.setAttribute('data-ad-load-state', 'unloaded');
       }
       googletag.pubads().clear(slots);
 
@@ -408,9 +447,8 @@ module.exports = {
           }
           delete this.slots[ad.id];
         }
+        ad.setAttribute('data-ad-load-state', 'unloaded');
       }
     }
-
   }
-
 };

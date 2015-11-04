@@ -18,7 +18,8 @@
 module.exports = {
 
   settings: {
-    dfpSite: 'onion'
+    dfpSite: 'onion',
+    filterSlotsByViewport: 100
   },
 
   units: {

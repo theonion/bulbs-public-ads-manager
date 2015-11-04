@@ -14,6 +14,12 @@ describe('AdsManager', function () {
 
   afterEach(function () {
     sandbox.restore();
+    var added = document.querySelectorAll('body > div');
+
+    for (var i = 0, l = added.length; i < l; i ++) {
+      var v = added[i];
+      document.body.removeChild(v);
+    }
   });
 
   it('generates sequential ids', function () {
@@ -51,6 +57,23 @@ describe('AdsManager', function () {
         '<div class="dfp" data-ad-unit="testing-two"></div>' +
       '</section>';
     expect(ads.findAds(el).length).to.equal(2);
+  });
+
+  it('will filter ads outside the viewport + threshold', function () {
+    var el = document.createElement('div');
+    document.body.appendChild(el);
+
+    el.innerHTML =
+      '<div class="dfp" data-slot-name="testing"></div>' +
+      '<div class="dfp" data-slot-name="testing-two"></div>';
+    expect(ads.findAds(el).length).to.equal(2);
+
+    el.innerHTML =
+      '<div class="dfp" data-slot-name="testing"></div>' +
+      '<div class="dfp" data-slot-name="testing-two"></div>';
+    el.children[1].style.position = 'absolute';
+    el.children[1].style.top = window.innerHeight + 101 + 'px';
+    expect(ads.filterAds(ads.findAds(el)).length).to.equal(1);
   });
 
   it('can find ads by CSS selector', function () {
@@ -105,6 +128,46 @@ describe('AdsManager', function () {
       expect(setTimeout.calledOnce).to.equal(false);
       expect(ads.reloadAds.calledOnce).to.equal(false);
     });
+  });
+
+  it('sets ad-load-state', function () {
+    ads.initialized = true;
+    ads.debug = true;
+    var el = document.createElement('div');
+
+    el.innerHTML = '<div class="dfp" data-ad-unit="header"><iframe></iframe></div>';
+
+    document.body.appendChild(el);
+
+    ads.loadAds(el);
+    expect(document.querySelector('.dfp').getAttribute('data-ad-load-state')).to.equal('loaded');
+
+    ads.unloadAds(el);
+    expect(document.querySelector('.dfp').getAttribute('data-ad-load-state')).to.equal('unloaded');
+
+    ads.initialized = false;
+    ads.debug = false;
+  });
+
+  it('will not load ads if paused', function () {
+    ads.initialized = true;
+    ads.debug = true;
+    var el = document.createElement('div');
+
+    el.innerHTML = '<div class="dfp" data-ad-unit="header"><iframe></iframe></div>';
+
+    document.body.appendChild(el);
+
+    ads.pause()
+    ads.loadAds(el);
+    expect(document.querySelector('.dfp').getAttribute('data-ad-load-state')).to.equal(null);
+
+    ads.unpause()
+    ads.loadAds(el);
+    expect(document.querySelector('.dfp').getAttribute('data-ad-load-state')).to.equal('loaded');
+
+    ads.initialized = false;
+    ads.debug = false;
   });
 
 });

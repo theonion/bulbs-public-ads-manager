@@ -15,8 +15,27 @@ MockGoogleTag.prototype.pubads = function () {
     collapseEmptyDivs: function () {},
     enableSingleRequest: function () {},
     disableInitialLoad: function () {},
-    addEventListener: function () {}
+    addEventListener: function () {},
+    refresh: function () {},
+    clear: function () {}
   };
+};
+
+MockGoogleTag.prototype.display = function () {};
+
+MockGoogleTag.prototype.defineSlot = function (adUnitPath, size, elementId) {
+
+  return {
+    defineSizeMapping: function () {},
+    setTargeting: function () {},
+    getSlotId: function () {
+      return {
+        getDomId: function () {
+          return elementId;
+        }
+      }
+    }
+  }
 };
 
 module.exports = MockGoogleTag;
