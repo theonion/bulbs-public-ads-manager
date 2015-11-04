@@ -359,8 +359,16 @@ module.exports = {
     return slot;
   },
 
+  pause: function () {
+    this.paused = true;
+  },
+
+  unpause: function () {
+    this.paused = false;
+  },
+
   loadAds: function (el) {
-    if (!this.initialized) {
+    if (this.paused || !this.initialized) {
       return;
     }
 

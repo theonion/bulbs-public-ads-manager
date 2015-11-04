@@ -140,10 +140,31 @@ describe('AdsManager', function () {
     document.body.appendChild(el);
 
     ads.loadAds(el);
-    expect(document.querySelector('.dfp').getAttribute('ad-load-state')).to.equal('loaded');
+    expect(document.querySelector('.dfp').getAttribute('data-ad-load-state')).to.equal('loaded');
 
     ads.unloadAds(el);
-    expect(document.querySelector('.dfp').getAttribute('ad-load-state')).to.equal('unloaded');
+    expect(document.querySelector('.dfp').getAttribute('data-ad-load-state')).to.equal('unloaded');
+
+    ads.initialized = false;
+    ads.debug = false;
+  });
+
+  it('will not load ads if paused', function () {
+    ads.initialized = true;
+    ads.debug = true;
+    var el = document.createElement('div');
+
+    el.innerHTML = '<div class="dfp" data-ad-unit="header"><iframe></iframe></div>';
+
+    document.body.appendChild(el);
+
+    ads.pause()
+    ads.loadAds(el);
+    expect(document.querySelector('.dfp').getAttribute('data-ad-load-state')).to.equal(null);
+
+    ads.unpause()
+    ads.loadAds(el);
+    expect(document.querySelector('.dfp').getAttribute('data-ad-load-state')).to.equal('loaded');
 
     ads.initialized = false;
     ads.debug = false;
