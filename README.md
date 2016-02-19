@@ -1,5 +1,3 @@
-<strong><i>:exclamation: THIS REPO SHOULD NOT BE MADE PUBLIC :exclamation:</i></strong>
-
 # bulbs-public-ads-manager
 Ads manager for public side of sites. Fills in ad slots.
 
@@ -7,7 +5,7 @@ Ads manager for public side of sites. Fills in ad slots.
 
 1. Install via bower, ```<version>``` being the version to depend on:
   ```bash
-  $ bower install --save https://0469c955e10241b40fffe0225e29a3c238aadf69:x-oauth-basic@github.com/theonion/bulbs-public-ads-manager.git\#\<version>
+  $ bower install --save https://github.com/theonion/bulbs-public-ads-manager.git\#\<version>
   ```
 
 1. Create a browserify pipeline, with an argument specifying where to find the
