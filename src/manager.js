@@ -16,7 +16,7 @@ module.exports = {
 
     this.slots = {};
     this.adId = 0;
-    this.targeting = utils.extend({dfp_site: adUnits.settings.dfpSite}, global.TARGETING);
+    this.targeting = utils.extend({ dfp_site: adUnits.settings.dfpSite }, global.TARGETING);
     this.initialized = false;
 
     this.debugAds = {};
