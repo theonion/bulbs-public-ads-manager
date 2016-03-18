@@ -3,7 +3,7 @@
 
 module.exports = function (config) {
   config.set({
-    basePath: '../..',
+    basePath: '',
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
@@ -16,6 +16,8 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
+      'node_modules/jquery/dist/jquery.min.js',
+      'resources/test/test_helper.js',
       'src/*.spec.js'
     ],
 
@@ -28,18 +30,17 @@ module.exports = function (config) {
       'src/*.spec.js': 'browserify'
     },
 
-    plugins : [
-      'karma-browserify',
-      'karma-chai',
-      'karma-mocha',
-      'karma-phantomjs-launcher',
-      'karma-sinon'
-    ],
-
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['dots'],
+    reporters: ['html', 'progress'],
+
+    client: {
+      mocha: {
+        reporter: 'html',
+        ui: 'bdd'
+      }
+    },
 
     // web server port
     port: 9876,
@@ -56,7 +57,7 @@ module.exports = function (config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['PhantomJS'],
+    browsers: ['Chrome'],
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
@@ -67,7 +68,7 @@ module.exports = function (config) {
       configure: function (bundle) {
         bundle.on('prebundle', function (bundle) {
           bundle.require('./resources/test/mock-ad-units', {expose: 'bulbs.ads.units'});
-          bundle.require('./resources/test/mock-google-tag', {expose: 'mockGoogleTag'});
+          bundle.require('./resources/test/mock-google-tag', {expose: 'mock_google_tag'});
           bundle.require('./src/utils', {expose: 'bulbs.ads.utils'});
           bundle.require('./src/dfp', {expose: 'bulbs.ads.dfp'});
           bundle.require('./src/manager', {expose: 'bulbs.ads.manager'});
