@@ -136,10 +136,6 @@ describe('AdManager', function() {
       expect(adManager.loadAds.calledOnce).to.be.true;
     });
 
-    it('enables services', function() {
-      expect(adManager.googletag.enableServices.called).to.be.true;
-    });
-
     it('calls loadAds on an interval if filtering by viewport', function(done) {
       adManager.options.filterSlotsByViewport = true;
       adManager.loadAds.reset();
@@ -598,6 +594,7 @@ describe('AdManager', function() {
         setTargeting: sinon.spy()
       });
       TestHelper.stub(adManager.googletag, 'display');
+      TestHelper.stub(adManager.googletag, 'enableServices');
 
       baseContainer = document.createElement('div');
       container1 = document.createElement('div');
@@ -658,6 +655,19 @@ describe('AdManager', function() {
 
       it('does not refresh any slots', function() {
         expect(adManager.googletag.pubads().refresh.called).to.be.false;
+      });
+    });
+
+    context('pub ads not ready', function() {
+      beforeEach(function() {
+        $(adSlot1).attr('data-ad-load-state', 'loaded');
+        $(adSlot2).attr('data-ad-load-state', 'loaded');
+        $(adSlot3).attr('data-ad-load-state', 'loaded');
+        adManager.loadAds();
+      });
+
+      it('enables services', function() {
+        expect(adManager.googletag.enableServices.called).to.be.true;
       });
     });
 
