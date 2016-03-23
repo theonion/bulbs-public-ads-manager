@@ -22,7 +22,7 @@ var AdManager = function(options) {
   this.adId = 0;
   this.initialized = false;
   this.viewportWidth = 0;
-  this.oldViewportWidth = null;
+  this.oldViewportWidth = window.document.body.clientWidth;
   this.targeting = utils.extend({ dfp_site: adUnits.settings.dfpSite }, global.TARGETING);
   this.options = utils.extend(defaultOptions, options);
   this.options.filterSlotsByViewport = adUnits.settings.hasOwnProperty('filterSlotsByViewport');
@@ -346,7 +346,7 @@ AdManager.prototype.loadAds = function(element) {
   for(var i = 0; i < ads.length; i++) {
     var element = ads[i];
 
-    if (element.getAttribute('data-ad-load-state') === 'loaded') {
+    if ((element.getAttribute('data-ad-load-state') === 'loaded') || (element.getAttribute('data-ad-load-state') === 'loading')) {
       continue;
     }
 
@@ -356,6 +356,7 @@ AdManager.prototype.loadAds = function(element) {
       slotsToLoad.push(slot);
     }
     this.googletag.display(element.id);
+    element.setAttribute('data-ad-load-state', 'loading');
   }
 
 

@@ -671,6 +671,27 @@ describe('AdManager', function() {
       });
     });
 
+    context('loading of all ads already in progress', function() {
+      beforeEach(function() {
+        $(adSlot1).attr('data-ad-load-state', 'loading');
+        $(adSlot2).attr('data-ad-load-state', 'loading');
+        $(adSlot3).attr('data-ad-load-state', 'loading');
+        adManager.loadAds();
+      });
+
+      it('does not try to configureAd', function() {
+        expect(adManager.configureAd.called).to.be.false;
+      });
+
+      it('does not try to trigger display', function() {
+        expect(adManager.googletag.display.called).to.be.false;
+      });
+
+      it('does not try to refresh pubads across the board', function() {
+        expect(adManager.googletag.pubads().refresh.called).to.be.false;
+      });
+    });
+
     context('all ads loaded', function() {
       beforeEach(function() {
         $(adSlot1).attr('data-ad-load-state', 'loaded');
@@ -713,6 +734,12 @@ describe('AdManager', function() {
 
       it('triggers refresh of each slot', function() {
         expect(adManager.googletag.pubads().refresh.calledWith([adSlot1, adSlot2, adSlot3])).to.be.true;
+      });
+
+      it('sets the state of each to `loading`', function() {
+        expect($(adSlot1).attr('data-ad-load-state')).to.equal('loading');
+        expect($(adSlot2).attr('data-ad-load-state')).to.equal('loading');
+        expect($(adSlot3).attr('data-ad-load-state')).to.equal('loading');
       });
     });
 
