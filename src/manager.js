@@ -124,14 +124,6 @@ AdManager.prototype.reloadAds = function(element) {
   this.loadAds(element);
 };
 
-AdManager.prototype.loadAds = function() {
-
-};
-
-AdManager.prototype.unloadAds = function() {
-
-};
-
 /**
  * Custom callback to wrap ad slot with additional functionality
  *
