@@ -94,7 +94,6 @@ AdManager.prototype.initGoogleTag = function() {
   if (this.options.filterSlotsByViewport) {
     setInterval(adManager.loadAds, 200);
   }
-  this.googletag.enableServices();
 };
 
 /**
@@ -340,6 +339,10 @@ AdManager.prototype.loadAds = function(element) {
   var ads = this.filterAds(this.findAds(element));
   var slotsToLoad = [];
 
+  if (!this.googletag.pubadsReady) {
+    this.googletag.enableServices();
+  }
+
   for(var i = 0; i < ads.length; i++) {
     var element = ads[i];
 
@@ -348,11 +351,13 @@ AdManager.prototype.loadAds = function(element) {
     }
 
     var slot = this.configureAd(element);
+
     if (slot) {
       slotsToLoad.push(slot);
     }
     this.googletag.display(element.id);
   }
+
 
   if (slotsToLoad.length > 0) {
     this.googletag.pubads().refresh(slotsToLoad);
