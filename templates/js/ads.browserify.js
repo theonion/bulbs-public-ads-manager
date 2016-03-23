@@ -1,3 +1,2 @@
-window.ads = require('bulbs.ads.manager');
-
-ads.init();
+var AdManager = require('bulbs.ads.manager');
+window.ads = new AdManager();
