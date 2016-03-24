@@ -1,12 +1,10 @@
 // this should be provided externally
 var adUnits = require('bulbs.ads.units');
 
-var googletag = require('./dfp');
+require('./dfp');
 var utils = require('./utils');
 
-var WARN = 'warn';
 var ERROR = 'error';
-var INFO = 'info';
 var TABLE = 'table';
 
 var AdManager = function(options) {
@@ -362,19 +360,19 @@ AdManager.prototype.loadAds = function(element) {
   }
 
   for(var i = 0; i < ads.length; i++) {
-    var element = ads[i];
+    var thisEl = ads[i];
 
-    if ((element.getAttribute('data-ad-load-state') === 'loaded') || (element.getAttribute('data-ad-load-state') === 'loading')) {
+    if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
       continue;
     }
 
-    var slot = this.configureAd(element);
+    var slot = this.configureAd(thisEl);
 
     if (slot) {
       slotsToLoad.push(slot);
     }
-    this.googletag.display(element.id);
-    element.setAttribute('data-ad-load-state', 'loading');
+    this.googletag.display(thisEl.id);
+    thisEl.setAttribute('data-ad-load-state', 'loading');
   }
 
 
