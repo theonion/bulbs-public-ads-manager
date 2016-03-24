@@ -1,4 +1,5 @@
 {
+  "name": "bulbs-public-ads-manager",
   "description": "Do not install via npm.",
   "private": false,
   "scripts": {
