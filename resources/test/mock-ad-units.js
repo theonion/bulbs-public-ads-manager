@@ -7,11 +7,11 @@ var AdUnits = {
     closeDelay: 1250
   },
 
-  makeAdCloseable: function(adElement) {
+  makeAdCloseable: function (adElement) {
     var closeButton = document.createElement('div');
     if (this.settings.closeDelay) {
       closeButton.className = 'close-btn disabled';
-      setTimeout(function() {
+      setTimeout(function () {
         utils.removeClass(closeButton, 'disabled');
       }, this.settings.closeDelay);
     } else {
@@ -27,7 +27,7 @@ var AdUnits = {
     }
   },
 
-  closeAd: function(adElement) {
+  closeAd: function (adElement) {
     if (onionan) {
       onionan.sendEvent({
         eventCategory: 'ads',
@@ -40,17 +40,17 @@ var AdUnits = {
     adElement.parentElement.removeChild(adElement);
   },
 
-  prependSite: function(baseSlotName) {
+  prependSite: function (baseSlotName) {
     return this.settings.dfpSite + '_' + baseSlotName;
   },
 
-  resetClasses: function(parent) {
+  resetClasses: function (parent) {
     utils.removeClass(parent, 'pinned');
     utils.removeClass(parent, 'mobile');
     utils.removeClass(parent, 'kargo');
   },
 
-  isKargo: function(e) {
+  isKargo: function (e) {
     var re = new RegExp(/kargo/);
     var slot = e.slot.L;
     if (re.test(slot) || e.lineItemId === 356279568 || e.lineItemId === 336705048) {
@@ -60,7 +60,7 @@ var AdUnits = {
     }
   },
 
-  setupMobileSlotClasses: function(e, el) {
+  setupMobileSlotClasses: function (e, el) {
     var parent = el.parentElement;
     utils.addClass(parent, 'mobile');
 
@@ -69,7 +69,7 @@ var AdUnits = {
     }
   },
 
-  handleMobileHeaderSlot: function(e, el) {
+  handleMobileHeaderSlot: function (e, el) {
     var parent = el.parentElement;
     AdUnits.makeAdCloseable(el);
     if (!utils.hasClass(parent, 'header-wrapper')) {
@@ -79,11 +79,11 @@ var AdUnits = {
     AdUnits.setupMobileSlotClasses(e, el);
   },
 
-  handleLeaderboardHeaderSlot: function(e, el) {
+  handleLeaderboardHeaderSlot: function (e, el) {
     AdUnits.makeAdCloseable(el);
   },
 
-  headerSlotRenderEnded: function(e, el) {
+  headerSlotRenderEnded: function (e, el) {
     var parent = el.parentElement;
     AdUnits.resetClasses(parent);
 
@@ -94,7 +94,7 @@ var AdUnits = {
     }
   },
 
-  articleHeaderSlotRenderEnded: function(e, el) {
+  articleHeaderSlotRenderEnded: function (e, el) {
     var parent = el.parentElement;
     AdUnits.resetClasses(parent);
 
@@ -109,14 +109,14 @@ var AdUnits = {
     }
   },
 
-  articleMobileHeaderSlotRenderEnded: function(e, el) {
+  articleMobileHeaderSlotRenderEnded: function (e, el) {
     var parent = el.parentElement;
     AdUnits.resetClasses(parent);
 
     AdUnits.setupMobileSlotClasses(e, el);
     AdUnits.makeAdCloseable(el);
   }
-}
+};
 
 AdUnits.units = {
   // This is used at the top of the homepage, as well as at the start of every article
@@ -155,7 +155,7 @@ AdUnits.units = {
       [[970, 0], [[728, 90], [970, 250]]],
       [[728, 0], [728, 90]],
       [[0, 0], [320, 50]]
-    ],
+    ]
   },
 
   // Homepage 728's
@@ -185,7 +185,7 @@ AdUnits.units = {
     'slotName': 'sidebar-primary',
     'sizes': [
       [[1000, 0], []],
-      [[0, 0], [300, 250]],
+      [[0, 0], [300, 250]]
     ]
   },
 
@@ -203,7 +203,7 @@ AdUnits.units = {
     'slotName': 'sidebar-primary',
     'sizes': [
       [[1000, 0], [300, 250]],
-      [[0, 0], []],
+      [[0, 0], []]
     ]
   },
 
@@ -211,7 +211,7 @@ AdUnits.units = {
     'slotName': 'sidebar-primary',
     'sizes': [
       [[1000, 0], [300, 250]],
-      [[0, 0], []],
+      [[0, 0], []]
     ]
   },
 
@@ -219,7 +219,7 @@ AdUnits.units = {
   'sidebar-secondary': {
     'slotName': 'sidebar-secondary',
     'sizes': [
-      [[0, 0], [300, 250]],
+      [[0, 0], [300, 250]]
     ]
   },
 
