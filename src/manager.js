@@ -7,6 +7,7 @@ var utils = require('./utils');
 var WARN = 'warn';
 var ERROR = 'error';
 var INFO = 'info';
+var TABLE = 'table';
 
 var AdManager = function(options) {
   var defaultOptions = {
@@ -230,6 +231,23 @@ AdManager.prototype.logMessage = function(message, logLevel) {
   }
 
   console[logLevel](message);
+};
+
+/**
+ * Informational utility function available in debug mode, logs information
+ * on all currently defined ad slots, including their targeting
+ *
+ * @param
+ * @returns
+*/
+AdManager.prototype.slotInfo = function() {
+  for (slotElementId in this.slots) {
+    if (this.slots[slotElementId]) {
+      var slot = this.slots[slotElementId];
+      console.info(slot.getSlotElementId(), slot.getName());
+      console.table(slot.getTargetingMap());
+    }
+  }
 };
 
 /**

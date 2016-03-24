@@ -46,7 +46,7 @@ describe('AdManager', function() {
       });
 
       it('sets filter slots by viewport based on ad unit config', function() {
-        expect(adManager.options.filterSlotsByViewport).to.equal(adUnits.settings.hasOwnProperty('filterSlotsByViewport'));
+        expect(adManager.options.filterSlotsByViewport).to.be.false;
       });
     });
 
