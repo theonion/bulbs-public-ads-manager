@@ -411,4 +411,10 @@ AdManager.prototype.unloadAds = function(element) {
   this.googletag.pubads().clear(slots);
 };
 
-module.exports = AdManager;
+var AdManagerWrapper = {
+  init: function(options) {
+    return new AdManager(options);
+  }
+};
+
+module.exports = AdManagerWrapper;
