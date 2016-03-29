@@ -4,20 +4,24 @@
   "description": "Do not install via npm.",
   "private": false,
   "scripts": {
-    "test": "./node_modules/.bin/karma start resources/test/karma.conf.js",
+    "test": "./node_modules/.bin/karma start karma.conf.js",
     "lint": "./node_modules/.bin/eslint src resources"
   },
   "devDependencies": {
     "browserify": "^11.0.1",
     "chai": "^3.2.0",
     "eslint": "^1.2.1",
-    "karma": "^0.13.8",
-    "karma-browserify": "^4.3.0",
+    "jquery": "^2.2.1",
+    "karma": "^0.13.15",
+    "karma-browserify": "^5.0.2",
+    "karma-browserstack-launcher": "^0.1.10",
     "karma-chai": "^0.1.0",
-    "karma-mocha": "^0.2.0",
-    "karma-phantomjs-launcher": "^0.2.1",
-    "karma-sinon": "^1.0.4",
+    "karma-chrome-launcher": "^0.2.2",
+    "karma-fixture": "^0.2.5",
+    "karma-html-reporter": "^0.2.7",
+    "karma-html2js-preprocessor": "^0.1.0",
     "mocha": "^2.2.5",
-    "sinon": "^1.16.0"
+    "sinon": "^1.16.0",
+    "watchify": "^3.7.0"
   }
 }

@@ -28,14 +28,15 @@ MockGoogleTag.prototype.defineSlot = function (adUnitPath, size, elementId) {
   return {
     defineSizeMapping: function () {},
     setTargeting: function () {},
+    addService: function () {},
     getSlotId: function () {
       return {
         getDomId: function () {
           return elementId;
         }
-      }
+      };
     }
-  }
+  };
 };
 
 module.exports = MockGoogleTag;

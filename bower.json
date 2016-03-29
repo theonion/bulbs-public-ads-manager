@@ -9,7 +9,7 @@
   "description": "Ads manager for public side",
   "license": "MIT",
   "main": [
-    "src/adsManager.js",
+    "src/manager.js",
     "src/dfp.js",
     "src/utils.js"
   ],

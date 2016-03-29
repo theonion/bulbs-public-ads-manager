@@ -36,9 +36,11 @@ describe('Utils', function () {
   it('should be able to tell if an element is close to the viewport', function () {
     var innerHeight = window.innerHeight;
 
+    element.style.position = 'absolute';
+    element.style.top = innerHeight + 'px';
+
     expect(utils.elementNearViewport(element, { withinDistance: 0 })).to.equal(true);
 
-    element.style.position = 'absolute';
     element.style.top = innerHeight + 1 + 'px';
 
     expect(utils.elementNearViewport(element, { withinDistance: 0 })).to.equal(false);
