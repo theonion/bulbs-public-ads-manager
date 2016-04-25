@@ -24,8 +24,8 @@ Ads manager for public side of sites. Fills in ad slots.
 
   adsManager.init(); // Returns a reference to the AdManager if needed further on the page
   ```
-  
-1. Ensure ad code is refrenced as high as possible on the page, preferably as one of the frist things that loads, so that no ad impressions are lost.
+
+1. Ensure ad code is referenced as high as possible on the page, preferably as one of the first things that loads, so that no ad impressions are lost.
 
 ## Development
 
@@ -38,4 +38,3 @@ $ npm test
 ### Notes
 #### Dependencies
 This project should never have outside, frontend dependencies since it really should be one of, if not, _the_ first JS to run on the page. Otherwise, potential ad views could be lost.
-
