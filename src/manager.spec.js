@@ -1,7 +1,6 @@
 describe('AdManager', function() {
   var AdManager, AdManagerWrapper, adManager;
   var MockGoogleTag = require('mock_google_tag');
-  var adUnits = require('bulbs.ads.units');
 
   beforeEach(function() {
     AdManagerWrapper = require('./manager');
@@ -32,12 +31,6 @@ describe('AdManager', function() {
 
     it('is not initialized', function() {
       expect(adManager.initialized).to.be.false;
-    });
-
-    xit('binds context for all event handlers', function() {
-      TestHelper.stub(AdManager.prototype, 'bindContext');
-      adManager = AdManagerWrapper.init();
-      expect(adManager.bindContext.called).to.be.true;
     });
 
     context('base defaults', function() {
