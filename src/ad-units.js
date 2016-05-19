@@ -146,6 +146,15 @@ AdUnits.units = {
     onSlotRenderEnded: AdUnits.headerSlotRenderEnded
   },
 
+  'inbetween': {
+    'slotName': 'header',
+    'sizes': [
+      [[970, 0], [[728, 90], [970, 250]]],
+      [[728, 0], [[728, 90]]],
+      [[0, 0], []]
+    ]
+  },
+
   'sidebar-primary': {
     'slotName': 'sidebar-primary',
     'sizes': [
