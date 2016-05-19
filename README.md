@@ -8,14 +8,6 @@ Ads manager for public side of sites. Fills in ad slots.
   $ bower install --save https://github.com/theonion/bulbs-public-ads-manager.git\#\<version>
   ```
 
-1. Create a browserify pipeline, with an argument specifying where to find the
-    ```bulbs.ads.units``` module. In this particular example, it has been
-    provided to the pipeline browserify setting:
-
-  ```python
-  PIPELINE_BROWSERIFY_ARGUMENTS = "-r {}:{}".format(os.path.join(STATIC_ROOT, "adUnits.js"), "bulbs.ads.units")
-  ```
-
 1. Require and initialize the ads manager code via a browserified file (path may differ
   based on configuration):
 

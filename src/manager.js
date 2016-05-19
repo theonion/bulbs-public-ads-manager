@@ -1,8 +1,6 @@
-// this should be provided externally
-var adUnits = require('bulbs.ads.units');
-
 require('./dfp');
 var utils = require('./utils');
+var adUnits = require('./ad-units');
 
 var ERROR = 'error';
 var TABLE = 'table';
@@ -12,7 +10,8 @@ var AdManager = function(options) {
     doReloadOnResize: true,
     resizeTimeout: null,
     debug: false,
-    dfpId: 1009948
+    dfpId: 1009948,
+    filterSlotsByViewport: false
   };
   var options = options || {};
 
@@ -22,12 +21,8 @@ var AdManager = function(options) {
   this.initialized = false;
   this.viewportWidth = 0;
   this.oldViewportWidth = window.document.body.clientWidth;
-  this.targeting = utils.extend({ dfp_site: adUnits.settings.dfpSite }, global.TARGETING);
+  this.targeting = global.TARGETING;
   this.options = utils.extend(defaultOptions, options);
-  this.options.filterSlotsByViewport = adUnits.settings.hasOwnProperty('filterSlotsByViewport');
-  if (this.options.filterSlotsByViewport) {
-    this.options.viewportThreshold = adUnits.settings.filterSlotsByViewport;
-  }
 
   this.bindContext();
 
