@@ -11,7 +11,8 @@
   "main": [
     "src/manager.js",
     "src/dfp.js",
-    "src/utils.js"
+    "src/utils.js",
+    "src/ad-units.js"
   ],
   "ignore": [
     "bower_components",
