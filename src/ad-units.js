@@ -224,6 +224,13 @@ AdUnits.units = {
       [[728, 0], []],
       [[0,0], [[1,1], [300,250]]]
     ]
+  },
+
+  'instant-article-inread': {
+    'slotName': 'instant-article-inread',
+    'sizes': [
+      [[0,0], [300,250]]
+    ]
   }
 };
 
