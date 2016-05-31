@@ -122,6 +122,7 @@ describe('Ad Units', function() {
 
     beforeEach(function(done) {
       parentAdElement = document.createElement('div');
+      parentAdElement.className = 'hide-toggle-btn';
       adElement = document.createElement('div');
       adElement.id = 'ad-slot';
       parentAdElement.appendChild(adElement);
@@ -148,6 +149,10 @@ describe('Ad Units', function() {
 
     it('calls initToggleHandler after the delay', function() {
       expect(adUnits.initToggleHandler.calledWith(adElement, toggleButton)).to.be.true;
+    });
+
+    it('removes the hide-toggle-btn class from the parent', function() {
+      expect($(parentAdElement).hasClass('hide-toggle-btn')).to.be.false;
     });
   });
 

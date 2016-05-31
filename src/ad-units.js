@@ -51,6 +51,7 @@ var AdUnits = {
     setTimeout(function() {
       AdUnits.toggleAd(adElement);
       AdUnits.initToggleHandler(adElement, toggleButton);
+      utils.removeClass(adElement.parentElement, 'hide-toggle-btn');
     }, this.toggleDelay);
   },
 
