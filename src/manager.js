@@ -366,13 +366,22 @@ AdManager.prototype.loadAds = function(element) {
     if (slot) {
       slotsToLoad.push(slot);
     }
-    this.googletag.display(thisEl.id);
+
+    if (typeof window.index_headertag_lightspeed === 'undefined') {
+      this.googletag.display(thisEl.id);
+    } else {
+      window.index_headertag_lightspeed.slotDisplay(thisEl.id, ads);
+    }
     thisEl.setAttribute('data-ad-load-state', 'loading');
   }
 
 
   if (slotsToLoad.length > 0) {
-    this.googletag.pubads().refresh(slotsToLoad);
+    if (typeof window.index_headertag_lightspeed === 'undefined') {
+      this.googletag.pubads().refresh(slotsToLoad);
+    } else {
+      window.index_headertag_lightspeed.slotRefresh(slotsToLoad, ads);
+    }
   }
 };
 

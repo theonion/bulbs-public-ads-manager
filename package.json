@@ -20,6 +20,8 @@
     "karma-fixture": "^0.2.5",
     "karma-html-reporter": "^0.2.7",
     "karma-html2js-preprocessor": "^0.1.0",
+    "karma-mocha": "^1.0.1",
+    "karma-sinon": "^1.0.5",
     "mocha": "^2.2.5",
     "sinon": "^1.16.0",
     "watchify": "^3.7.0"
