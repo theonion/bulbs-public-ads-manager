@@ -629,6 +629,45 @@ describe('AdManager', function() {
       $(baseContainer).remove();
     });
 
+    context('with wrapper tag', function() {
+      beforeEach(function() {
+        window.index_headertag_lightspeed = {
+          slotDisplay: sinon.stub(),
+          slotRefresh: sinon.stub()
+        };
+        adManager.loadAds();
+      });
+
+      it('calls wrapper tag instead of googletag', function() {
+        expect(window.index_headertag_lightspeed.slotDisplay.callCount).to.equal(3);
+        window.index_headertag_lightspeed.slotDisplay.args.forEach(function(args, index) {
+          expect(args[0]).to.equal('dfp-ad-' + (index + 1));
+          expect(args[1][0]).to.equal(adSlot1);
+          expect(args[1][1]).to.equal(adSlot2);
+          expect(args[1][2]).to.equal(adSlot3);
+        });
+      });
+
+      it('triggers refresh of each slot through wrapper tag', function() {
+        expect(adManager.googletag.pubads().refresh.called).to.be.false;
+        expect(window.index_headertag_lightspeed.slotRefresh.callCount).to.equal(1);
+      });
+    });
+
+    context('without wrapper tag', function() {
+      beforeEach(function() {
+        window.index_headertag_lightspeed = undefined;
+        adManager.loadAds();
+      });
+
+      it('displays each ad', function() {
+        expect(adManager.googletag.display.callCount).to.equal(3);
+        expect(adManager.googletag.display.calledWith('dfp-ad-1')).to.be.true;
+        expect(adManager.googletag.display.calledWith('dfp-ad-2')).to.be.true;
+        expect(adManager.googletag.display.calledWith('dfp-ad-3')).to.be.true;
+      });
+    });
+
     context('paused', function() {
       beforeEach(function() {
         adManager.paused = true;
