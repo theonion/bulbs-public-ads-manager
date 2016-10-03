@@ -11,7 +11,6 @@ var AdManager = function(options) {
     resizeTimeout: null,
     debug: false,
     dfpId: 1009948,
-    filterSlotsByViewport: false
   };
   var options = options || {};
 
@@ -85,9 +84,6 @@ AdManager.prototype.initGoogleTag = function() {
   this.initialized = true;
 
   this.loadAds();
-  if (this.options.filterSlotsByViewport) {
-    setInterval(adManager.loadAds, 200);
-  }
 };
 
 /**
@@ -190,32 +186,6 @@ AdManager.prototype.findAds = function (el) {
   }
 
   return ads;
-};
-
-/**
- * Filter ads on the page by viewport threshold, if enabled
- *
- * @param {HTMLCollection} ads - Array of ads to confirm if within viewport
- * @returns {Array} of {Element} objects representing filtered ad slots
-*/
-AdManager.prototype.filterAds = function(ads) {
-  if (this.options.filterSlotsByViewport) {
-    var filteredAds = [];
-    var nearViewport;
-    for (var i = 0, l = ads.length; i < l; i ++) {
-      var ad = ads[i];
-      nearViewport = utils.elementNearViewport(ad, {
-        withinDistance: this.options.viewportThreshold
-      });
-      if (nearViewport) {
-        filteredAds.push(ad);
-      }
-    }
-    return filteredAds;
-  }
-  else {
-    return ads;
-  }
 };
 
 AdManager.prototype.logMessage = function(message, logLevel) {
@@ -347,8 +317,8 @@ AdManager.prototype.loadAds = function(element) {
     return;
   }
 
-  var ads = this.filterAds(this.findAds(element));
   var slotsToLoad = [];
+  var ads = this.findAds(element);
 
   if (!this.googletag.pubadsReady) {
     this.googletag.enableServices();
