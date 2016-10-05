@@ -239,22 +239,12 @@ describe('Ad Units', function() {
         adUnits.handleMobileHeaderSlot(e, adElement);
         expect(adUnits.setupMobileSlotClasses.called).to.be.false;
       });
-
-      it('makes ad togglable', function() {
-        sinon.stub(adUnits, 'makeAdTogglable');
-        adUnits.handleMobileHeaderSlot(e, adElement);
-        expect(adUnits.makeAdTogglable.calledWith(adElement)).to.be.true;
-      });
     });
 
     describe('parent has header wrapper', function() {
       beforeEach(function() {
         $(parentAdElement).addClass('header-wrapper');
         adUnits.handleMobileHeaderSlot(e, adElement);
-      });
-
-      it('makes ad closeable', function() {
-        expect(adUnits.makeAdTogglable.calledWith(adElement)).to.be.true;
       });
 
       it('sets up mobile slot classes', function() {
@@ -268,6 +258,7 @@ describe('Ad Units', function() {
     var e = {};
 
     beforeEach(function() {
+      sinon.stub(adUnits, 'makeAdTogglable');
       parentAdElement = document.createElement('div');
       $('body').append(parentAdElement);
       adUnits.handleLeaderboardHeaderSlot(e, parentAdElement);
@@ -386,9 +377,9 @@ describe('Ad Units', function() {
       expect(adUnits.resetClasses.calledWith(parentAdElement)).to.be.true;
     });
 
-    it('defers to `handleMobileHeaderSlot` if 320x50', function() {
+    it('defers to `handleMobileHeaderSlot` if 300x250', function() {
       sinon.stub(adUnits, 'handleMobileHeaderSlot');
-      var e = { size: [320, 50]};
+      var e = { size: [300, 250]};
       adUnits.headerSlotRenderEnded(e, adElement);
       expect(adUnits.handleMobileHeaderSlot.calledWith(e, adElement)).to.be.true;
     });
@@ -415,7 +406,7 @@ describe('Ad Units', function() {
     });
 
     it('allows these slots on mobile', function() {
-      expect(adUnits.units.header.sizes[2]).to.eql([[0, 0], [[1,1], [320, 50]]]);
+      expect(adUnits.units.header.sizes[2]).to.eql([[0, 0], [[1,1], [300, 250]]]);
     });
 
     it('sets up `headerSlotRenderEnded` as the callback', function() {
