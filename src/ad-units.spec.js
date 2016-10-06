@@ -219,12 +219,25 @@ describe('Ad Units', function() {
 
   describe('#handleMobileHeaderSlot', function() {
     var parentAdElement;
-    var e = {};
+    var adIframe;
+    var e = {
+      slot: {
+        getSlotElementId: function() {
+          return 'ad-slot';
+        }
+      }
+    };
 
     beforeEach(function() {
       parentAdElement = document.createElement('div');
       adElement = document.createElement('div');
       adElement.id = 'ad-slot';
+      adElement.className = 'collapsed';
+      adIframe = document.createElement('iframe');
+      adElement.appendChild(adIframe);
+      parentAdElement.appendChild(adElement);
+      $('body').append(parentAdElement);
+      TestHelper.stub(adUnits, 'prepPagePushIframe');
       parentAdElement.appendChild(adElement);
       $('body').append(parentAdElement);
     });

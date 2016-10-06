@@ -68,7 +68,6 @@ var AdUnits = {
   setupMobileSlotClasses: function(e, el) {
     var parent = el.parentElement;
     utils.addClass(parent, 'mobile');
-    utils.addClass(parent, 'page-push');
 
     if (AdUnits.isKargo(e)) {
       utils.addClass(parent, 'kargo');
@@ -82,6 +81,7 @@ var AdUnits = {
     }
 
     AdUnits.setupMobileSlotClasses(e, el);
+    AdUnits.handlePagePushHeaderSlot(e, el);
   },
 
   handleLeaderboardHeaderSlot: function(e, el) {
