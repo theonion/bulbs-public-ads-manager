@@ -258,21 +258,31 @@ describe('Ad Units', function() {
 
   describe('#handleLeaderboardHeaderSlot', function() {
     var parentAdElement;
+    var adElement;
     var e = {};
 
     beforeEach(function() {
       sinon.stub(adUnits, 'makeAdTogglable');
       parentAdElement = document.createElement('div');
+      $(parentAdElement).addClass('page-push');
+      adElement = document.createElement('div');
+      $(parentAdElement).append(adElement);
       $('body').append(parentAdElement);
-      adUnits.handleLeaderboardHeaderSlot(e, parentAdElement);
+      adUnits.handleLeaderboardHeaderSlot(e, adElement);
     });
 
     afterEach(function() {
       document.body.removeChild(parentAdElement);
+      adUnits.makeAdTogglable.restore();
     });
 
     it('makes the ad closeable', function() {
-      expect(adUnits.makeAdTogglable.calledWith(parentAdElement)).to.be.true;
+      expect(adUnits.makeAdTogglable.calledWith(adElement)).to.be.true;
+    });
+
+    it('removes page push class', function() {
+      var parentAdElementClass = $(parentAdElement).attr('class')
+      expect(parentAdElementClass === 'page-push').to.be.false;
     });
   });
 

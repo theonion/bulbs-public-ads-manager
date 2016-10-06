@@ -82,6 +82,9 @@ var AdUnits = {
   },
 
   handleLeaderboardHeaderSlot: function(e, el) {
+    var parent = el.parentElement;
+    utils.removeClass(parent, 'page-push');
+
     AdUnits.makeAdTogglable(el);
   },
 
