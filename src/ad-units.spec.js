@@ -240,29 +240,19 @@ describe('Ad Units', function() {
       TestHelper.stub(adUnits, 'prepPagePushIframe');
       parentAdElement.appendChild(adElement);
       $('body').append(parentAdElement);
+
+      $(parentAdElement).addClass('header-wrapper');
     });
 
     afterEach(function() {
       document.body.removeChild(parentAdElement);
     });
 
-    describe('parent does not have `header-wrapper`', function() {
-      it('does not setup mobile slot classes', function() {
-        sinon.stub(adUnits, 'setupMobileSlotClasses');
-        adUnits.handleMobileHeaderSlot(e, adElement);
-        expect(adUnits.setupMobileSlotClasses.called).to.be.false;
-      });
-    });
 
-    describe('parent has header wrapper', function() {
-      beforeEach(function() {
-        $(parentAdElement).addClass('header-wrapper');
-        adUnits.handleMobileHeaderSlot(e, adElement);
-      });
-
-      it('sets up mobile slot classes', function() {
-        expect(adUnits.setupMobileSlotClasses.calledWith(e, adElement)).to.be.true;
-      });
+    it('sets up mobile slot classes', function() {
+      sinon.stub(adUnits, 'setupMobileSlotClasses');
+      adUnits.handleMobileHeaderSlot(e, adElement);
+      expect(adUnits.setupMobileSlotClasses.calledWith(e, adElement)).to.be.true;
     });
   });
 

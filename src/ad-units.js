@@ -76,9 +76,6 @@ var AdUnits = {
 
   handleMobileHeaderSlot: function(e, el) {
     var parent = el.parentElement;
-    if (!utils.hasClass(parent, 'header-wrapper')) {
-      return;
-    }
 
     AdUnits.setupMobileSlotClasses(e, el);
     AdUnits.handlePagePushHeaderSlot(e, el);
