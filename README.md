@@ -30,3 +30,15 @@ $ npm test
 ### Notes
 #### Dependencies
 This project should never have outside, frontend dependencies since it really should be one of, if not, _the_ first JS to run on the page. Otherwise, potential ad views could be lost.
+
+## Creating a new release
+
+* inside of your ```bower.json``` and ```package.json``` files update the version in accordance with [semver](http://semver.org/)
+* Create a tag for your release
+```bash
+$ git tag <tag version number>
+```
+* push tag
+```bash
+$ git push origin --tags
+```
