@@ -415,7 +415,7 @@ describe('Ad Units', function() {
     });
 
     it('allows these slots on mobile', function() {
-      expect(adUnits.units.header.sizes[2]).to.eql([[0, 0], [[1,1], [320, 50]]]);
+      expect(adUnits.units.header.sizes[2]).to.eql([[0, 0], [[1,1], [320, 50], [300, 250]]]);
     });
 
     it('sets up `headerSlotRenderEnded` as the callback', function() {
