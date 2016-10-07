@@ -219,70 +219,66 @@ describe('Ad Units', function() {
 
   describe('#handleMobileHeaderSlot', function() {
     var parentAdElement;
-    var adIframe;
-    var e = {
-      slot: {
-        getSlotElementId: function() {
-          return 'ad-slot';
-        }
-      }
-    };
+    var e = {};
 
     beforeEach(function() {
       parentAdElement = document.createElement('div');
       adElement = document.createElement('div');
       adElement.id = 'ad-slot';
-      adElement.className = 'collapsed';
-      adIframe = document.createElement('iframe');
-      adElement.appendChild(adIframe);
       parentAdElement.appendChild(adElement);
       $('body').append(parentAdElement);
-      TestHelper.stub(adUnits, 'prepPagePushIframe');
-      parentAdElement.appendChild(adElement);
-      $('body').append(parentAdElement);
-
-      $(parentAdElement).addClass('header-wrapper');
     });
 
     afterEach(function() {
       document.body.removeChild(parentAdElement);
     });
 
+    describe('parent does not have `header-wrapper`', function() {
+      it('does not setup mobile slot classes', function() {
+        sinon.stub(adUnits, 'setupMobileSlotClasses');
+        adUnits.handleMobileHeaderSlot(e, adElement);
+        expect(adUnits.setupMobileSlotClasses.called).to.be.false;
+      });
 
-    it('sets up mobile slot classes', function() {
-      sinon.stub(adUnits, 'setupMobileSlotClasses');
-      adUnits.handleMobileHeaderSlot(e, adElement);
-      expect(adUnits.setupMobileSlotClasses.calledWith(e, adElement)).to.be.true;
+      it('makes ad togglable', function() {
+        sinon.stub(adUnits, 'makeAdTogglable');
+        adUnits.handleMobileHeaderSlot(e, adElement);
+        expect(adUnits.makeAdTogglable.calledWith(adElement)).to.be.true;
+      });
+    });
+
+    describe('parent has header wrapper', function() {
+      beforeEach(function() {
+        $(parentAdElement).addClass('header-wrapper');
+        adUnits.handleMobileHeaderSlot(e, adElement);
+      });
+
+      it('makes ad closeable', function() {
+        expect(adUnits.makeAdTogglable.calledWith(adElement)).to.be.true;
+      });
+
+      it('sets up mobile slot classes', function() {
+        expect(adUnits.setupMobileSlotClasses.calledWith(e, adElement)).to.be.true;
+      });
     });
   });
 
   describe('#handleLeaderboardHeaderSlot', function() {
     var parentAdElement;
-    var adElement;
     var e = {};
 
     beforeEach(function() {
-      sinon.stub(adUnits, 'makeAdTogglable');
       parentAdElement = document.createElement('div');
-      $(parentAdElement).addClass('page-push');
-      adElement = document.createElement('div');
-      $(parentAdElement).append(adElement);
       $('body').append(parentAdElement);
-      adUnits.handleLeaderboardHeaderSlot(e, adElement);
+      adUnits.handleLeaderboardHeaderSlot(e, parentAdElement);
     });
 
     afterEach(function() {
       document.body.removeChild(parentAdElement);
-      adUnits.makeAdTogglable.restore();
     });
 
     it('makes the ad closeable', function() {
-      expect(adUnits.makeAdTogglable.calledWith(adElement)).to.be.true;
-    });
-
-    it('removes page push class', function() {
-      var parentAdElementClass = $(parentAdElement).attr('class')
-      expect(parentAdElementClass === 'page-push').to.be.false;
+      expect(adUnits.makeAdTogglable.calledWith(parentAdElement)).to.be.true;
     });
   });
 
@@ -390,9 +386,9 @@ describe('Ad Units', function() {
       expect(adUnits.resetClasses.calledWith(parentAdElement)).to.be.true;
     });
 
-    it('defers to `handleMobileHeaderSlot` if 300x250', function() {
+    it('defers to `handleMobileHeaderSlot` if 320x50', function() {
       sinon.stub(adUnits, 'handleMobileHeaderSlot');
-      var e = { size: [300, 250]};
+      var e = { size: [320, 50]};
       adUnits.headerSlotRenderEnded(e, adElement);
       expect(adUnits.handleMobileHeaderSlot.calledWith(e, adElement)).to.be.true;
     });
@@ -419,7 +415,7 @@ describe('Ad Units', function() {
     });
 
     it('allows these slots on mobile', function() {
-      expect(adUnits.units.header.sizes[2]).to.eql([[0, 0], [[1,1], [300, 250]]]);
+      expect(adUnits.units.header.sizes[2]).to.eql([[0, 0], [[1,1], [320, 50], [300, 250]]]);
     });
 
     it('sets up `headerSlotRenderEnded` as the callback', function() {

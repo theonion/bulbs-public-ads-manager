@@ -76,15 +76,15 @@ var AdUnits = {
 
   handleMobileHeaderSlot: function(e, el) {
     var parent = el.parentElement;
+    AdUnits.makeAdTogglable(el);
+    if (!utils.hasClass(parent, 'header-wrapper')) {
+      return;
+    }
 
     AdUnits.setupMobileSlotClasses(e, el);
-    AdUnits.handlePagePushHeaderSlot(e, el);
   },
 
   handleLeaderboardHeaderSlot: function(e, el) {
-    var parent = el.parentElement;
-    utils.removeClass(parent, 'page-push');
-
     AdUnits.makeAdTogglable(el);
   },
 
@@ -120,7 +120,7 @@ var AdUnits = {
     var parent = el.parentElement;
     AdUnits.resetClasses(parent);
 
-    if (e.size[0] === 300) {
+    if (e.size[0] === 320) {
       AdUnits.handleMobileHeaderSlot(e, el);
     } else if ((e.size[0] === 728) && (e.size[1] === 90)) {
       AdUnits.handleLeaderboardHeaderSlot(e, el);
@@ -142,7 +142,7 @@ AdUnits.units = {
     'sizes': [
       [[970, 0], [[728, 90], [1,1], [970, 415], [970, 250], [970, 90]]],
       [[728, 0], [[1,1], [728, 90]]],
-      [[0, 0], [[1,1], [300, 250]]]
+      [[0, 0], [[1,1], [320, 50], [300, 250]]]
     ],
     onSlotRenderEnded: AdUnits.headerSlotRenderEnded
   },
