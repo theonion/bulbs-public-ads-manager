@@ -1,6 +1,5 @@
 {
   "name": "bulbs-public-ads-manager",
-  "version": "2.2.0",
   "private": true,
   "authors": [
     "Andrew Kos <akos@theonion.com>",
