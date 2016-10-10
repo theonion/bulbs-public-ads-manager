@@ -37,10 +37,6 @@ describe('AdManager', function() {
       it('reloads on resize', function() {
         expect(adManager.options.doReloadOnResize).to.be.true;
       });
-
-      it('sets filter slots by viewport based on ad unit config', function() {
-        expect(adManager.options.filterSlotsByViewport).to.be.false;
-      });
     });
 
     context('override options', function() {
@@ -127,16 +123,6 @@ describe('AdManager', function() {
 
     it('loads ads initially', function() {
       expect(adManager.loadAds.calledOnce).to.be.true;
-    });
-
-    it('calls loadAds on an interval if filtering by viewport', function(done) {
-      adManager.options.filterSlotsByViewport = true;
-      adManager.loadAds.reset();
-      adManager.initGoogleTag();
-      setTimeout(function() {
-        expect(adManager.loadAds.callCount).to.be.greaterThan(1);
-        done();
-      }, 300);
     });
   });
 
@@ -358,70 +344,6 @@ describe('AdManager', function() {
       });
     });
   });
-
-  describe('#filterAds', function() {
-    var adSlot1, container1;
-
-    beforeEach(function() {
-      container1 = document.createElement('div');
-      adSlot1 = document.createElement('div');
-      adSlot1.id = 'dfp-ad-1';
-      adSlot1.className = 'dfp';
-      container1.appendChild(adSlot1);
-      document.body.appendChild(container1);
-    });
-
-    afterEach(function() {
-      $(container1).remove();
-    });
-
-    context('not filtering by viewport', function() {
-      var ads;
-
-      beforeEach(function() {
-        adManager.options.filterSlotsByViewport = false;
-        ads = adManager.filterAds([adSlot1]);
-      });
-
-      it('returns the ads untouched', function() {
-        expect(ads).to.eql([adSlot1]);
-      });
-    });
-
-    context('filtering by viewport', function() {
-      beforeEach(function() {
-        adManager.options.filterSlotsByViewport = true;
-        adManager.options.viewportThreshold = 200;
-      });
-
-      context('outside the viewport', function() {
-        beforeEach(function() {
-          var outsideTop = window.innerHeight + 400;
-          adSlot1.style.position = 'absolute';
-          adSlot1.style.top = outsideTop + 'px';
-          ads = adManager.filterAds([adSlot1]);
-        });
-
-        it('returns []', function() {
-          expect(ads).to.eql([]);
-        });
-      });
-
-      context('inside the viewport', function() {
-        beforeEach(function() {
-          var centeredTop = Math.round(window.innerHeight / 2);
-          adSlot1.style.position = 'absolute';
-          adSlot1.style.top = centeredTop + 'px';
-          ads = adManager.filterAds([adSlot1]);
-        });
-
-        it('returns ads', function() {
-          expect(ads).to.eql([adSlot1]);
-        });
-      });
-    });
-  });
-
   describe('#logMessage', function() {
     beforeEach(function() {
       TestHelper.spyOn(console, 'warn');
