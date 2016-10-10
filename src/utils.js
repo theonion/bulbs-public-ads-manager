@@ -74,6 +74,21 @@ var Utils = {
     var innerHeight    = window.innerHeight || window.document.documentElement.clientHeight;
 
     return rect.top <= innerHeight + withinDistance && rect.top >= -withinDistance;
+  },
+
+  dispatchEvent: function (el, eventName) {
+    var customEvent;
+    try {
+      customEvent = new window.CustomEvent(eventName, {
+        bubbles: true,
+        cancelable: true
+      });
+    }
+    catch (e) {
+      customEvent = document.createEvent('Event');
+      customEvent.initEvent(eventName, true, true);
+    }
+    el.dispatchEvent(customEvent);
   }
 };
 

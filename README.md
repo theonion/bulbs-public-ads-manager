@@ -27,6 +27,8 @@ To run tests:
 $ npm test
 ```
 
+Tests will run on travis-ci as part of the pull request process.
+
 ### Notes
 #### Dependencies
 This project should never have outside, frontend dependencies since it really should be one of, if not, _the_ first JS to run on the page. Otherwise, potential ad views could be lost.

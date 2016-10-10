@@ -55,4 +55,12 @@ describe('Utils', function () {
     expect(utils.elementNearViewport(element, { withinDistance: 100})).to.equal(false);
     expect(utils.elementNearViewport(element, { withinDistance: 201})).to.equal(true);
   });
+
+  it('should emit custom events', function () {
+    var element = document.createElement('div');
+    var spy = sinon.spy();
+    element.addEventListener('coolEvent', spy);
+    utils.dispatchEvent(element, 'coolEvent');
+    expect(spy).to.have.been.called;
+  });
 });

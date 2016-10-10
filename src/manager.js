@@ -44,6 +44,8 @@ AdManager.prototype.bindContext = function() {
   this.handleWindowResize = this.handleWindowResize.bind(this);
   this.loadAds = this.loadAds.bind(this);
   this.onSlotRenderEnded = this.onSlotRenderEnded.bind(this);
+  this.onImpressionViewable = this.onImpressionViewable.bind(this);
+  this.onSlotOnload = this.onSlotOnload.bind(this);
 };
 
 /**
@@ -78,6 +80,8 @@ AdManager.prototype.initGoogleTag = function() {
   this.googletag.pubads().collapseEmptyDivs(true);
 
   this.googletag.pubads().addEventListener('slotRenderEnded', adManager.onSlotRenderEnded);
+  this.googletag.pubads().addEventListener('impressionViewable', adManager.onImpressionViewable);
+  this.googletag.pubads().addEventListener('slotOnload', adManager.onSlotOnload);
 
   this.initBaseTargeting();
 
@@ -133,6 +137,31 @@ AdManager.prototype.onSlotRenderEnded = function(event) {
   }
 
   element.setAttribute('data-ad-load-state', 'loaded');
+  utils.dispatchEvent(element, 'dfpSlotRenderEnded');
+};
+
+/**
+ * Custom callback to wrap ad slot with additional functionality
+ *
+ * @param {Event} event - Event passed through the GPT library
+ * @returns undefined
+*/
+AdManager.prototype.onImpressionViewable = function(event) {
+  var slotId = event.slot.getSlotId().getDomId();
+  var element = document.getElementById(slotId);
+  utils.dispatchEvent(element, 'dfpImpressionViewable');
+};
+
+/**
+ * Custom callback to wrap ad slot with additional functionality
+ *
+ * @param {Event} event - Event passed through the GPT library
+ * @returns undefined
+*/
+AdManager.prototype.onSlotOnload = function(event) {
+  var slotId = event.slot.getSlotId().getDomId();
+  var element = document.getElementById(slotId);
+  utils.dispatchEvent(element, 'dfpSlotOnload');
 };
 
 /**

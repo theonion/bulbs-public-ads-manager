@@ -113,6 +113,14 @@ describe('AdManager', function() {
       expect(adManager.googletag.pubads().addEventListener.calledWith('slotRenderEnded', adManager.onSlotRenderEnded)).to.be.true;
     });
 
+    it('sets up custom slot onImpressionViewable callback', function() {
+      expect(adManager.googletag.pubads().addEventListener.calledWith('impressionViewable', adManager.onImpressionViewable)).to.be.true;
+    });
+
+    it('sets up custom slot onload callback', function() {
+      expect(adManager.googletag.pubads().addEventListener.calledWith('slotOnload', adManager.onSlotOnload)).to.be.true;
+    });
+
     it('sets the global targeting on the pub ads service', function() {
       expect(adManager.initBaseTargeting.called).to.be.true;
     });
@@ -157,8 +165,9 @@ describe('AdManager', function() {
     });
   });
 
+
   describe('#onSlotRenderEnded', function() {
-    var adElement, event;
+    var adElement, event, eventSpy;
 
     beforeEach(function() {
       adElement = document.createElement('div');
@@ -182,6 +191,8 @@ describe('AdManager', function() {
       };
       adManager.rendered = false;
       TestHelper.stub(adManager.adUnits.units.header, 'onSlotRenderEnded');
+      eventSpy = sinon.spy();
+      adElement.addEventListener('dfpSlotRenderEnded', eventSpy);
       adManager.onSlotRenderEnded(event);
     });
 
@@ -207,6 +218,86 @@ describe('AdManager', function() {
 
     it('sets loaded state to loaded', function() {
       expect($(adElement).data('ad-load-state')).to.equal('loaded');
+    });
+
+    it('emits a dfpSlotRenderEnded event', function() {
+      expect(eventSpy).to.have.been.called;
+    });
+  });
+
+  describe('#onImpressionViewable', function()  {
+    var adElement, event, eventSpy;
+
+    beforeEach(function() {
+      adElement = document.createElement('div');
+      adElement.id = 'dfp-ad-1';
+      $(adElement).attr('style', 'height: 250px; width: 300px');
+      $(adElement).attr('data-ad-unit', 'header');
+      document.body.appendChild(adElement);
+      var getDomId = function() {
+        return 'dfp-ad-1';
+      };
+      var getSlotId = function() {
+        return {
+          getDomId: getDomId
+        }
+      };
+
+      event = {
+        slot: {
+          getSlotId: getSlotId
+        }
+      };
+      TestHelper.stub(adManager.adUnits.units.header, 'onSlotRenderEnded');
+      eventSpy = sinon.spy();
+      adElement.addEventListener('dfpImpressionViewable', eventSpy);
+      adManager.onSlotRenderEnded(event);
+    });
+
+    afterEach(function() {
+      $(adElement).remove();
+    });
+
+    it('emits a dfpImpressionViewable event', function() {
+      expect(eventSpy).to.have.been.called;
+    });
+  });
+
+  describe('#onSlotOnload', function() {
+    var adElement, event, eventSpy;
+
+    beforeEach(function() {
+      adElement = document.createElement('div');
+      adElement.id = 'dfp-ad-1';
+      $(adElement).attr('style', 'height: 250px; width: 300px');
+      $(adElement).attr('data-ad-unit', 'header');
+      document.body.appendChild(adElement);
+      var getDomId = function() {
+        return 'dfp-ad-1';
+      };
+      var getSlotId = function() {
+        return {
+          getDomId: getDomId
+        }
+      };
+
+      event = {
+        slot: {
+          getSlotId: getSlotId
+        }
+      };
+      TestHelper.stub(adManager.adUnits.units.header, 'onSlotRenderEnded');
+      eventSpy = sinon.spy();
+      adElement.addEventListener('dfpSlotOnload', eventSpy);
+      adManager.onSlotRenderEnded(event);
+    });
+
+    afterEach(function() {
+      $(adElement).remove();
+    });
+
+    it('emits a dfpSlotOnload event', function() {
+      expect(eventSpy).to.have.been.called;
     });
   });
 
