@@ -13,7 +13,6 @@ var AdManager = function(options) {
     dfpId: 1009948,
   };
   var options = options || {};
-
   this.adUnits = adUnits;
   this.slots = {};
   this.adId = 0;
