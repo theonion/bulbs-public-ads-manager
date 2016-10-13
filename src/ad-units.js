@@ -172,6 +172,14 @@ AdUnits.units = {
     ]
   },
 
+  'sidebar-short-primary': {
+    'slotName': 'sidebar-primary',
+    'sizes': [
+      [[600, 0], [300, 250]],
+      [[0, 0], []]
+    ]
+  },
+
   'sidebar-secondary': {
     'slotName': 'sidebar-secondary',
     'sizes': [
