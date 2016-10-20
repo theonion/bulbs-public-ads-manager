@@ -138,6 +138,7 @@ AdUnits.units = {
   },
 
   'header': {
+    'refreshDisabled': true,
     'slotName': 'header',
     'sizes': [
       [[970, 0], [[728, 90], [1,1], [970, 415], [970, 250], [970, 90]]],
