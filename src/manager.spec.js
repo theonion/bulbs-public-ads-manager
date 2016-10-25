@@ -150,6 +150,24 @@ describe('AdManager', function() {
       expect(googletag.pubads().setTargeting.calledWith('dfp_site', 'onion')).to.be.true;
       expect(googletag.pubads().setTargeting.calledWith('dfp_pagetype', 'home')).to.be.true;
     });
+
+    context('Krux user id present', function() {
+      beforeEach(function() {
+        window.Krux = {
+          user: '12345'
+        };
+        adManager.initBaseTargeting();
+      });
+
+      afterEach(function() {
+        delete window.Krux;
+      });
+
+      it('sets the Krux user id if available', function() {
+        expect(googletag.pubads().setTargeting.calledWith('kuid', '12345')).to.be.true;
+      });
+    });
+
   });
 
   describe('#reloadAds', function() {
