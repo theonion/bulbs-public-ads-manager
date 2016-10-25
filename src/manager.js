@@ -233,7 +233,7 @@ AdManager.prototype.logMessage = function(message, logLevel) {
  * @returns
 */
 AdManager.prototype.slotInfo = function() {
-  for (slotElementId in this.slots) {
+  for (var slotElementId in this.slots) {
     if (this.slots[slotElementId]) {
       var slot = this.slots[slotElementId];
       console.info(slot.getSlotElementId(), slot.getName());
