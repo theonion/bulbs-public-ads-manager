@@ -237,7 +237,7 @@ AdManager.prototype.logMessage = function(message, logLevel) {
  * @returns
 */
 AdManager.prototype.slotInfo = function() {
-  for (slotElementId in this.slots) {
+  for (var slotElementId in this.slots) {
     if (this.slots[slotElementId]) {
       var slot = this.slots[slotElementId];
       console.info(slot.getSlotElementId(), slot.getName());
@@ -254,7 +254,7 @@ AdManager.prototype.slotInfo = function() {
  * @returns undefined
 */
 AdManager.prototype.setSlotTargeting = function(element, slot) {
-  for (customKey in this.targeting) {
+  for (var customKey in this.targeting) {
     if(this.targeting[customKey]) {
       slot.setTargeting(customKey, this.targeting[customKey].toString());
     }
@@ -265,7 +265,7 @@ AdManager.prototype.setSlotTargeting = function(element, slot) {
     slotTargeting = JSON.parse(element.dataset.targeting);
   }
 
-  for (customKey in slotTargeting) {
+  for (var customKey in slotTargeting) {
     if(slotTargeting[customKey]) {
       slot.setTargeting(customKey, slotTargeting[customKey].toString());
     }
