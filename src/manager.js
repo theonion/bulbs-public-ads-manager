@@ -103,6 +103,10 @@ AdManager.prototype.initBaseTargeting = function() {
       this.googletag.pubads().setTargeting(customCriteriaKey, customCriteriaValue.toString());
     }
   }
+
+  if (window.Krux && window.Krux.user) {
+    this.googletag.pubads().setTargeting('kuid', Krux.user);
+  }
 };
 
 /**
