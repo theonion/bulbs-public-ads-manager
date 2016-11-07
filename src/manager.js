@@ -75,9 +75,7 @@ AdManager.prototype.handleWindowResize = function() {
 AdManager.prototype.initGoogleTag = function() {
   var adManager = this;
 
-  this.googletag.pubads().enableSingleRequest();
   this.googletag.pubads().disableInitialLoad();
-  this.googletag.pubads().collapseEmptyDivs(true);
 
   this.googletag.pubads().addEventListener('slotRenderEnded', adManager.onSlotRenderEnded);
   this.googletag.pubads().addEventListener('impressionViewable', adManager.onImpressionViewable);
@@ -314,6 +312,10 @@ AdManager.prototype.configureAd = function (element) {
 
   slot.addService(this.googletag.pubads());
 
+  if (adUnitConfig.eagerLoad) {
+    slot.eagerLoad = true;
+  }
+
   this.slots[element.id] = slot;
 
   return slot;
@@ -376,15 +378,43 @@ AdManager.prototype.loadAds = function(element) {
       window.index_headertag_lightspeed.slotDisplay(thisEl.id, ads);
     }
     thisEl.setAttribute('data-ad-load-state', 'loading');
+
+    if (slot.eagerLoad) {
+      this.refreshSlots([slot], ads);
+    }
+  }
+};
+
+/**
+ * Fetches a new ad for just single dom element
+ *
+ * @param {domElement} DOM element containing the DFP ad slot
+ * @returns undefined
+*/
+AdManager.prototype.refreshSlot = function(domElement) {
+  var slot = this.slots[domElement.id];
+  var ads = this.findAds(domElement);
+
+  if (slot) {
+    this.refreshSlots([slot], ads);
+  }
+};
+
+/**
+ * Fetches a new ad for each slot passed in
+ *
+ * @param {slotsToLoad} One or many slots to fetch new ad for
+ * @returns undefined
+*/
+AdManager.prototype.refreshSlots = function (slotsToLoad, ads) {
+  if (slotsToLoad.length == 0) {
+    return;
   }
 
-
-  if (slotsToLoad.length > 0) {
-    if (typeof window.index_headertag_lightspeed === 'undefined') {
-      this.googletag.pubads().refresh(slotsToLoad);
-    } else {
-      window.index_headertag_lightspeed.slotRefresh(slotsToLoad, ads);
-    }
+  if (typeof window.index_headertag_lightspeed === 'undefined') {
+    this.googletag.pubads().refresh(slotsToLoad, { changeCorrelator: false });
+  } else {
+    window.index_headertag_lightspeed.slotRefresh(slotsToLoad, ads);
   }
 };
 
