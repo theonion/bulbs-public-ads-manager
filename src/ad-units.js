@@ -132,6 +132,7 @@ var AdUnits = {
 
 AdUnits.units = {
   'campaign-pixel': {
+    'eagerLoad': true,
     'sizes': [
       [[0, 0], [1, 1]]
     ]
