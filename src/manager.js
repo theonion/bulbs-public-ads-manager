@@ -414,7 +414,7 @@ AdManager.prototype.refreshSlots = function (slotsToLoad, ads) {
   if (typeof window.index_headertag_lightspeed === 'undefined') {
     this.googletag.pubads().refresh(slotsToLoad, { changeCorrelator: false });
   } else {
-    window.index_headertag_lightspeed.slotRefresh(slotsToLoad, ads);
+    window.index_headertag_lightspeed.slotRefresh(slotsToLoad, ads, { changeCorrelator: false });
   }
 };
 
