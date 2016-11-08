@@ -132,6 +132,7 @@ var AdUnits = {
 
 AdUnits.units = {
   'campaign-pixel': {
+    'eagerLoad': true,
     'sizes': [
       [[0, 0], [1, 1]]
     ]
@@ -139,6 +140,7 @@ AdUnits.units = {
 
   'header': {
     'refreshDisabled': true,
+    'eagerLoad': true,
     'slotName': 'header',
     'sizes': [
       [[970, 0], [[728, 90], [1,1], [970, 415], [970, 250], [970, 90]]],

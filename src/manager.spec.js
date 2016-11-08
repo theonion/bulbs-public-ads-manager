@@ -104,9 +104,8 @@ describe('AdManager', function() {
     });
 
     it('invokes setup functions on publisher service', function() {
-      expect(adManager.googletag.pubads().enableSingleRequest.called).to.be.true;
+      expect(adManager.googletag.pubads().enableSingleRequest.called).to.be.false;
       expect(adManager.googletag.pubads().disableInitialLoad.called).to.be.true;
-      expect(adManager.googletag.pubads().collapseEmptyDivs.calledWith(true)).to.be.true;
     });
 
     it('sets up custom slot render ended callback', function() {
@@ -576,6 +575,11 @@ describe('AdManager', function() {
       it('returns the configured slot and adds it to the slots object', function() {
         expect(typeof adManager.slots['dfp-ad-1'].addService).to.equal('function');
       });
+
+      it('sets whether the ad should be eager loaded', function() {
+        var configuredSlot = adManager.configureAd(adSlot1);
+        expect(configuredSlot.eagerLoad).to.be.true;
+      });
     });
   });
 
@@ -650,7 +654,10 @@ describe('AdManager', function() {
       document.body.appendChild(baseContainer);
 
       adManager.configureAd = function(element) {
-        return element;
+        return {
+          element: element,
+          eagerLoad: true
+        };
       };
 
       TestHelper.spyOn(adManager, 'configureAd');
@@ -681,7 +688,7 @@ describe('AdManager', function() {
 
       it('triggers refresh of each slot through wrapper tag', function() {
         expect(adManager.googletag.pubads().refresh.called).to.be.false;
-        expect(window.index_headertag_lightspeed.slotRefresh.callCount).to.equal(1);
+        expect(window.index_headertag_lightspeed.slotRefresh.callCount).to.equal(3);
       });
     });
 
@@ -796,7 +803,9 @@ describe('AdManager', function() {
       });
 
       it('triggers refresh of each slot', function() {
-        expect(adManager.googletag.pubads().refresh.calledWith([adSlot1, adSlot2, adSlot3])).to.be.true;
+        expect(adManager.googletag.pubads().refresh.args[0][0][0].element).to.eql(adSlot1);
+        expect(adManager.googletag.pubads().refresh.args[1][0][0].element).to.eql(adSlot2);
+        expect(adManager.googletag.pubads().refresh.args[2][0][0].element).to.eql(adSlot3);
       });
 
       it('sets the state of each to `loading`', function() {
@@ -825,8 +834,47 @@ describe('AdManager', function() {
       });
 
       it('triggers refresh of non-loaded slots', function() {
-        expect(adManager.googletag.pubads().refresh.calledWith([adSlot2, adSlot3])).to.be.true;
+        expect(adManager.googletag.pubads().refresh.args[0][0][0].element).to.eql(adSlot2);
+        expect(adManager.googletag.pubads().refresh.args[1][0][0].element).to.eql(adSlot3);
       });
+    });
+  });
+
+  describe('#refreshSlot', function() {
+    var baseContainer, container1, adSlot1, ads, stubSlot;
+
+    beforeEach(function() {
+      TestHelper.stub(adManager, 'refreshSlots');
+
+      baseContainer = document.createElement('div');
+      container1 = document.createElement('div');
+      container1.className ='expected';
+      container1.id = 'ad-container-1';
+      adSlot1 = document.createElement('div');
+      adSlot1.id = 'dfp-ad-1';
+      adSlot1.className = 'dfp';
+      container1.appendChild(adSlot1);
+      baseContainer.appendChild(container1);
+
+      document.body.appendChild(baseContainer);
+
+      stubSlot = {
+        element: adSlot1
+      };
+
+      adManager.slots = {
+        'dfp-ad-1': stubSlot
+      };
+
+      adManager.refreshSlot(adSlot1);
+    });
+
+    afterEach(function() {
+      $(baseContainer).remove();
+    });
+
+    it('loads the DFP slot matching up with the DOM element id', function() {
+      expect(adManager.refreshSlots.calledWith([stubSlot], [adSlot1])).to.be.true;
     });
   });
 
