@@ -239,6 +239,7 @@ AdUnits.units = {
   },
 
   'instant-article-inread': {
+    'eagerLoad': true,
     'slotName': 'instant-article-inread',
     'sizes': [
       [[0,0], [300,250]]
