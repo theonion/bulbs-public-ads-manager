@@ -9,6 +9,9 @@ var AdUnits = {
     utils.removeClass(parent, 'pinned');
     utils.removeClass(parent, 'mobile');
     utils.removeClass(parent, 'kargo');
+    utils.removeClass(parent, 'page-push');
+    utils.removeClass(parent, 'super-hero');
+    parent.style.height = '';
   },
 
   makeAdTogglable: function(adElement) {

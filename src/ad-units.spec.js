@@ -6,7 +6,8 @@ describe('Ad Units', function() {
 
     beforeEach(function() {
       parentAdElement = document.createElement('div');
-      parentAdElement.className = 'pinned mobile kargo';
+      parentAdElement.className = 'pinned mobile kargo page-push super-hero';
+      parentAdElement.style.height = '10px';
       $('body').append(parentAdElement);
       adUnits.resetClasses(parentAdElement);
     });
@@ -25,6 +26,18 @@ describe('Ad Units', function() {
 
     it('removes `kargo` class', function() {
       expect($(parentAdElement).hasClass('kargo')).to.be.false;
+    });
+
+    it('removes `page-push` class', function() {
+      expect($(parentAdElement).hasClass('page-push')).to.be.false;
+    });
+
+    it('removes `super-hero` class', function() {
+      expect($(parentAdElement).hasClass('super-hero')).to.be.false;
+    });
+
+    it('removes any style height attribute set (for super hero)', function() {
+      expect(parentAdElement.style.height).to.equal('');
     });
   });
 
