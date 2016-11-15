@@ -6,7 +6,8 @@ describe('Ad Units', function() {
 
     beforeEach(function() {
       parentAdElement = document.createElement('div');
-      parentAdElement.className = 'pinned mobile kargo';
+      parentAdElement.className = 'pinned mobile kargo page-push super-hero';
+      parentAdElement.style.height = '10px';
       $('body').append(parentAdElement);
       adUnits.resetClasses(parentAdElement);
     });
@@ -25,6 +26,18 @@ describe('Ad Units', function() {
 
     it('removes `kargo` class', function() {
       expect($(parentAdElement).hasClass('kargo')).to.be.false;
+    });
+
+    it('removes `page-push` class', function() {
+      expect($(parentAdElement).hasClass('page-push')).to.be.false;
+    });
+
+    it('removes `super-hero` class', function() {
+      expect($(parentAdElement).hasClass('super-hero')).to.be.false;
+    });
+
+    it('removes any style height attribute set (for super hero)', function() {
+      expect(parentAdElement.style.height).to.equal('');
     });
   });
 
@@ -322,6 +335,38 @@ describe('Ad Units', function() {
     });
   });
 
+  describe('#handleSuperHeroHeaderSlot', function() {
+    var parentAdElement, adElement, adIframe;
+    var e = {
+      slot: {
+        getSlotElementId: function() {
+          return 'ad-slot';
+        }
+      }
+    };
+
+    beforeEach(function() {
+      parentAdElement = document.createElement('div');
+      adElement = document.createElement('div');
+      adElement.id = 'ad-slot';
+      parentAdElement.appendChild(adElement);
+      $('body').append(parentAdElement);
+      adUnits.handleSuperHeroHeaderSlot(e, adElement);
+    });
+
+    afterEach(function() {
+      document.body.removeChild(parentAdElement);
+    });
+
+    it('adds super-hero to parent element', function() {
+      expect($(parentAdElement).hasClass('super-hero')).to.be.true;
+    });
+
+    it('sets the parent element style height', function() {
+      expect(parentAdElement.style.height).not.to.be.empty;
+    });
+  });
+
   describe('#prepPagePushIframe', function() {
     var parentAdElement, adElement, adIframe;
 
@@ -399,6 +444,20 @@ describe('Ad Units', function() {
       adUnits.headerSlotRenderEnded(e, adElement);
       expect(adUnits.handleLeaderboardHeaderSlot.calledWith(e, adElement)).to.be.true;
     });
+
+    it('defers to `handlePagePushHeaderSlot` if 1x1', function() {
+      sinon.stub(adUnits, 'handlePagePushHeaderSlot');
+      var e = { size: [1, 1]};
+      adUnits.headerSlotRenderEnded(e, adElement);
+      expect(adUnits.handlePagePushHeaderSlot.calledWith(e, adElement)).to.be.true;
+    });
+
+    it('defers to `handleSuperHeroHeaderSlot` if 1280x720', function() {
+      sinon.stub(adUnits, 'handleSuperHeroHeaderSlot');
+      var e = { size: [1280, 720]};
+      adUnits.headerSlotRenderEnded(e, adElement);
+      expect(adUnits.handleSuperHeroHeaderSlot.calledWith(e, adElement)).to.be.true;
+    });
   });
 
   describe('header slot config', function() {
@@ -407,15 +466,15 @@ describe('Ad Units', function() {
     });
 
     it('allows these slots on desktop', function() {
-      expect(adUnits.units.header.sizes[0]).to.eql([[970, 0], [[728, 90], [1,1], [970, 415], [970, 250], [970, 90]]]);
+      expect(adUnits.units.header.sizes[0]).to.eql([[970, 0], [[728, 90], [1,1], [970, 415], [970, 250], [970, 90], [1280, 720]]]);
     });
 
     it('allows these slots on tablet', function() {
-      expect(adUnits.units.header.sizes[1]).to.eql([[728, 0], [[1, 1], [728, 90]]]);
+      expect(adUnits.units.header.sizes[1]).to.eql([[728, 0], [[1, 1], [728, 90], [1280, 720]]]);
     });
 
     it('allows these slots on mobile', function() {
-      expect(adUnits.units.header.sizes[2]).to.eql([[0, 0], [[1,1], [320, 50], [300, 250]]]);
+      expect(adUnits.units.header.sizes[2]).to.eql([[0, 0], [[1,1], [320, 50], [300, 250], [1280, 720]]]);
     });
 
     it('sets up `headerSlotRenderEnded` as the callback', function() {

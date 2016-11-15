@@ -9,6 +9,9 @@ var AdUnits = {
     utils.removeClass(parent, 'pinned');
     utils.removeClass(parent, 'mobile');
     utils.removeClass(parent, 'kargo');
+    utils.removeClass(parent, 'page-push');
+    utils.removeClass(parent, 'super-hero');
+    parent.style.height = '';
   },
 
   makeAdTogglable: function(adElement) {
@@ -104,6 +107,16 @@ var AdUnits = {
     }
   },
 
+  handleSuperHeroHeaderSlot: function(e, el) {
+    utils.addClass(el.parentElement, 'super-hero');
+
+    var height = document.documentElement.clientHeight - 175;
+    if (height > 720) {
+      height = 720;
+    }
+    el.parentElement.style.height = height + 'px';
+  },
+
   prepPagePushIframe: function(dfpContainer, iframe) {
     var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
 
@@ -126,6 +139,8 @@ var AdUnits = {
       AdUnits.handleLeaderboardHeaderSlot(e, el);
     } else if ((e.size[0] === 1) && (e.size[1] === 1)) {
       AdUnits.handlePagePushHeaderSlot(e, el);
+    } else if ((e.size[0] === 1280) && (e.size[1] === 720)) {
+      AdUnits.handleSuperHeroHeaderSlot(e, el);
     }
   }
 };
@@ -143,9 +158,9 @@ AdUnits.units = {
     'eagerLoad': true,
     'slotName': 'header',
     'sizes': [
-      [[970, 0], [[728, 90], [1,1], [970, 415], [970, 250], [970, 90]]],
-      [[728, 0], [[1,1], [728, 90]]],
-      [[0, 0], [[1,1], [320, 50], [300, 250]]]
+      [[970, 0], [[728, 90], [1,1], [970, 415], [970, 250], [970, 90], [1280, 720]]],
+      [[728, 0], [[1,1], [728, 90], [1280, 720]]],
+      [[0, 0], [[1,1], [320, 50], [300, 250], [1280, 720]]]
     ],
     onSlotRenderEnded: AdUnits.headerSlotRenderEnded
   },
