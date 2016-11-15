@@ -412,9 +412,9 @@ AdManager.prototype.refreshSlots = function (slotsToLoad, ads) {
   }
 
   if (typeof window.index_headertag_lightspeed === 'undefined') {
-    this.googletag.pubads().refresh(slotsToLoad, { changeCorrelator: false });
+    this.googletag.pubads().refresh(slotsToLoad);
   } else {
-    window.index_headertag_lightspeed.slotRefresh(slotsToLoad, ads, { changeCorrelator: false });
+    window.index_headertag_lightspeed.slotRefresh(slotsToLoad, ads);
   }
 };
 
