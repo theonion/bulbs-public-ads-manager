@@ -11,6 +11,7 @@ describe('AdManager', function() {
       dfp_pagetype: 'homepage'
     };
     adManager = AdManagerWrapper.init();
+    adManager.googletag.cmd = [];
   });
 
   describe('new AdManager', function() {
@@ -895,6 +896,60 @@ describe('AdManager', function() {
 
     it('loads the DFP slot matching up with the DOM element id', function() {
       expect(adManager.refreshSlots.calledWith([stubSlot], [adSlot1])).to.be.true;
+    });
+  });
+
+  describe('#asyncRefreshSlot', function() {
+    var baseContainer, container1, adSlot1, ads, stubSlot;
+
+    beforeEach(function() {
+      TestHelper.stub(adManager, 'refreshSlot');
+
+      baseContainer = document.createElement('div');
+      container1 = document.createElement('div');
+      container1.className ='expected';
+      container1.id = 'ad-container-1';
+      adSlot1 = document.createElement('div');
+      adSlot1.id = 'dfp-ad-1';
+      adSlot1.className = 'dfp';
+      container1.appendChild(adSlot1);
+      baseContainer.appendChild(container1);
+
+      document.body.appendChild(baseContainer);
+    });
+
+    afterEach(function() {
+      $(baseContainer).remove();
+    });
+
+    context('api is ready', function() {
+      beforeEach(function() {
+        window.googletag.apiReady = true;
+        adManager.asyncRefreshSlot(adSlot1);
+      });
+
+      it('refreshes the slot right away', function() {
+        expect(adManager.refreshSlot.calledWith(adSlot1)).to.be.true;
+      });
+    });
+
+    context('api is not ready', function() {
+      beforeEach(function (done) {
+        window.googletag.apiReady = false;
+        window.googletag.cmd = {
+          push: function(callback) {
+            setTimeout(function() {
+              callback();
+              done();
+            }, 50);
+          }
+        };
+        adManager.asyncRefreshSlot(adSlot1);
+      });
+
+      it('refreshes the slot by way of the `cmd` async queue', function () {
+        expect(adManager.refreshSlot.calledWith(adSlot1)).to.be.true;
+      });
     });
   });
 

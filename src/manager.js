@@ -409,6 +409,26 @@ AdManager.prototype.refreshSlot = function(domElement) {
 };
 
 /**
+  * Uses the `cmd` async GPT queue to enqueue ad manager function to run
+  * if the GPT API is not yet ready.  Assures slots have been configured,
+  * etc. prior to trying to make the ad request
+  *
+  * @param {domElement} DOM element containing the DFP ad slot
+  * @returns undefined
+*/
+AdManager.prototype.asyncRefreshSlot = function(domElement) {
+  var adManager = this;
+
+  if (this.googletag.apiReady) {
+    this.refreshSlot(domElement);
+  } else {
+    this.googletag.cmd.push(function () {
+      adManager.refreshSlot(domElement);
+    });
+  }
+};
+
+/**
  * Fetches a new ad for each slot passed in
  *
  * @param {slotsToLoad} One or many slots to fetch new ad for
