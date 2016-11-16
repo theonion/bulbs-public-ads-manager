@@ -94,7 +94,9 @@ describe('AdManager', function() {
         addEventListener: sinon.spy(),
         refresh: sinon.spy(),
         clear: sinon.spy(),
-        setTargeting: sinon.spy()
+        setTargeting: sinon.spy(),
+        updateCorrelator: sinon.spy(),
+        enableAsyncRendering: sinon.spy()
       });
       TestHelper.stub(adManager, 'initBaseTargeting');
       TestHelper.stub(adManager, 'loadAds');
@@ -103,9 +105,20 @@ describe('AdManager', function() {
       adManager.initGoogleTag();
     });
 
-    it('invokes setup functions on publisher service', function() {
+    it('does not enable single request mode', function() {
       expect(adManager.googletag.pubads().enableSingleRequest.called).to.be.false;
+    });
+
+    it('disables initial load of ads, to defer to the eager/lazy loading logic', function() {
       expect(adManager.googletag.pubads().disableInitialLoad.called).to.be.true;
+    });
+
+    it('enables async rendering to avoid page blocking and allow the manual use of `updateCorrelator`', function() {
+      expect(adManager.googletag.pubads().enableAsyncRendering.called).to.be.true;
+    });
+
+    it('always updates the correlator automatically whenever the ad lib is loaded', function() {
+      expect(adManager.googletag.pubads().updateCorrelator.called).to.be.true;
     });
 
     it('sets up custom slot render ended callback', function() {
@@ -171,6 +184,9 @@ describe('AdManager', function() {
 
   describe('#reloadAds', function() {
     beforeEach(function() {
+      TestHelper.stub(adManager.googletag, 'pubads').returns({
+        updateCorrelator: sinon.spy()
+      });
       TestHelper.stub(adManager, 'unloadAds');
       TestHelper.stub(adManager, 'loadAds');
       adManager.reloadAds('domElement');
@@ -179,6 +195,10 @@ describe('AdManager', function() {
     it('unloads and reloads ads', function() {
       expect(adManager.unloadAds.calledWith('domElement')).to.be.true;
       expect(adManager.loadAds.calledWith('domElement')).to.be.true;
+    });
+
+    it('updates the correlator so it is treated like a new pageview request', function() {
+      expect(googletag.pubads().updateCorrelator.called).to.be.true;
     });
   });
 

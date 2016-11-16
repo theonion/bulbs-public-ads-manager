@@ -76,6 +76,8 @@ AdManager.prototype.initGoogleTag = function() {
   var adManager = this;
 
   this.googletag.pubads().disableInitialLoad();
+  this.googletag.pubads().enableAsyncRendering();
+  this.googletag.pubads().updateCorrelator();
 
   this.googletag.pubads().addEventListener('slotRenderEnded', adManager.onSlotRenderEnded);
   this.googletag.pubads().addEventListener('impressionViewable', adManager.onImpressionViewable);
@@ -115,6 +117,7 @@ AdManager.prototype.initBaseTargeting = function() {
  * @returns undefined
 */
 AdManager.prototype.reloadAds = function(element) {
+  this.googletag.pubads().updateCorrelator();
   this.unloadAds(element);
   this.loadAds(element);
 };
@@ -377,9 +380,9 @@ AdManager.prototype.loadAds = function(element) {
     } else {
       window.index_headertag_lightspeed.slotDisplay(thisEl.id, ads);
     }
-    thisEl.setAttribute('data-ad-load-state', 'loading');
 
     if (slot.eagerLoad) {
+      thisEl.setAttribute('data-ad-load-state', 'loading');
       this.refreshSlots([slot], ads);
     }
   }
@@ -392,10 +395,15 @@ AdManager.prototype.loadAds = function(element) {
  * @returns undefined
 */
 AdManager.prototype.refreshSlot = function(domElement) {
+  if ((domElement.getAttribute('data-ad-load-state') === 'loaded') || (domElement.getAttribute('data-ad-load-state') === 'loading')) {
+    return;
+  }
+
   var slot = this.slots[domElement.id];
   var ads = this.findAds(domElement);
 
   if (slot) {
+    domElement.setAttribute('data-ad-load-state', 'loading');
     this.refreshSlots([slot], ads);
   }
 };
