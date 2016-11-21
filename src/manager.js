@@ -137,12 +137,17 @@ AdManager.prototype.onSlotRenderEnded = function(event) {
   element.style.removeProperty('height');
   element.style.removeProperty('width');
 
-  if (adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
-    adUnits.units[element.dataset.adUnit].onSlotRenderEnded(event, element);
-  }
+  if (event.isEmpty) {
+    element.setAttribute('data-ad-load-state', 'empty');
+  } else {
 
-  element.setAttribute('data-ad-load-state', 'loaded');
-  utils.dispatchEvent(element, 'dfpSlotRenderEnded');
+    if (adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
+      adUnits.units[element.dataset.adUnit].onSlotRenderEnded(event, element);
+    }
+
+    element.setAttribute('data-ad-load-state', 'loaded');
+    utils.dispatchEvent(element, 'dfpSlotRenderEnded');
+  }
 };
 
 /**
