@@ -231,7 +231,6 @@ describe('AdManager', function() {
       TestHelper.stub(adManager.adUnits.units.header, 'onSlotRenderEnded');
       eventSpy = sinon.spy();
       adElement.addEventListener('dfpSlotRenderEnded', eventSpy);
-      adManager.onSlotRenderEnded(event);
     });
 
     afterEach(function() {
@@ -239,27 +238,55 @@ describe('AdManager', function() {
     });
 
     it('sets rendered to true', function() {
+
+      adManager.onSlotRenderEnded(event);
+
       expect(adManager.rendered).to.be.true;
     });
 
     it('removes the height property', function() {
+
+      adManager.onSlotRenderEnded(event);
+
       expect(adElement.style.height).not.to.equal('250px');
     });
 
     it('removes the width property', function() {
+
+      adManager.onSlotRenderEnded(event);
+
       expect(adElement.style.width).not.to.equal('300px');
     });
 
     it('calls custom slot render ended callback if there is one', function() {
+
+      adManager.onSlotRenderEnded(event);
+
       expect(adManager.adUnits.units.header.onSlotRenderEnded.calledWith(event, adElement)).to.be.true;
     });
 
     it('sets loaded state to loaded', function() {
+
+      adManager.onSlotRenderEnded(event);
+
       expect($(adElement).data('ad-load-state')).to.equal('loaded');
     });
 
     it('emits a dfpSlotRenderEnded event', function() {
-      expect(eventSpy).to.have.been.called;
+
+      adManager.onSlotRenderEnded(event);
+
+      expect(eventSpy.called).to.be.true;
+    });
+
+    it('does not dispatch slot render end, does not call callback when ad comes back empty', function() {
+      event.isEmpty = true;
+
+      adManager.onSlotRenderEnded(event);
+
+      expect($(adElement).data('ad-load-state')).to.equal('empty');
+      expect(adManager.adUnits.units.header.onSlotRenderEnded.called).to.be.false;
+      expect(eventSpy.called).to.be.false;
     });
   });
 
