@@ -75,9 +75,9 @@ AdManager.prototype.handleWindowResize = function() {
 AdManager.prototype.initGoogleTag = function() {
   var adManager = this;
 
-  this.googletag.pubads().enableSingleRequest();
   this.googletag.pubads().disableInitialLoad();
-  this.googletag.pubads().collapseEmptyDivs(true);
+  this.googletag.pubads().enableAsyncRendering();
+  this.googletag.pubads().updateCorrelator();
 
   this.googletag.pubads().addEventListener('slotRenderEnded', adManager.onSlotRenderEnded);
   this.googletag.pubads().addEventListener('impressionViewable', adManager.onImpressionViewable);
@@ -103,6 +103,10 @@ AdManager.prototype.initBaseTargeting = function() {
       this.googletag.pubads().setTargeting(customCriteriaKey, customCriteriaValue.toString());
     }
   }
+
+  if (window.Krux && window.Krux.user) {
+    this.googletag.pubads().setTargeting('kuid', Krux.user);
+  }
 };
 
 /**
@@ -113,6 +117,7 @@ AdManager.prototype.initBaseTargeting = function() {
  * @returns undefined
 */
 AdManager.prototype.reloadAds = function(element) {
+  this.googletag.pubads().updateCorrelator();
   this.unloadAds(element);
   this.loadAds(element);
 };
@@ -233,7 +238,7 @@ AdManager.prototype.logMessage = function(message, logLevel) {
  * @returns
 */
 AdManager.prototype.slotInfo = function() {
-  for (slotElementId in this.slots) {
+  for (var slotElementId in this.slots) {
     if (this.slots[slotElementId]) {
       var slot = this.slots[slotElementId];
       console.info(slot.getSlotElementId(), slot.getName());
@@ -250,7 +255,7 @@ AdManager.prototype.slotInfo = function() {
  * @returns undefined
 */
 AdManager.prototype.setSlotTargeting = function(element, slot) {
-  for (customKey in this.targeting) {
+  for (var customKey in this.targeting) {
     if(this.targeting[customKey]) {
       slot.setTargeting(customKey, this.targeting[customKey].toString());
     }
@@ -261,7 +266,7 @@ AdManager.prototype.setSlotTargeting = function(element, slot) {
     slotTargeting = JSON.parse(element.dataset.targeting);
   }
 
-  for (customKey in slotTargeting) {
+  for (var customKey in slotTargeting) {
     if(slotTargeting[customKey]) {
       slot.setTargeting(customKey, slotTargeting[customKey].toString());
     }
@@ -321,6 +326,10 @@ AdManager.prototype.configureAd = function (element) {
   this.setSlotTargeting(element, slot);
 
   slot.addService(this.googletag.pubads());
+
+  if (adUnitConfig.eagerLoad) {
+    slot.eagerLoad = true;
+  }
 
   this.slots[element.id] = slot;
 
@@ -383,16 +392,69 @@ AdManager.prototype.loadAds = function(element) {
     } else {
       window.index_headertag_lightspeed.slotDisplay(thisEl.id, ads);
     }
-    thisEl.setAttribute('data-ad-load-state', 'loading');
+
+    if (slot.eagerLoad) {
+      thisEl.setAttribute('data-ad-load-state', 'loading');
+      this.refreshSlots([slot], ads);
+    }
+  }
+};
+
+/**
+ * Fetches a new ad for just single dom element
+ *
+ * @param {domElement} DOM element containing the DFP ad slot
+ * @returns undefined
+*/
+AdManager.prototype.refreshSlot = function(domElement) {
+  if ((domElement.getAttribute('data-ad-load-state') === 'loaded') || (domElement.getAttribute('data-ad-load-state') === 'loading')) {
+    return;
   }
 
+  var slot = this.slots[domElement.id];
+  var ads = this.findAds(domElement);
 
-  if (slotsToLoad.length > 0) {
-    if (typeof window.index_headertag_lightspeed === 'undefined') {
-      this.googletag.pubads().refresh(slotsToLoad);
-    } else {
-      window.index_headertag_lightspeed.slotRefresh(slotsToLoad, ads);
-    }
+  if (slot) {
+    domElement.setAttribute('data-ad-load-state', 'loading');
+    this.refreshSlots([slot], ads);
+  }
+};
+
+/**
+  * Uses the `cmd` async GPT queue to enqueue ad manager function to run
+  * if the GPT API is not yet ready.  Assures slots have been configured,
+  * etc. prior to trying to make the ad request
+  *
+  * @param {domElement} DOM element containing the DFP ad slot
+  * @returns undefined
+*/
+AdManager.prototype.asyncRefreshSlot = function(domElement) {
+  var adManager = this;
+
+  if (this.googletag.apiReady) {
+    this.refreshSlot(domElement);
+  } else {
+    this.googletag.cmd.push(function () {
+      adManager.refreshSlot(domElement);
+    });
+  }
+};
+
+/**
+ * Fetches a new ad for each slot passed in
+ *
+ * @param {slotsToLoad} One or many slots to fetch new ad for
+ * @returns undefined
+*/
+AdManager.prototype.refreshSlots = function (slotsToLoad, ads) {
+  if (slotsToLoad.length == 0) {
+    return;
+  }
+
+  if (typeof window.index_headertag_lightspeed === 'undefined') {
+    this.googletag.pubads().refresh(slotsToLoad, { changeCorrelator: false });
+  } else {
+    window.index_headertag_lightspeed.slotRefresh(slotsToLoad, ads, { changeCorrelator: false });
   }
 };
 
