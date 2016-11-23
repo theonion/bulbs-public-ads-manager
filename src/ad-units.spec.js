@@ -458,6 +458,11 @@ describe('Ad Units', function() {
       adUnits.headerSlotRenderEnded(e, adElement);
       expect(adUnits.handleSuperHeroHeaderSlot.calledWith(e, adElement)).to.be.true;
     });
+
+    it('adds the data-ad-load-state to the parent wrapper as well', function() {
+      adUnits.headerSlotRenderEnded({ size: [320, 50]}, adElement);
+      expect($(parentAdElement).data('ad-load-state')).to.equal('loaded');
+    });
   });
 
   describe('header slot config', function() {
