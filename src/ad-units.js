@@ -131,6 +131,7 @@ var AdUnits = {
 
   headerSlotRenderEnded: function(e, el) {
     var parent = el.parentElement;
+    parent.setAttribute('data-ad-load-state', 'loaded');
     AdUnits.resetClasses(parent);
 
     if (e.size[0] === 320) {
