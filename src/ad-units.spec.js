@@ -465,6 +465,34 @@ describe('Ad Units', function() {
     });
   });
 
+  describe('#inreadSlotRenderEnded', function() {
+    var parentAdElement, adElement;
+
+    beforeEach(function() {
+      parentAdElement = document.createElement('div');
+      parentAdElement.id = 'parent-ad-element';
+      adElement = document.createElement('div');
+      adElement.id = 'ad-slot';
+      parentAdElement.appendChild(adElement);
+      $('body').append(parentAdElement);
+    });
+
+    afterEach(function() {
+      document.body.removeChild(parentAdElement);
+    });
+
+    it('fills innerHTML if dfp returns with ad', function() {
+      var e = { isEmpty: false };
+      adUnits.inreadSlotRenderEnded(e, adElement);
+      expect(adElement.innerHTML).to.equal('Content continues below advertisement');
+    });
+    it('does not fill innerHTML if dfp returns empty', function() {
+      var e = { isEmpty: true };
+      adUnits.inreadSlotRenderEnded(e, adElement);
+      expect(adElement.innerHTML).to.equal('');
+    });
+  });
+
   describe('header slot config', function() {
     it('matches up to the DFP `header` slot name', function() {
       expect(adUnits.units.header.slotName).to.equal('header');
