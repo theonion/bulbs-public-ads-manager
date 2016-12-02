@@ -45,7 +45,8 @@ describe('AdManager', function() {
 
     context('override options', function() {
       it('allows override of defaults', function() {
-        adManager = AdManagerWrapper.init({ doReloadOnResize: false,
+        adManager = AdManagerWrapper.init({
+          doReloadOnResize: false,
           dfpSiteCode: 'fmg.onion'
          });
         expect(adManager.options.doReloadOnResize).to.be.false;
