@@ -10,7 +10,7 @@ var AdManager = function(options) {
     doReloadOnResize: true,
     resizeTimeout: null,
     debug: false,
-    dfpId: 1009948,
+    dfpId: 4246,
   };
   var options = options || {};
 
@@ -303,7 +303,12 @@ AdManager.prototype.configureAd = function (element) {
     return;
   }
 
-  var slotName = adUnitConfig.slotName || element.dataset.adUnit;
+  var positionTargeting = adUnitConfig.slotName || element.dataset.adUnit;
+
+  var slotName = this.options.dfpSiteCode;
+  if (window.dfpSiteSection) {
+    slotName += '/' + window.dfpSiteSection;
+  }
   var adUnitPath = '/' + this.options.dfpId + '/' + slotName;
 
   // Use first ad size as the default
@@ -315,6 +320,13 @@ AdManager.prototype.configureAd = function (element) {
     // This probably means that the slot has already been filled.
     return;
   }
+
+  var slotTargeting = {};
+  if (element.dataset.targeting) {
+    slotTargeting = JSON.parse(element.dataset.targeting);
+  }
+  slotTargeting.pos = positionTargeting;
+  element.dataset.targeting = JSON.stringify(slotTargeting);
 
   this.setSlotTargeting(element, slot);
 
