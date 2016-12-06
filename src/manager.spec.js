@@ -704,6 +704,7 @@ describe('AdManager', function() {
         enableSingleRequest: sinon.spy(),
         disableInitialLoad: sinon.spy(),
         addEventListener: sinon.spy(),
+        updateCorrelator: sinon.spy(),
         refresh: sinon.spy(),
         clear: sinon.spy(),
         setTargeting: sinon.spy()
@@ -867,6 +868,16 @@ describe('AdManager', function() {
 
       it('does not try to refresh pubads across the board', function() {
         expect(adManager.googletag.pubads().refresh.called).to.be.false;
+      });
+    });
+
+    context('update correlator true', function() {
+      beforeEach(function() {
+        adManager.loadAds(undefined, true);
+      });
+
+      it('updates the correlator', function() {
+        expect(adManager.googletag.pubads().updateCorrelator.called).to.be.true;
       });
     });
 
