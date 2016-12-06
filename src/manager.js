@@ -365,6 +365,7 @@ AdManager.prototype.unpause = function() {
  * Loads all ads
  *
  * @param {Element} optional element to scope where to load ads in the document
+ * @param {updateCorrelator} optional flag to force an update of the correlator value
  * @returns undefined
 */
 AdManager.prototype.loadAds = function(element, updateCorrelator) {
