@@ -367,7 +367,7 @@ AdManager.prototype.unpause = function() {
  * @param {Element} optional element to scope where to load ads in the document
  * @returns undefined
 */
-AdManager.prototype.loadAds = function(element) {
+AdManager.prototype.loadAds = function(element, updateCorrelator) {
   if (this.paused || !this.initialized) {
     return;
   }
@@ -377,6 +377,10 @@ AdManager.prototype.loadAds = function(element) {
 
   if (!this.googletag.pubadsReady) {
     this.googletag.enableServices();
+  }
+
+  if (updateCorrelator) {
+    this.googletag.pubads().updateCorrelator();
   }
 
   for(var i = 0; i < ads.length; i++) {
