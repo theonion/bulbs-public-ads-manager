@@ -110,6 +110,7 @@ describe('AdManager', function() {
       TestHelper.stub(adManager, 'initBaseTargeting');
       TestHelper.stub(adManager, 'loadAds');
       TestHelper.stub(adManager.googletag, 'enableServices');
+      TestHelper.stub(adManager, 'initAmazonA9');
       adManager.initialized = false;
       adManager.initGoogleTag();
     });
@@ -953,6 +954,7 @@ describe('AdManager', function() {
       adSlot1.className = 'dfp';
       container1.appendChild(adSlot1);
       baseContainer.appendChild(container1);
+      adManager.options.amazon_enabled = false;
 
       document.body.appendChild(baseContainer);
 
