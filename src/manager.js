@@ -85,7 +85,7 @@ AdManager.prototype.initGoogleTag = function() {
   this.googletag.pubads().addEventListener('slotOnload', adManager.onSlotOnload);
 
   this.initBaseTargeting();
-  if (this.options.amazon_enabled && amznads) {
+  if (this.options.amazon_enabled) {
     this.initAmazonA9();
   }
 
@@ -433,7 +433,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
 */
 AdManager.prototype.refreshSlot = function(domElement) {
   var that = this;
-  if (this.options.amazon_enabled && amznads) {
+  if (this.options.amazon_enabled) {
       amznads.getAdsCallback('3706', function () {
       amznads.setTargetingForGPTAsync('amznslots');
       that.refreshAds(domElement);

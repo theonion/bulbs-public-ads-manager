@@ -160,6 +160,7 @@ describe('AdManager', function() {
     });
 
     it('no call to initAmazonA9 if parameter amazon_enalbed is false', function() {
+      expect(adManager.initAmazonA9.calledOnce).to.be.true;
       adManager.options.amazon_enabled = false;
       adManager.initGoogleTag();
       expect(adManager.initAmazonA9.calledTwice).to.be.false;
