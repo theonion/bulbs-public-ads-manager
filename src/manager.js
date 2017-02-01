@@ -11,6 +11,7 @@ var AdManager = function(options) {
     resizeTimeout: null,
     debug: false,
     dfpId: 4246,
+    amazon_enabled: true;
   };
   var options = options || {};
 
@@ -84,11 +85,25 @@ AdManager.prototype.initGoogleTag = function() {
   this.googletag.pubads().addEventListener('slotOnload', adManager.onSlotOnload);
 
   this.initBaseTargeting();
+  if (this.options.amazon_enabled) {
+    this.initAmazonA9();
+  }
 
   this.initialized = true;
 
   this.loadAds();
 };
+
+/**
+ * initializes A9
+ *
+ * @returns undefined
+*/
+AdManager.prototype.initAmazonA9 = function() {
+  amznads.getAds('3076');
+  amznads.setTargetingForGPTAsync('amznslots');
+};
+
 
 /**
  * Sets global targeting regardless of ad slot based on the `TARGETING` global on each site
@@ -417,16 +432,11 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
  * @returns undefined
 */
 AdManager.prototype.refreshSlot = function(domElement) {
-  if ((domElement.getAttribute('data-ad-load-state') === 'loaded') || (domElement.getAttribute('data-ad-load-state') === 'loading')) {
-    return;
-  }
-
-  var slot = this.slots[domElement.id];
-  var ads = this.findAds(domElement);
-
-  if (slot) {
-    domElement.setAttribute('data-ad-load-state', 'loading');
-    this.refreshSlots([slot], ads);
+  if (this.options.amazon_enabled) {
+    amznads.getAdsCallback('3706', this.refreshAmazonAds);
+    this.googletag.pubads().clearTargeting('amznslots');
+  } else {
+    this.refreshAds(domElement);
   }
 };
 
@@ -448,6 +458,38 @@ AdManager.prototype.asyncRefreshSlot = function(domElement) {
       adManager.refreshSlot(domElement);
     });
   }
+};
+
+/**
+  * Uses the `cmd` async GPT queue to enqueue ad manager function to run
+  * if the GPT API is not yet ready.  Assures slots have been configured,
+  * etc. prior to trying to make the ad request
+  *
+  * @param {domElement} DOM element containing the DFP ad slot
+  * @returns undefined
+*/
+AdManager.prototype.refreshAds = function (domElement) {
+  if ((domElement.getAttribute('data-ad-load-state') === 'loaded') || (domElement.getAttribute('data-ad-load-state') === 'loading')) {
+    return;
+  }
+
+  var slot = this.slots[domElement.id];
+  var ads = this.findAds(domElement);
+
+  if (slot) {
+    domElement.setAttribute('data-ad-load-state', 'loading');
+    this.refreshSlots([slot], ads);
+  }
+};
+
+/**
+ * push
+ *
+ * @param {slotsToLoad} One or many slots to fetch new ad for
+ * @returns undefined
+*/
+AdManager.prototype.refreshAmazonAds = function () {
+  amznads.setTargetingForGPTAsync('amznslots');
 };
 
 /**
