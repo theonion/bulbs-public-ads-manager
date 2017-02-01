@@ -11,7 +11,7 @@ var AdManager = function(options) {
     resizeTimeout: null,
     debug: false,
     dfpId: 4246,
-    amazon_enabled: true;
+    amazon_enabled: true,
   };
   var options = options || {};
 
@@ -432,10 +432,15 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
  * @returns undefined
 */
 AdManager.prototype.refreshSlot = function(domElement) {
+  var that = this;
   if (this.options.amazon_enabled) {
-    amznads.getAdsCallback('3706', this.refreshAmazonAds);
+      amznads.getAdsCallback('3706', function () {
+      amznads.setTargetingForGPTAsync('amznslots');
+      that.refreshAds(domElement);
+    });
     this.googletag.pubads().clearTargeting('amznslots');
-  } else {
+  }
+  else {
     this.refreshAds(domElement);
   }
 };
@@ -480,16 +485,6 @@ AdManager.prototype.refreshAds = function (domElement) {
     domElement.setAttribute('data-ad-load-state', 'loading');
     this.refreshSlots([slot], ads);
   }
-};
-
-/**
- * push
- *
- * @param {slotsToLoad} One or many slots to fetch new ad for
- * @returns undefined
-*/
-AdManager.prototype.refreshAmazonAds = function () {
-  amznads.setTargetingForGPTAsync('amznslots');
 };
 
 /**
