@@ -110,7 +110,7 @@ describe('AdManager', function() {
       TestHelper.stub(adManager, 'initBaseTargeting');
       TestHelper.stub(adManager, 'loadAds');
       TestHelper.stub(adManager.googletag, 'enableServices');
-      TestHelper.stub(adManager, 'initAmazonA9');
+      sinon.stub(adManager, 'initAmazonA9');
       adManager.initialized = false;
       adManager.initGoogleTag();
     });
@@ -153,6 +153,16 @@ describe('AdManager', function() {
 
     it('loads ads initially', function() {
       expect(adManager.loadAds.calledOnce).to.be.true;
+    });
+
+    it('calls initAmazonA9 by default', function () {
+      expect(adManager.initAmazonA9.calledOnce).to.be.true;
+    });
+
+    it('no call to initAmazonA9 if parameter amazon_enalbed is false', function() {
+      adManager.options.amazon_enabled = false;
+      adManager.initGoogleTag();
+      expect(adManager.initAmazonA9.calledTwice).to.be.false;
     });
   });
 
