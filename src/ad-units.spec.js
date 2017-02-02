@@ -1,6 +1,7 @@
 describe('Ad Units', function () {
   var adUnits = require('./ad-units');
   var $ = require('jquery');
+  var sinon = require('sinon');
 
   describe('#resetClasses', function () {
     var parentAdElement;
@@ -83,9 +84,10 @@ describe('Ad Units', function () {
 
     describe('delayAdToggle()', function () {
       it('is called by makeAdTogglable', function () {
-        var delayAdToggle = TestHelper.spyOn(adUnits, 'delayAdToggle');
+        var delayAdToggle = sinon.spy(adUnits, 'delayAdToggle');
         adUnits.makeAdTogglable(adElement);
         expect(delayAdToggle.called).to.be.true;
+        adUnits.delayAdToggle.restore();
       });
 
       it('removes the hide-toggle-btn class from the parent', function () {
@@ -132,7 +134,7 @@ describe('Ad Units', function () {
   });
 
   describe('#delayAdToggle', function () {
-    var parentAdElement, adElement, toggleButton;
+    var parentAdElement, adElement, toggleButton, sandbox;
 
     beforeEach(function (done) {
       parentAdElement = document.createElement('div');
@@ -145,8 +147,9 @@ describe('Ad Units', function () {
       adElement.parentElement.appendChild(toggleButton);
       $('body').append(parentAdElement);
       adUnits.toggleDelay = 200;
-      TestHelper.stub(adUnits, 'toggleAd');
-      TestHelper.stub(adUnits, 'initToggleHandler');
+      sandbox = sinon.sandbox.create();
+      sandbox.stub(adUnits, 'toggleAd');
+      sandbox.stub(adUnits, 'initToggleHandler');
       adUnits.delayAdToggle(adElement, toggleButton);
       setTimeout(function () {
         done();
@@ -155,6 +158,7 @@ describe('Ad Units', function () {
 
     afterEach(function () {
       document.body.removeChild(parentAdElement);
+      sandbox.restore();
     });
 
     it('calls toggle ad after the delay', function () {
@@ -172,6 +176,7 @@ describe('Ad Units', function () {
 
   describe('#setupMobileSlotClasses', function () {
     var parentAdElement;
+    var adElement;
 
     beforeEach(function () {
       parentAdElement = document.createElement('div');
@@ -233,6 +238,7 @@ describe('Ad Units', function () {
 
   describe('#handleMobileHeaderSlot', function () {
     var parentAdElement;
+    var adElement;
     var e = {};
 
     beforeEach(function () {
@@ -297,7 +303,7 @@ describe('Ad Units', function () {
   });
 
   describe('#handlePagePushHeaderSlot', function () {
-    var parentAdElement, adElement, adIframe;
+    var parentAdElement, adElement, adIframe, sandbox;
     var e = {
       slot: {
         getSlotElementId: function () {
@@ -315,12 +321,14 @@ describe('Ad Units', function () {
       adElement.appendChild(adIframe);
       parentAdElement.appendChild(adElement);
       $('body').append(parentAdElement);
-      TestHelper.stub(adUnits, 'prepPagePushIframe');
+      sandbox = sinon.sandbox.create();
+      sandbox.stub(adUnits, 'prepPagePushIframe');
       adUnits.handlePagePushHeaderSlot(e, adElement);
     });
 
     afterEach(function () {
       document.body.removeChild(parentAdElement);
+      sandbox.restore();
     });
 
     it('adds page-push to parent element', function () {
@@ -337,7 +345,7 @@ describe('Ad Units', function () {
   });
 
   describe('#handleSuperHeroHeaderSlot', function () {
-    var parentAdElement, adElement, adIframe;
+    var parentAdElement, adElement;
     var e = {
       slot: {
         getSlotElementId: function () {
@@ -472,7 +480,11 @@ describe('Ad Units', function () {
     });
 
     it('allows these slots on desktop', function () {
-      expect(adUnits.units.header.sizes[0]).to.eql([[970, 0], [[728, 90], [1,1], [970, 415], [970, 250], [970, 90], [1280, 720]]]);
+      var expected = [
+        [970, 0],
+        [[728, 90], [1,1], [970, 415], [970, 250], [970, 90], [1280, 720]]
+      ];
+      expect(adUnits.units.header.sizes[0]).to.eql(expected);
     });
 
     it('allows these slots on tablet', function () {
