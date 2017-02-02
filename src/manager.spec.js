@@ -973,7 +973,7 @@ describe('AdManager', function() {
       });
 
       getAdsCallback = function () {};
-      adManager.amznads = { getAdsCallback };
+      adManager.amznads = { getAdsCallback: getAdsCallback };
       TestHelper.stub(adManager.amznads, 'getAdsCallback');
 
       domElement = document.createElement('div');
