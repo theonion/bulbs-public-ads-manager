@@ -167,6 +167,19 @@ describe('AdManager', function() {
     });
   });
 
+  describe('#initAmazonA9', function () {
+    beforeEach(function() {
+      TestHelper.stub(console, 'log');
+    });
+
+    it('logs error if amznands is not defined', function () {
+      adManager.initAmazonA9();
+      var logMessage = 'bulbs-public-ads-manager: amznads is not defined';
+      expect(console.log.calledWith(logMessage)).to.be.true;
+      expect(adManager.amznads).to.be.false;
+    });
+  });
+
   describe('#initBaseTargeting', function() {
     beforeEach(function() {
       adManager.targeting = {

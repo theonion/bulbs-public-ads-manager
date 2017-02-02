@@ -104,7 +104,7 @@ AdManager.prototype.initAmazonA9 = function() {
   try {
     this.amznads = amznads;
   } catch(e) {
-    if(e.name == "ReferencError") {
+    if(e.name == "ReferenceError") {
       this.amznads = false;
       console.log('bulbs-public-ads-manager: amznads is not defined');
     }
