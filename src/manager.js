@@ -24,6 +24,7 @@ var AdManager = function(options) {
   this.targeting = global.TARGETING;
   this.options = utils.extend(defaultOptions, options);
 
+
   this.bindContext();
 
   window.addEventListener('resize', this.handleWindowResize);
@@ -100,8 +101,18 @@ AdManager.prototype.initGoogleTag = function() {
  * @returns undefined
 */
 AdManager.prototype.initAmazonA9 = function() {
-  amznads.getAds('3076');
-  amznads.setTargetingForGPTAsync('amznslots');
+  try {
+    this.amznads = amznads;
+  } catch(e) {
+    if(e.name == "ReferencError") {
+      this.amznads = false;
+      console.log('bulbs-public-ads-manager: amznads is not defined');
+    }
+  }
+  if(this.amznads) {
+    amznads.getAds('3076');
+    amznads.setTargetingForGPTAsync('amznslots');
+  }
 };
 
 
@@ -433,7 +444,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
 */
 AdManager.prototype.refreshSlot = function(domElement) {
   var that = this;
-  if (this.options.amazon_enabled) {
+  if (this.options.amazon_enabled && this.amznads) {
       amznads.getAdsCallback('3706', function () {
       amznads.setTargetingForGPTAsync('amznslots');
       that.refreshAds(domElement);
