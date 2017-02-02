@@ -6,6 +6,7 @@ describe('AdManager', function() {
     AdManagerWrapper = require('./manager');
     window.googletag = new MockGoogleTag();
 
+    window.Bulbs = { settings: { AMAZON_A9_ID: '1234' } };
     window.TARGETING = {
       dfp_site: 'onion',
       dfp_pagetype: 'homepage'

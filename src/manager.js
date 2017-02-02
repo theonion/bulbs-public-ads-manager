@@ -23,6 +23,7 @@ var AdManager = function(options) {
   this.oldViewportWidth = window.document.body.clientWidth;
   this.targeting = global.TARGETING;
   this.options = utils.extend(defaultOptions, options);
+  this.amazonId = window.Bulbs.settings.AMAZON_A9_ID;
 
 
   this.bindContext();
@@ -110,7 +111,7 @@ AdManager.prototype.initAmazonA9 = function() {
     }
   }
   if(this.amznads) {
-    this.amznads.getAds('3076');
+    this.amznads.getAds(this.amazonId);
     this.amznads.setTargetingForGPTAsync('amznslots');
   }
 };
@@ -445,7 +446,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
 AdManager.prototype.refreshSlot = function(domElement) {
   var that = this;
   if (this.options.amazon_enabled && this.amznads) {
-      that.amznads.getAdsCallback('3706', function () {
+      that.amznads.getAdsCallback(this.amazonId, function () {
         that.amznads.setTargetingForGPTAsync('amznslots');
         that.refreshAds(domElement);
       });
