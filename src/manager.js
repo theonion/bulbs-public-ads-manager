@@ -110,8 +110,8 @@ AdManager.prototype.initAmazonA9 = function() {
     }
   }
   if(this.amznads) {
-    amznads.getAds('3076');
-    amznads.setTargetingForGPTAsync('amznslots');
+    this.amznads.getAds('3076');
+    this.amznads.setTargetingForGPTAsync('amznslots');
   }
 };
 
@@ -445,10 +445,10 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
 AdManager.prototype.refreshSlot = function(domElement) {
   var that = this;
   if (this.options.amazon_enabled && this.amznads) {
-      amznads.getAdsCallback('3706', function () {
-      amznads.setTargetingForGPTAsync('amznslots');
-      that.refreshAds(domElement);
-    });
+      that.amznads.getAdsCallback('3706', function () {
+        that.amznads.setTargetingForGPTAsync('amznslots');
+        that.refreshAds(domElement);
+      });
     this.googletag.pubads().clearTargeting('amznslots');
   }
   else {

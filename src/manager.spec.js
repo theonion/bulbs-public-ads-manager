@@ -964,6 +964,48 @@ describe('AdManager', function() {
   });
 
   describe('#refreshSlot', function() {
+    var domElement, getAdsCallback;
+    beforeEach(function () {
+      TestHelper.stub(adManager, 'refreshAds');
+      TestHelper.stub(adManager.googletag, 'pubads').returns({
+        clearTargeting: sinon.spy(),
+      });
+
+      getAdsCallback = function () {};
+      adManager.amznads = { getAdsCallback };
+      TestHelper.stub(adManager.amznads, 'getAdsCallback');
+
+      domElement = document.createElement('div');
+      document.body.appendChild(domElement);
+    });
+
+    afterEach(function () {
+      $(domElement).remove();
+    });
+
+    context('amazon_enabled = true', function () {
+      it('calls getAds callback', function () {
+        adManager.refreshSlot(domElement);
+        expect(adManager.amznads.getAdsCallback.calledOnce).to.be.true;
+      });
+
+      it('clears targeting', function () {
+        adManager.refreshSlot(domElement);
+        var expected = adManager.googletag.pubads().clearTargeting.calledOnce;
+        expect(expected).to.be.true;
+      });
+    });
+
+    context('amazon_enabled = false', function () {
+      it('calls refreshAds', function () {
+        adManager.options.amazon_enabled = false;
+        adManager.refreshSlot(domElement);
+        expect(adManager.refreshAds.calledOnce).to.be.true;
+      });
+    });
+  });
+
+  describe('#refreshAds', function() {
     var baseContainer, container1, adSlot1, ads, stubSlot;
 
     beforeEach(function() {
@@ -990,7 +1032,6 @@ describe('AdManager', function() {
         'dfp-ad-1': stubSlot
       };
 
-      adManager.refreshSlot(adSlot1);
     });
 
     afterEach(function() {
@@ -998,6 +1039,7 @@ describe('AdManager', function() {
     });
 
     it('loads the DFP slot matching up with the DOM element id', function() {
+      adManager.refreshAds(adSlot1);
       expect(adManager.refreshSlots.calledWith([stubSlot], [adSlot1])).to.be.true;
     });
   });
