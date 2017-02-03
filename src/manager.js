@@ -3,7 +3,6 @@ var utils = require('./utils');
 var adUnits = require('./ad-units');
 
 var ERROR = 'error';
-var TABLE = 'table';
 
 var AdManager = function (options) {
   var defaultOptions = {
@@ -11,9 +10,8 @@ var AdManager = function (options) {
     resizeTimeout: null,
     debug: false,
     dfpId: 4246,
-    amazon_enabled: true,
+    amazon_enabled: true
   };
-  var options = options || {};
 
   this.adUnits = adUnits;
   this.slots = {};
@@ -103,7 +101,7 @@ AdManager.prototype.initGoogleTag = function () {
 */
 AdManager.prototype.initAmazonA9 = function () {
   try {
-    this.amznads = amznads;
+    this.amznads = amznads; //eslint-disable-line no-undef
   } catch(e) {
     if(e.name == 'ReferenceError') {
       this.amznads = false;
@@ -131,16 +129,16 @@ AdManager.prototype.initBaseTargeting = function () {
     }
   }
 
-  if (window.Krux && window.Krux.user) {
-    this.googletag.pubads().setTargeting('kuid', Krux.user);
+  if (window.Krux && window.Krux.user) {                     //eslint-disable-line no-undef
+    this.googletag.pubads().setTargeting('kuid', Krux.user); //eslint-disable-line no-undef
   }
 };
 
 /**
  * First unloads all ad slots on the page, then loads them all again.
  *
- * @param {Element} element - Optional parameter if the ad refresh should be scoped to a particular container on the page
- *
+ * @param {Element} element - Optional parameter if the ad refresh
+ *  should be scoped to a particular container on the page
  * @returns undefined
 */
 AdManager.prototype.reloadAds = function (element) {
@@ -287,7 +285,8 @@ AdManager.prototype.slotInfo = function () {
  * @returns undefined
 */
 AdManager.prototype.setSlotTargeting = function (element, slot) {
-  for (var customKey in this.targeting) {
+  var customKey;
+  for (customKey in this.targeting) {
     if(this.targeting[customKey]) {
       slot.setTargeting(customKey, this.targeting[customKey].toString());
     }
@@ -298,7 +297,7 @@ AdManager.prototype.setSlotTargeting = function (element, slot) {
     slotTargeting = JSON.parse(element.dataset.targeting);
   }
 
-  for (var customKey in slotTargeting) {
+  for (customKey in slotTargeting) {
     if(slotTargeting[customKey]) {
       slot.setTargeting(customKey, slotTargeting[customKey].toString());
     }
@@ -414,7 +413,8 @@ AdManager.prototype.loadAds = function (element, updateCorrelator) {
   for(var i = 0; i < ads.length; i++) {
     var thisEl = ads[i];
 
-    if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
+    var dataAdLoadState = thisEl.getAttribute('data-ad-load-state');
+    if ((dataAdLoadState === 'loaded') || (dataAdLoadState === 'loading')) {
       continue;
     }
 
@@ -486,7 +486,8 @@ AdManager.prototype.asyncRefreshSlot = function (domElement) {
   * @returns undefined
 */
 AdManager.prototype.refreshAds = function (domElement) {
-  if ((domElement.getAttribute('data-ad-load-state') === 'loaded') || (domElement.getAttribute('data-ad-load-state') === 'loading')) {
+  var dataAdLoadState = domElement.getAttribute('data-ad-load-state');
+  if (( dataAdLoadState === 'loaded') || ( dataAdLoadState === 'loading')) {
     return;
   }
 
