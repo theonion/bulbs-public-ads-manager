@@ -160,9 +160,9 @@ describe('AdManager', function() {
       expect(adManager.initAmazonA9.calledOnce).to.be.true;
     });
 
-    it('no call to initAmazonA9 if parameter amazon_enalbed is false', function() {
+    it('no call to initAmazonA9 if parameter amazonEnalbed is false', function() {
       expect(adManager.initAmazonA9.calledOnce).to.be.true;
-      adManager.options.amazon_enabled = false;
+      adManager.options.amazonEnabled = false;
       adManager.initGoogleTag();
       expect(adManager.initAmazonA9.calledTwice).to.be.false;
     });
@@ -984,7 +984,7 @@ describe('AdManager', function() {
       $(domElement).remove();
     });
 
-    context('amazon_enabled = true', function () {
+    context('amazonEnabled = true', function () {
       it('calls getAds callback', function () {
         adManager.refreshSlot(domElement);
         expect(adManager.amznads.getAdsCallback.calledOnce).to.be.true;
@@ -997,9 +997,9 @@ describe('AdManager', function() {
       });
     });
 
-    context('amazon_enabled = false', function () {
+    context('amazonEnabled = false', function () {
       it('calls refreshAds', function () {
-        adManager.options.amazon_enabled = false;
+        adManager.options.amazonEnabled = false;
         adManager.refreshSlot(domElement);
         expect(adManager.refreshAds.calledOnce).to.be.true;
       });
@@ -1021,7 +1021,7 @@ describe('AdManager', function() {
       adSlot1.className = 'dfp';
       container1.appendChild(adSlot1);
       baseContainer.appendChild(container1);
-      adManager.options.amazon_enabled = false;
+      adManager.options.amazonEnabled = false;
 
       document.body.appendChild(baseContainer);
 
