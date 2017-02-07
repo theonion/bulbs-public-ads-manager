@@ -169,7 +169,6 @@ AdUnits.units = {
   'inbetween': {
     'slotName': 'header',
     'sizes': [
-      [[970, 0], [[728, 90]]],
       [[728, 0], [[728, 90]]],
       [[0, 0], []]
     ]
