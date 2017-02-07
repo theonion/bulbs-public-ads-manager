@@ -11,51 +11,51 @@ eventStub = {
 };
 
 promiseStub = sinon.stub();
-promiseStub.abort = function() {};
-promiseStub.fail = function() {};
-promiseStub.done = function() {};
-promiseStub.always = function() {};
-promiseStub.success = function() {};
-promiseStub.error = function() {};
-promiseStub.then = function() {};
+promiseStub.abort = function () {};
+promiseStub.fail = function () {};
+promiseStub.done = function () {};
+promiseStub.always = function () {};
+promiseStub.success = function () {};
+promiseStub.error = function () {};
+promiseStub.then = function () {};
 
-sinon.stub(promiseStub, "abort").returns(promiseStub);
-sinon.stub(promiseStub, "fail").returns(promiseStub);
-sinon.stub(promiseStub, "done").returns(promiseStub);
-sinon.stub(promiseStub, "always").returns(promiseStub);
-sinon.stub(promiseStub, "success").returns(promiseStub);
-sinon.stub(promiseStub, "error").returns(promiseStub);
-sinon.stub(promiseStub, "then").returns(promiseStub);
+sinon.stub(promiseStub, 'abort').returns(promiseStub);
+sinon.stub(promiseStub, 'fail').returns(promiseStub);
+sinon.stub(promiseStub, 'done').returns(promiseStub);
+sinon.stub(promiseStub, 'always').returns(promiseStub);
+sinon.stub(promiseStub, 'success').returns(promiseStub);
+sinon.stub(promiseStub, 'error').returns(promiseStub);
+sinon.stub(promiseStub, 'then').returns(promiseStub);
 
-function spyOn(object, method) {
+function spyOn (object, method) {
   var spy = sinon.spy(object, method);
   spies.push(spy);
   return spy;
 }
 
-function stub(object, method, retVal) {
-   var stub = sinon.stub(object, method).returns(retVal);
-   stubs.push(stub);
-   return stub;
+function stub (object, method, retVal) {
+  var stub = sinon.stub(object, method).returns(retVal);
+  stubs.push(stub);
+  return stub;
 }
 
 var TestHelper = {
-  spyOn: function(object, method) {
+  spyOn: function (object, method) {
     var spy = sinon.spy(object, method);
     spies.push(spy);
     return spy;
   },
 
-  stub: function(object, method, retVal) {
-     var stub = sinon.stub(object, method).returns(retVal);
-     stubs.push(stub);
-     return stub;
+  stub: function (object, method, retVal) {
+    var stub = sinon.stub(object, method).returns(retVal);
+    stubs.push(stub);
+    return stub;
   },
 
-  click: function(el){
-    var ev = document.createEvent("MouseEvent");
+  click: function (el){
+    var ev = document.createEvent('MouseEvent');
     ev.initMouseEvent(
-      "click",
+      'click',
       true, true,
       window, null,
       0, 0, 0, 0,
@@ -66,17 +66,17 @@ var TestHelper = {
   }
 };
 
-beforeEach(function() {
+beforeEach(function () {
   spies = [];
   stubs = [];
 });
 
-afterEach(function() {
-  spies.forEach(function(spy) {
+afterEach(function () {
+  spies.forEach(function (spy) {
     spy.restore();
   });
 
-  stubs.forEach(function(stub) {
+  stubs.forEach(function (stub) {
     stub.restore();
   });
 });
@@ -90,10 +90,10 @@ Function.prototype.bind = Function.prototype.bind || function (thisp) {
 };
 
 // PhantomJS doesn't like triggering click events
-function click(el){
-  var ev = document.createEvent("MouseEvent");
+function click (el){
+  var ev = document.createEvent('MouseEvent');
   ev.initMouseEvent(
-    "click",
+    'click',
     true, true,
     window, null,
     0, 0, 0, 0,
@@ -108,11 +108,11 @@ if (window.navigator.userAgent.match(/PhantomJS/)) {
   history = window.history;
   oldPushState = history.pushState.bind(history);
   oldReplaceState = history.replaceState.bind(history);
-  history.pushState = function(state, title, url) {
+  history.pushState = function (state, title, url) {
     history.state = state;
     return oldPushState(state, title, url);
   };
-  history.replaceState = function(state, title, url) {
+  history.replaceState = function (state, title, url) {
     history.state = state;
     return oldReplaceState(state, title, url);
   };

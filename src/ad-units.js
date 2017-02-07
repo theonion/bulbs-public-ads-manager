@@ -5,7 +5,7 @@ var utils = require('./utils');
 var AdUnits = {
   toggleDelay: 6000,
 
-  resetClasses: function(parent) {
+  resetClasses: function (parent) {
     utils.removeClass(parent, 'pinned');
     utils.removeClass(parent, 'mobile');
     utils.removeClass(parent, 'kargo');
@@ -14,7 +14,7 @@ var AdUnits = {
     parent.style.height = '';
   },
 
-  makeAdTogglable: function(adElement) {
+  makeAdTogglable: function (adElement) {
     var toggleButton = document.createElement('div');
     toggleButton.className = 'toggle-btn open';
     this.delayAdToggle(adElement, toggleButton);
@@ -32,7 +32,7 @@ var AdUnits = {
     }
   },
 
-  toggleAd: function(adElement) {
+  toggleAd: function (adElement) {
     var openedClass = 'open';
     var closedClass = 'closed';
     var toggleButton = adElement.nextElementSibling;
@@ -51,14 +51,14 @@ var AdUnits = {
   },
 
   delayAdToggle: function (adElement, toggleButton) {
-    setTimeout(function() {
+    setTimeout(function () {
       AdUnits.toggleAd(adElement);
       AdUnits.initToggleHandler(adElement, toggleButton);
       utils.removeClass(adElement.parentElement, 'hide-toggle-btn');
     }, this.toggleDelay);
   },
 
-  isKargo: function(e) {
+  isKargo: function (e) {
     var re = new RegExp(/kargo/);
     var slot = e.slot.L;
     if (re.test(slot) || e.lineItemId === 356279568 || e.lineItemId === 336705048) {
@@ -68,7 +68,7 @@ var AdUnits = {
     }
   },
 
-  setupMobileSlotClasses: function(e, el) {
+  setupMobileSlotClasses: function (e, el) {
     var parent = el.parentElement;
     utils.addClass(parent, 'mobile');
 
@@ -77,7 +77,7 @@ var AdUnits = {
     }
   },
 
-  handleMobileHeaderSlot: function(e, el) {
+  handleMobileHeaderSlot: function (e, el) {
     var parent = el.parentElement;
     AdUnits.makeAdTogglable(el);
     if (!utils.hasClass(parent, 'header-wrapper')) {
@@ -87,11 +87,11 @@ var AdUnits = {
     AdUnits.setupMobileSlotClasses(e, el);
   },
 
-  handleLeaderboardHeaderSlot: function(e, el) {
+  handleLeaderboardHeaderSlot: function (e, el) {
     AdUnits.makeAdTogglable(el);
   },
 
-  handlePagePushHeaderSlot: function(e, el) {
+  handlePagePushHeaderSlot: function (e, el) {
     utils.addClass(el.parentElement, 'page-push');
 
     var dfpContainer = document.getElementById(e.slot.getSlotElementId());
@@ -107,7 +107,7 @@ var AdUnits = {
     }
   },
 
-  handleSuperHeroHeaderSlot: function(e, el) {
+  handleSuperHeroHeaderSlot: function (e, el) {
     utils.addClass(el.parentElement, 'super-hero');
 
     var height = document.documentElement.clientHeight - 175;
@@ -117,10 +117,10 @@ var AdUnits = {
     el.parentElement.style.height = height + 'px';
   },
 
-  prepPagePushIframe: function(dfpContainer, iframe) {
+  prepPagePushIframe: function (dfpContainer, iframe) {
     var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
 
-    iframeDoc.addEventListener('PagePush:Expand', function() {
+    iframeDoc.addEventListener('PagePush:Expand', function () {
       utils.removeClass(dfpContainer, 'collapsed');
     });
 
@@ -129,7 +129,7 @@ var AdUnits = {
     });
   },
 
-  headerSlotRenderEnded: function(e, el) {
+  headerSlotRenderEnded: function (e, el) {
     var parent = el.parentElement;
     parent.setAttribute('data-ad-load-state', 'loaded');
     AdUnits.resetClasses(parent);
