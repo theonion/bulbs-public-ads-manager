@@ -400,7 +400,6 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
     return;
   }
 
-  var slotsToLoad = [];
   var ads = this.findAds(element);
 
   if (!this.googletag.pubadsReady) {
@@ -420,10 +419,6 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
 
     var slot = this.configureAd(thisEl);
 
-    if (slot) {
-      slotsToLoad.push(slot);
-    }
-
     if (typeof window.index_headertag_lightspeed === 'undefined') {
       this.googletag.display(thisEl.id);
     } else {
@@ -431,8 +426,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
     }
 
     if (slot.eagerLoad) {
-      thisEl.setAttribute('data-ad-load-state', 'loading');
-      this.refreshSlots([slot], ads);
+      this.refreshSlot(thisEl);
     }
   }
 };
@@ -446,13 +440,12 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
 AdManager.prototype.refreshSlot = function(domElement) {
   var that = this;
   if (this.options.amazonEnabled && this.amznads) {
-      that.amznads.getAdsCallback(this.amazonId, function () {
-        that.amznads.setTargetingForGPTAsync('amznslots');
-        that.refreshAds(domElement);
-      });
+    this.amznads.getAdsCallback(this.amazonId, function () {
+      that.amznads.setTargetingForGPTAsync('amznslots');
+      that.refreshAds(domElement);
+    }, 500);
     this.googletag.pubads().clearTargeting('amznslots');
-  }
-  else {
+  } else {
     this.refreshAds(domElement);
   }
 };

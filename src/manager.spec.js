@@ -724,6 +724,7 @@ describe('AdManager', function() {
     beforeEach(function() {
       adManager.paused = false;
       adManager.initialized = true;
+      adManager.options.amazonEnabled = false;
 
       TestHelper.stub(adManager.googletag, 'pubads').returns({
         collapseEmptyDivs: sinon.spy(),
@@ -775,6 +776,7 @@ describe('AdManager', function() {
       };
 
       TestHelper.spyOn(adManager, 'configureAd');
+      TestHelper.stub(adManager, 'refreshSlot');
     });
 
     afterEach(function() {
@@ -784,8 +786,7 @@ describe('AdManager', function() {
     context('with wrapper tag', function() {
       beforeEach(function() {
         window.index_headertag_lightspeed = {
-          slotDisplay: sinon.stub(),
-          slotRefresh: sinon.stub()
+          slotDisplay: sinon.stub()
         };
         adManager.loadAds();
       });
@@ -801,8 +802,10 @@ describe('AdManager', function() {
       });
 
       it('triggers refresh of each slot through wrapper tag', function() {
-        expect(adManager.googletag.pubads().refresh.called).to.be.false;
-        expect(window.index_headertag_lightspeed.slotRefresh.callCount).to.equal(3);
+        expect(adManager.refreshSlot.callCount).to.equal(3);
+        expect(adManager.refreshSlot.calledWith(adSlot1)).to.be.true;
+        expect(adManager.refreshSlot.calledWith(adSlot2)).to.be.true;
+        expect(adManager.refreshSlot.calledWith(adSlot3)).to.be.true;
       });
     });
 
@@ -909,6 +912,7 @@ describe('AdManager', function() {
 
     context('no ads loaded', function() {
       beforeEach(function() {
+        adManager.refreshSlot.reset();
         adManager.loadAds();
       });
 
@@ -927,15 +931,9 @@ describe('AdManager', function() {
       });
 
       it('triggers refresh of each slot', function() {
-        expect(adManager.googletag.pubads().refresh.args[0][0][0].element).to.eql(adSlot1);
-        expect(adManager.googletag.pubads().refresh.args[1][0][0].element).to.eql(adSlot2);
-        expect(adManager.googletag.pubads().refresh.args[2][0][0].element).to.eql(adSlot3);
-      });
-
-      it('sets the state of each to `loading`', function() {
-        expect($(adSlot1).attr('data-ad-load-state')).to.equal('loading');
-        expect($(adSlot2).attr('data-ad-load-state')).to.equal('loading');
-        expect($(adSlot3).attr('data-ad-load-state')).to.equal('loading');
+        expect(adManager.refreshSlot.calledWith(adSlot1));
+        expect(adManager.refreshSlot.calledWith(adSlot2));
+        expect(adManager.refreshSlot.calledWith(adSlot3));
       });
     });
 
@@ -958,8 +956,9 @@ describe('AdManager', function() {
       });
 
       it('triggers refresh of non-loaded slots', function() {
-        expect(adManager.googletag.pubads().refresh.args[0][0][0].element).to.eql(adSlot2);
-        expect(adManager.googletag.pubads().refresh.args[1][0][0].element).to.eql(adSlot3);
+        expect(adManager.refreshSlot.calledWith(adSlot1)).to.be.false;
+        expect(adManager.refreshSlot.calledWith(adSlot2)).to.be.true;
+        expect(adManager.refreshSlot.calledWith(adSlot3)).to.be.true;
       });
     });
   });
