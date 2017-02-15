@@ -438,17 +438,41 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
  * @returns undefined
 */
 AdManager.prototype.refreshSlot = function(domElement) {
-  var that = this;
   if (this.options.amazonEnabled && this.amznads) {
-    this.amznads.getAdsCallback(this.amazonId, function () {
-      that.amznads.setTargetingForGPTAsync('amznslots');
-      that.refreshAds(domElement);
-    }, 500);
-    this.googletag.pubads().clearTargeting('amznslots');
+    params = {
+      id: this.amazonId,
+      callback: this.amazonAdRefresh.bind(this, domElement),
+      timeout: 5e2
+    };
+    this.amazonAdRefreshThrottled(params);
   } else {
     this.refreshAds(domElement);
   }
 };
+
+AdManager.prototype.amazonAdRefresh = function (domElement) {
+  this.amznads.setTargetingForGPTAsync('amznslots');
+  this.refreshAds(domElement);
+  this.googletag.pubads().clearTargeting('amznslots');
+}
+
+AdManager.prototype.doGetAmazonAdsCallback = function (params) {
+  amznads.lastGetAdsCallback = Date.now();
+  amznads.getAdsCallback(params.id, params.callback, params.timeout);
+}
+
+AdManager.prototype.amazonAdRefreshThrottled = function (params) {
+  // clear previous bids from amznads
+  amznads.ads = {};
+
+  if (typeof amznads.lastGetAdsCallback === 'undefined') {
+    this.doGetAmazonAdsCallback(params);
+  } else if (Date.now - amznads.lastGetAdsCallback > 1e4) {
+    this.doGetAmazonAdsCallback(params);
+  } else {
+    params.callback.call();
+  }
+}
 
 /**
   * Uses the `cmd` async GPT queue to enqueue ad manager function to run
