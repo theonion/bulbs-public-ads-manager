@@ -970,6 +970,7 @@ describe('AdManager', function() {
       TestHelper.stub(adManager.googletag, 'pubads').returns({
         clearTargeting: sinon.spy(),
       });
+      TestHelper.stub(adManager, 'amazonAdRefreshThrottled');
 
       getAdsCallback = function () {};
       adManager.amznads = { getAdsCallback: getAdsCallback };
@@ -986,14 +987,9 @@ describe('AdManager', function() {
     context('amazonEnabled = true', function () {
       it('calls getAds callback', function () {
         adManager.refreshSlot(domElement);
-        expect(adManager.amznads.getAdsCallback.calledOnce).to.be.true;
+        expect(adManager.amazonAdRefreshThrottled.calledOnce).to.be.true;
       });
 
-      it('clears targeting', function () {
-        adManager.refreshSlot(domElement);
-        var expected = adManager.googletag.pubads().clearTargeting.calledOnce;
-        expect(expected).to.be.true;
-      });
     });
 
     context('amazonEnabled = false', function () {
@@ -1002,6 +998,101 @@ describe('AdManager', function() {
         adManager.refreshSlot(domElement);
         expect(adManager.refreshAds.calledOnce).to.be.true;
       });
+    });
+  });
+
+  describe('#amazonAdRefresh', function () {
+    var domElement;
+    beforeEach(function () {
+      TestHelper.stub(adManager, 'refreshAds');
+      TestHelper.stub(adManager.googletag, 'pubads').returns({
+        clearTargeting: sinon.spy(),
+      });
+
+      adManager.amznads = {
+        setTargetingForGPTAsync: sinon.spy(),
+      };
+
+      domElement = document.createElement('div');
+      document.body.appendChild(domElement);
+      adManager.amazonAdRefresh(domElement);
+    });
+
+    it('calls setTargetingForGPTAsync', function () {
+      expect(adManager.amznads.setTargetingForGPTAsync.calledOnce).to.be.true;
+    });
+
+    it('calls refreshAds', function () {
+      expect(adManager.refreshAds.calledWith(domElement)).to.be.true;
+    });
+
+    it('clears targeting', function () {
+      var expected = adManager.googletag.pubads().clearTargeting.calledOnce;
+      expect(expected).to.be.true;
+    });
+  });
+
+  describe('#doGetAmazonAdsCallback', function () {
+    var params;
+    beforeEach(function () {
+      adManager.amznads = {
+        getAdsCallback: sinon.stub()
+      };
+      params = { id: 1, callback: function () {}, timeout: 1e4 };
+    });
+
+    it('sets lastGetAdsCallback', function () {
+      expect(adManager.amznads.lastGetAdsCallback).to.be.undefined;
+      adManager.doGetAmazonAdsCallback(params);
+      var expected = typeof adManager.amznads.lastGetAdsCallback === 'number';
+      expect(expected).to.be.true;
+    });
+
+    it('calls amazons getAdsCallback', function () {
+      adManager.doGetAmazonAdsCallback(params);
+      expect(adManager.amznads.getAdsCallback.calledOnce).to.be.true;
+    });
+  });
+
+  describe('#amazonAdRefreshThrottled', function () {
+    var params, clock;
+
+    beforeEach(function () {
+      adManager.amznads = {
+        getAdsCallback: sinon.stub(),
+        ads: { key: 'value' }
+      };
+      params = { id: 1, callback: sinon.stub(), timeout: 1e4 };
+    });
+
+    it('clears previous bids from amznads', function () {
+      adManager.amazonAdRefreshThrottled(params);
+      var expected = JSON.stringify(adManager.amznads.ads) === '{}';
+      expect(expected).to.be.true;
+    });
+
+    context('calls doGetAmazonAdsCallback if lastGetAdsCallback', function () {
+      it('is undefined', function () {
+        adManager.amazonAdRefreshThrottled(params);
+        expect(adManager.amznads.getAdsCallback.calledOnce).to.be.true;
+      });
+
+      it('is more than 10 seconds old', function () {
+        clock = sinon.useFakeTimers(2e4);
+        adManager.amznads.lastGetAdsCallback = 0;
+        adManager.amazonAdRefreshThrottled(params);
+        expect(adManager.amznads.getAdsCallback.calledOnce).to.be.true;
+        clock.restore();
+      });
+    });
+
+    it('calls callback lastGetAdsCallback is < 10s old', function () {
+      clock = sinon.useFakeTimers();
+      adManager.amznads.lastGetAdsCallback = 0;
+      adManager.amazonAdRefreshThrottled(params);
+      expect(adManager.amznads.getAdsCallback.calledOnce).to.be.false;
+      expect(params.callback.calledOnce).to.be.true;
+      clock.restore();
     });
   });
 

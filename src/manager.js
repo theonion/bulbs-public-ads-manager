@@ -457,17 +457,17 @@ AdManager.prototype.amazonAdRefresh = function (domElement) {
 }
 
 AdManager.prototype.doGetAmazonAdsCallback = function (params) {
-  amznads.lastGetAdsCallback = Date.now();
-  amznads.getAdsCallback(params.id, params.callback, params.timeout);
+  this.amznads.lastGetAdsCallback = Date.now();
+  this.amznads.getAdsCallback(params.id, params.callback, params.timeout);
 }
 
 AdManager.prototype.amazonAdRefreshThrottled = function (params) {
   // clear previous bids from amznads
-  amznads.ads = {};
+  this.amznads.ads = {};
 
-  if (typeof amznads.lastGetAdsCallback === 'undefined') {
+  if (typeof this.amznads.lastGetAdsCallback === 'undefined') {
     this.doGetAmazonAdsCallback(params);
-  } else if (Date.now - amznads.lastGetAdsCallback > 1e4) {
+  } else if (Date.now() - this.amznads.lastGetAdsCallback > 1e4) {
     this.doGetAmazonAdsCallback(params);
   } else {
     params.callback.call();
