@@ -442,9 +442,10 @@ AdManager.prototype.refreshSlot = function(domElement) {
     params = {
       id: this.amazonId,
       callback: this.amazonAdRefresh.bind(this, domElement),
-      timeout: 5e2
+      timeout: 500
     };
     this.amazonAdRefreshThrottled(params);
+    amznads.lastGetAdsCallback = Date.now();
   } else {
     this.refreshAds(domElement);
   }
@@ -467,6 +468,7 @@ AdManager.prototype.amazonAdRefreshThrottled = function (params) {
 
   if (typeof this.amznads.lastGetAdsCallback === 'undefined') {
     this.doGetAmazonAdsCallback(params);
+  // returns true if amznads.lastGetAdsCallback was updated > 10 seconds ago
   } else if (Date.now() - this.amznads.lastGetAdsCallback > 1e4) {
     this.doGetAmazonAdsCallback(params);
   } else {
