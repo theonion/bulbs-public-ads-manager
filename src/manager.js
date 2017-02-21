@@ -445,7 +445,7 @@ AdManager.prototype.refreshSlot = function(domElement) {
       timeout: 500
     };
     this.amazonAdRefreshThrottled(params);
-    amznads.lastGetAdsCallback = Date.now();
+    this.amznads.lastGetAdsCallback = Date.now();
   } else {
     this.refreshAds(domElement);
   }
