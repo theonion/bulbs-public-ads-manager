@@ -452,9 +452,9 @@ AdManager.prototype.refreshSlot = function(domElement) {
 };
 
 AdManager.prototype.amazonAdRefresh = function (domElement) {
+  this.googletag.pubads().clearTargeting('amznslots');
   this.amznads.setTargetingForGPTAsync('amznslots');
   this.refreshAds(domElement);
-  this.googletag.pubads().clearTargeting('amznslots');
 }
 
 AdManager.prototype.doGetAmazonAdsCallback = function (params) {
@@ -463,9 +463,6 @@ AdManager.prototype.doGetAmazonAdsCallback = function (params) {
 }
 
 AdManager.prototype.amazonAdRefreshThrottled = function (params) {
-  // clear previous bids from amznads
-  this.amznads.ads = {};
-
   if (typeof this.amznads.lastGetAdsCallback === 'undefined') {
     this.doGetAmazonAdsCallback(params);
   // returns true if amznads.lastGetAdsCallback was updated > 10 seconds ago
