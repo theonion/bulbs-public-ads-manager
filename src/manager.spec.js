@@ -1058,17 +1058,8 @@ describe('AdManager', function() {
     var params, clock;
 
     beforeEach(function () {
-      adManager.amznads = {
-        getAdsCallback: sinon.stub(),
-        ads: { key: 'value' }
-      };
+      adManager.amznads = { getAdsCallback: sinon.stub() };
       params = { id: 1, callback: sinon.stub(), timeout: 1e4 };
-    });
-
-    it('clears previous bids from amznads', function () {
-      adManager.amazonAdRefreshThrottled(params);
-      var expected = JSON.stringify(adManager.amznads.ads) === '{}';
-      expect(expected).to.be.true;
     });
 
     context('calls doGetAmazonAdsCallback if lastGetAdsCallback', function () {
