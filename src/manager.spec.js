@@ -6,6 +6,7 @@ describe('AdManager', function() {
     AdManagerWrapper = require('./manager');
     window.googletag = new MockGoogleTag();
 
+    window.Bulbs = { settings: { AMAZON_A9_ID: '1234' } };
     window.TARGETING = {
       dfp_site: 'onion',
       dfp_pagetype: 'homepage'
@@ -110,6 +111,7 @@ describe('AdManager', function() {
       TestHelper.stub(adManager, 'initBaseTargeting');
       TestHelper.stub(adManager, 'loadAds');
       TestHelper.stub(adManager.googletag, 'enableServices');
+      sinon.stub(adManager, 'initAmazonA9');
       adManager.initialized = false;
       adManager.initGoogleTag();
     });
@@ -152,6 +154,30 @@ describe('AdManager', function() {
 
     it('loads ads initially', function() {
       expect(adManager.loadAds.calledOnce).to.be.true;
+    });
+
+    it('calls initAmazonA9 by default', function () {
+      expect(adManager.initAmazonA9.calledOnce).to.be.true;
+    });
+
+    it('no call to initAmazonA9 if parameter amazonEnalbed is false', function() {
+      expect(adManager.initAmazonA9.calledOnce).to.be.true;
+      adManager.options.amazonEnabled = false;
+      adManager.initGoogleTag();
+      expect(adManager.initAmazonA9.calledTwice).to.be.false;
+    });
+  });
+
+  describe('#initAmazonA9', function () {
+    beforeEach(function() {
+      TestHelper.stub(console, 'log');
+    });
+
+    it('logs error if amznands is not defined', function () {
+      adManager.initAmazonA9();
+      var logMessage = 'bulbs-public-ads-manager: amznads is not defined';
+      expect(console.log.calledWith(logMessage)).to.be.true;
+      expect(adManager.amznads).to.be.false;
     });
   });
 
@@ -698,6 +724,7 @@ describe('AdManager', function() {
     beforeEach(function() {
       adManager.paused = false;
       adManager.initialized = true;
+      adManager.options.amazonEnabled = false;
 
       TestHelper.stub(adManager.googletag, 'pubads').returns({
         collapseEmptyDivs: sinon.spy(),
@@ -749,6 +776,7 @@ describe('AdManager', function() {
       };
 
       TestHelper.spyOn(adManager, 'configureAd');
+      TestHelper.stub(adManager, 'refreshSlot');
     });
 
     afterEach(function() {
@@ -758,8 +786,7 @@ describe('AdManager', function() {
     context('with wrapper tag', function() {
       beforeEach(function() {
         window.index_headertag_lightspeed = {
-          slotDisplay: sinon.stub(),
-          slotRefresh: sinon.stub()
+          slotDisplay: sinon.stub()
         };
         adManager.loadAds();
       });
@@ -775,8 +802,10 @@ describe('AdManager', function() {
       });
 
       it('triggers refresh of each slot through wrapper tag', function() {
-        expect(adManager.googletag.pubads().refresh.called).to.be.false;
-        expect(window.index_headertag_lightspeed.slotRefresh.callCount).to.equal(3);
+        expect(adManager.refreshSlot.callCount).to.equal(3);
+        expect(adManager.refreshSlot.calledWith(adSlot1)).to.be.true;
+        expect(adManager.refreshSlot.calledWith(adSlot2)).to.be.true;
+        expect(adManager.refreshSlot.calledWith(adSlot3)).to.be.true;
       });
     });
 
@@ -883,6 +912,7 @@ describe('AdManager', function() {
 
     context('no ads loaded', function() {
       beforeEach(function() {
+        adManager.refreshSlot.reset();
         adManager.loadAds();
       });
 
@@ -901,15 +931,9 @@ describe('AdManager', function() {
       });
 
       it('triggers refresh of each slot', function() {
-        expect(adManager.googletag.pubads().refresh.args[0][0][0].element).to.eql(adSlot1);
-        expect(adManager.googletag.pubads().refresh.args[1][0][0].element).to.eql(adSlot2);
-        expect(adManager.googletag.pubads().refresh.args[2][0][0].element).to.eql(adSlot3);
-      });
-
-      it('sets the state of each to `loading`', function() {
-        expect($(adSlot1).attr('data-ad-load-state')).to.equal('loading');
-        expect($(adSlot2).attr('data-ad-load-state')).to.equal('loading');
-        expect($(adSlot3).attr('data-ad-load-state')).to.equal('loading');
+        expect(adManager.refreshSlot.calledWith(adSlot1));
+        expect(adManager.refreshSlot.calledWith(adSlot2));
+        expect(adManager.refreshSlot.calledWith(adSlot3));
       });
     });
 
@@ -932,13 +956,138 @@ describe('AdManager', function() {
       });
 
       it('triggers refresh of non-loaded slots', function() {
-        expect(adManager.googletag.pubads().refresh.args[0][0][0].element).to.eql(adSlot2);
-        expect(adManager.googletag.pubads().refresh.args[1][0][0].element).to.eql(adSlot3);
+        expect(adManager.refreshSlot.calledWith(adSlot1)).to.be.false;
+        expect(adManager.refreshSlot.calledWith(adSlot2)).to.be.true;
+        expect(adManager.refreshSlot.calledWith(adSlot3)).to.be.true;
       });
     });
   });
 
   describe('#refreshSlot', function() {
+    var domElement, getAdsCallback;
+    beforeEach(function () {
+      TestHelper.stub(adManager, 'refreshAds');
+      TestHelper.stub(adManager.googletag, 'pubads').returns({
+        clearTargeting: sinon.spy(),
+      });
+      TestHelper.stub(adManager, 'amazonAdRefreshThrottled');
+
+      getAdsCallback = function () {};
+      adManager.amznads = { getAdsCallback: getAdsCallback };
+      TestHelper.stub(adManager.amznads, 'getAdsCallback');
+
+      domElement = document.createElement('div');
+      document.body.appendChild(domElement);
+    });
+
+    afterEach(function () {
+      $(domElement).remove();
+    });
+
+    context('amazonEnabled = true', function () {
+      it('calls getAds callback', function () {
+        adManager.refreshSlot(domElement);
+        expect(adManager.amazonAdRefreshThrottled.calledOnce).to.be.true;
+      });
+
+    });
+
+    context('amazonEnabled = false', function () {
+      it('calls refreshAds', function () {
+        adManager.options.amazonEnabled = false;
+        adManager.refreshSlot(domElement);
+        expect(adManager.refreshAds.calledOnce).to.be.true;
+      });
+    });
+  });
+
+  describe('#amazonAdRefresh', function () {
+    var domElement;
+    beforeEach(function () {
+      TestHelper.stub(adManager, 'refreshAds');
+      TestHelper.stub(adManager.googletag, 'pubads').returns({
+        clearTargeting: sinon.spy(),
+      });
+
+      adManager.amznads = {
+        setTargetingForGPTAsync: sinon.spy(),
+      };
+
+      domElement = document.createElement('div');
+      document.body.appendChild(domElement);
+      adManager.amazonAdRefresh(domElement);
+    });
+
+    it('calls setTargetingForGPTAsync', function () {
+      expect(adManager.amznads.setTargetingForGPTAsync.calledOnce).to.be.true;
+    });
+
+    it('calls refreshAds', function () {
+      expect(adManager.refreshAds.calledWith(domElement)).to.be.true;
+    });
+
+    it('clears targeting', function () {
+      var expected = adManager.googletag.pubads().clearTargeting.calledOnce;
+      expect(expected).to.be.true;
+    });
+  });
+
+  describe('#doGetAmazonAdsCallback', function () {
+    var params;
+    beforeEach(function () {
+      adManager.amznads = {
+        getAdsCallback: sinon.stub()
+      };
+      params = { id: 1, callback: function () {}, timeout: 1e4 };
+    });
+
+    it('sets lastGetAdsCallback', function () {
+      expect(adManager.amznads.lastGetAdsCallback).to.be.undefined;
+      adManager.doGetAmazonAdsCallback(params);
+      var expected = typeof adManager.amznads.lastGetAdsCallback === 'number';
+      expect(expected).to.be.true;
+    });
+
+    it('calls amazons getAdsCallback', function () {
+      adManager.doGetAmazonAdsCallback(params);
+      expect(adManager.amznads.getAdsCallback.calledOnce).to.be.true;
+    });
+  });
+
+  describe('#amazonAdRefreshThrottled', function () {
+    var params, clock;
+
+    beforeEach(function () {
+      adManager.amznads = { getAdsCallback: sinon.stub() };
+      params = { id: 1, callback: sinon.stub(), timeout: 1e4 };
+    });
+
+    context('calls doGetAmazonAdsCallback if lastGetAdsCallback', function () {
+      it('is undefined', function () {
+        adManager.amazonAdRefreshThrottled(params);
+        expect(adManager.amznads.getAdsCallback.calledOnce).to.be.true;
+      });
+
+      it('is more than 10 seconds old', function () {
+        clock = sinon.useFakeTimers(2e4);
+        adManager.amznads.lastGetAdsCallback = 0;
+        adManager.amazonAdRefreshThrottled(params);
+        expect(adManager.amznads.getAdsCallback.calledOnce).to.be.true;
+        clock.restore();
+      });
+    });
+
+    it('calls callback lastGetAdsCallback is < 10s old', function () {
+      clock = sinon.useFakeTimers();
+      adManager.amznads.lastGetAdsCallback = 0;
+      adManager.amazonAdRefreshThrottled(params);
+      expect(adManager.amznads.getAdsCallback.calledOnce).to.be.false;
+      expect(params.callback.calledOnce).to.be.true;
+      clock.restore();
+    });
+  });
+
+  describe('#refreshAds', function() {
     var baseContainer, container1, adSlot1, ads, stubSlot;
 
     beforeEach(function() {
@@ -953,6 +1102,7 @@ describe('AdManager', function() {
       adSlot1.className = 'dfp';
       container1.appendChild(adSlot1);
       baseContainer.appendChild(container1);
+      adManager.options.amazonEnabled = false;
 
       document.body.appendChild(baseContainer);
 
@@ -964,7 +1114,6 @@ describe('AdManager', function() {
         'dfp-ad-1': stubSlot
       };
 
-      adManager.refreshSlot(adSlot1);
     });
 
     afterEach(function() {
@@ -972,6 +1121,7 @@ describe('AdManager', function() {
     });
 
     it('loads the DFP slot matching up with the DOM element id', function() {
+      adManager.refreshAds(adSlot1);
       expect(adManager.refreshSlots.calledWith([stubSlot], [adSlot1])).to.be.true;
     });
   });

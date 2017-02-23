@@ -176,6 +176,7 @@ AdUnits.units = {
 
   'sidebar-primary': {
     'slotName': 'sidebar-primary',
+    'refreshDisabled': true,
     'sizes': [
       [[1000, 0], [300, 250]],
       [[0, 0], []]

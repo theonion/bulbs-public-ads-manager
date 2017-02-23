@@ -11,6 +11,7 @@ var AdManager = function(options) {
     resizeTimeout: null,
     debug: false,
     dfpId: 4246,
+    amazonEnabled: true,
   };
   var options = options || {};
 
@@ -22,6 +23,8 @@ var AdManager = function(options) {
   this.oldViewportWidth = window.document.body.clientWidth;
   this.targeting = global.TARGETING;
   this.options = utils.extend(defaultOptions, options);
+  this.amazonId = window.Bulbs.settings.AMAZON_A9_ID;
+
 
   this.bindContext();
 
@@ -84,11 +87,35 @@ AdManager.prototype.initGoogleTag = function() {
   this.googletag.pubads().addEventListener('slotOnload', adManager.onSlotOnload);
 
   this.initBaseTargeting();
+  if (this.options.amazonEnabled) {
+    this.initAmazonA9();
+  }
 
   this.initialized = true;
 
   this.loadAds();
 };
+
+/**
+ * initializes A9
+ *
+ * @returns undefined
+*/
+AdManager.prototype.initAmazonA9 = function() {
+  try {
+    this.amznads = amznads;
+  } catch(e) {
+    if(e.name == "ReferenceError") {
+      this.amznads = false;
+      console.log('bulbs-public-ads-manager: amznads is not defined');
+    }
+  }
+  if(this.amznads) {
+    this.amznads.getAds(this.amazonId);
+    this.amznads.setTargetingForGPTAsync('amznslots');
+  }
+};
+
 
 /**
  * Sets global targeting regardless of ad slot based on the `TARGETING` global on each site
@@ -373,7 +400,6 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
     return;
   }
 
-  var slotsToLoad = [];
   var ads = this.findAds(element);
 
   if (!this.googletag.pubadsReady) {
@@ -393,10 +419,6 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
 
     var slot = this.configureAd(thisEl);
 
-    if (slot) {
-      slotsToLoad.push(slot);
-    }
-
     if (typeof window.index_headertag_lightspeed === 'undefined') {
       this.googletag.display(thisEl.id);
     } else {
@@ -404,8 +426,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
     }
 
     if (slot.eagerLoad) {
-      thisEl.setAttribute('data-ad-load-state', 'loading');
-      this.refreshSlots([slot], ads);
+      this.refreshSlot(thisEl);
     }
   }
 };
@@ -417,18 +438,40 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
  * @returns undefined
 */
 AdManager.prototype.refreshSlot = function(domElement) {
-  if ((domElement.getAttribute('data-ad-load-state') === 'loaded') || (domElement.getAttribute('data-ad-load-state') === 'loading')) {
-    return;
-  }
-
-  var slot = this.slots[domElement.id];
-  var ads = this.findAds(domElement);
-
-  if (slot) {
-    domElement.setAttribute('data-ad-load-state', 'loading');
-    this.refreshSlots([slot], ads);
+  if (this.options.amazonEnabled && this.amznads) {
+    params = {
+      id: this.amazonId,
+      callback: this.amazonAdRefresh.bind(this, domElement),
+      timeout: 500
+    };
+    this.amazonAdRefreshThrottled(params);
+    this.amznads.lastGetAdsCallback = Date.now();
+  } else {
+    this.refreshAds(domElement);
   }
 };
+
+AdManager.prototype.amazonAdRefresh = function (domElement) {
+  this.googletag.pubads().clearTargeting('amznslots');
+  this.amznads.setTargetingForGPTAsync('amznslots');
+  this.refreshAds(domElement);
+}
+
+AdManager.prototype.doGetAmazonAdsCallback = function (params) {
+  this.amznads.lastGetAdsCallback = Date.now();
+  this.amznads.getAdsCallback(params.id, params.callback, params.timeout);
+}
+
+AdManager.prototype.amazonAdRefreshThrottled = function (params) {
+  if (typeof this.amznads.lastGetAdsCallback === 'undefined') {
+    this.doGetAmazonAdsCallback(params);
+  // returns true if amznads.lastGetAdsCallback was updated > 10 seconds ago
+  } else if (Date.now() - this.amznads.lastGetAdsCallback > 1e4) {
+    this.doGetAmazonAdsCallback(params);
+  } else {
+    params.callback.call();
+  }
+}
 
 /**
   * Uses the `cmd` async GPT queue to enqueue ad manager function to run
@@ -447,6 +490,28 @@ AdManager.prototype.asyncRefreshSlot = function(domElement) {
     this.googletag.cmd.push(function () {
       adManager.refreshSlot(domElement);
     });
+  }
+};
+
+/**
+  * Uses the `cmd` async GPT queue to enqueue ad manager function to run
+  * if the GPT API is not yet ready.  Assures slots have been configured,
+  * etc. prior to trying to make the ad request
+  *
+  * @param {domElement} DOM element containing the DFP ad slot
+  * @returns undefined
+*/
+AdManager.prototype.refreshAds = function (domElement) {
+  if ((domElement.getAttribute('data-ad-load-state') === 'loaded') || (domElement.getAttribute('data-ad-load-state') === 'loading')) {
+    return;
+  }
+
+  var slot = this.slots[domElement.id];
+  var ads = this.findAds(domElement);
+
+  if (slot) {
+    domElement.setAttribute('data-ad-load-state', 'loading');
+    this.refreshSlots([slot], ads);
   }
 };
 
