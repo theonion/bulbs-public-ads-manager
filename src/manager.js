@@ -103,17 +103,14 @@ AdManager.prototype.initGoogleTag = function() {
 */
 AdManager.prototype.initAmazonA9 = function() {
   try {
-    amznads.apiReady;
+    this.amznads = amznads;
+    this.amznads.getAds(this.amazonId);
+    this.amznads.setTargetingForGPTAsync('amznslots');
   } catch(e) {
     if(e.name == "ReferenceError") {
       this.amznads = false;
       console.log('bulbs-public-ads-manager: amznads is not defined');
     }
-  }
-  if(this.amznads) {
-    this.amznads = amznads;
-    this.amznads.getAds(this.amazonId);
-    this.amznads.setTargetingForGPTAsync('amznslots');
   }
 };
 
