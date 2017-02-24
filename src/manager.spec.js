@@ -169,15 +169,28 @@ describe('AdManager', function() {
   });
 
   describe('#initAmazonA9', function () {
+    var sandbox;
+    var getAds;
+    var setTargetingForGPTAsync;
+
     beforeEach(function() {
-      TestHelper.stub(console, 'log');
+      sandbox = sinon.sandbox.create();
+      adManager.amznads = {
+        getAds: function () {},
+        setTargetingForGPTAsync: function () {}
+      };
+      sandbox.stub(adManager.amznads, 'getAds');
+      sandbox.stub(adManager.amznads, 'setTargetingForGPTAsync');
     });
 
-    it('logs error if amznands is not defined', function () {
+    afterEach(function() {
+      sandbox.restore();
+    });
+
+    it('no call to amznads functions if amznads is undefined', function () {
       adManager.initAmazonA9();
-      var logMessage = 'bulbs-public-ads-manager: amznads is not defined';
-      expect(console.log.calledWith(logMessage)).to.be.true;
-      expect(adManager.amznads).to.be.false;
+      expect(adManager.amznads.getAds.called).to.be.false;
+      expect(adManager.amznads.setTargetingForGPTAsync.called).to.be.false;
     });
   });
 

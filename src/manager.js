@@ -102,15 +102,10 @@ AdManager.prototype.initGoogleTag = function() {
  * @returns undefined
 */
 AdManager.prototype.initAmazonA9 = function() {
-  try {
+  if (typeof amzanads !== "undefined"  && amznads.apiReady) {
     this.amznads = amznads;
     this.amznads.getAds(this.amazonId);
     this.amznads.setTargetingForGPTAsync('amznslots');
-  } catch(e) {
-    if(e.name == "ReferenceError") {
-      this.amznads = false;
-      console.log('bulbs-public-ads-manager: amznads is not defined');
-    }
   }
 };
 
