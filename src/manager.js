@@ -102,7 +102,7 @@ AdManager.prototype.initGoogleTag = function() {
  * @returns undefined
 */
 AdManager.prototype.initAmazonA9 = function() {
-  if (typeof amzanads !== "undefined"  && amznads.apiReady) {
+  if (typeof amznads !== "undefined"  && amznads.apiReady) {
     this.amznads = amznads;
     this.amznads.getAds(this.amazonId);
     this.amznads.setTargetingForGPTAsync('amznslots');
