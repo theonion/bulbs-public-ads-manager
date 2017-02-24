@@ -103,7 +103,7 @@ AdManager.prototype.initGoogleTag = function() {
 */
 AdManager.prototype.initAmazonA9 = function() {
   try {
-    this.amznads = amznads;
+    amznads.apiReady;
   } catch(e) {
     if(e.name == "ReferenceError") {
       this.amznads = false;
@@ -111,6 +111,7 @@ AdManager.prototype.initAmazonA9 = function() {
     }
   }
   if(this.amznads) {
+    this.amznads = amznads;
     this.amznads.getAds(this.amazonId);
     this.amznads.setTargetingForGPTAsync('amznslots');
   }
