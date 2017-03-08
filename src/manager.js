@@ -1,6 +1,5 @@
 require('./dfp');
 var utils = require('./utils');
-var adUnits = require('./ad-units');
 
 var ERROR = 'error';
 var TABLE = 'table';
@@ -15,7 +14,7 @@ var AdManager = function(options) {
   };
   var options = options || {};
 
-  this.adUnits = adUnits;
+  this.adUnits = options.adUnits;
   this.slots = {};
   this.adId = 0;
   this.initialized = false;
@@ -161,8 +160,8 @@ AdManager.prototype.onSlotRenderEnded = function(event) {
     element.setAttribute('data-ad-load-state', 'empty');
   } else {
 
-    if (adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
-      adUnits.units[element.dataset.adUnit].onSlotRenderEnded(event, element);
+    if (this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
+      this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded(event, element);
     }
 
     element.setAttribute('data-ad-load-state', 'loaded');

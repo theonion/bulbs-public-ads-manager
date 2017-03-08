@@ -58,23 +58,9 @@ var AdUnits = {
     }, this.toggleDelay);
   },
 
-  isKargo: function(e) {
-    var re = new RegExp(/kargo/);
-    var slot = e.slot.L;
-    if (re.test(slot) || e.lineItemId === 356279568 || e.lineItemId === 336705048) {
-      return true;
-    } else {
-      return false;
-    }
-  },
-
   setupMobileSlotClasses: function(e, el) {
     var parent = el.parentElement;
     utils.addClass(parent, 'mobile');
-
-    if (AdUnits.isKargo(e)) {
-      utils.addClass(parent, 'kargo');
-    }
   },
 
   handleMobileHeaderSlot: function(e, el) {

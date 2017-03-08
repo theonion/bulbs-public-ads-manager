@@ -1,9 +1,10 @@
 describe('AdManager', function() {
-  var AdManager, AdManagerWrapper, adManager;
+  var AdManager, AdManagerWrapper, adManager, adUnits;
   var MockGoogleTag = require('mock_google_tag');
 
   beforeEach(function() {
     AdManagerWrapper = require('./manager');
+    adUnits = require('./ad-units');
     window.googletag = new MockGoogleTag();
 
     window.Bulbs = { settings: { AMAZON_A9_ID: '1234' } };
@@ -13,7 +14,8 @@ describe('AdManager', function() {
     };
 
     adManager = AdManagerWrapper.init({
-      dfpSiteCode: 'fmg.onion'
+      dfpSiteCode: 'fmg.onion',
+      adUnits: adUnits
     });
     adManager.googletag.cmd = [];
   });
@@ -48,7 +50,8 @@ describe('AdManager', function() {
       it('allows override of defaults', function() {
         adManager = AdManagerWrapper.init({
           doReloadOnResize: false,
-          dfpSiteCode: 'fmg.onion'
+          dfpSiteCode: 'fmg.onion',
+          adUnits: adUnits
          });
         expect(adManager.options.doReloadOnResize).to.be.false;
       });
@@ -58,7 +61,8 @@ describe('AdManager', function() {
       beforeEach(function() {
         adManager.googletag.cmd = [];
         adManager = AdManagerWrapper.init({
-          dfpSiteCode: 'fmg.onion'
+          dfpSiteCode: 'fmg.onion',
+          adUnits: adUnits
         });
         TestHelper.stub(adManager, 'initGoogleTag');
         // Call the anonymous function pushed onto the async cmd array

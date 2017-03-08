@@ -6,7 +6,7 @@ describe('Ad Units', function() {
 
     beforeEach(function() {
       parentAdElement = document.createElement('div');
-      parentAdElement.className = 'pinned mobile kargo page-push super-hero';
+      parentAdElement.className = 'pinned mobile page-push super-hero';
       parentAdElement.style.height = '10px';
       $('body').append(parentAdElement);
       adUnits.resetClasses(parentAdElement);
@@ -22,10 +22,6 @@ describe('Ad Units', function() {
 
     it('removes `mobile` class', function() {
       expect($(parentAdElement).hasClass('mobile')).to.be.false;
-    });
-
-    it('removes `kargo` class', function() {
-      expect($(parentAdElement).hasClass('kargo')).to.be.false;
     });
 
     it('removes `page-push` class', function() {
@@ -196,36 +192,6 @@ describe('Ad Units', function() {
 
       it('adds the `mobile` class to the parent', function() {
         expect($(parentAdElement).hasClass('mobile')).to.be.true;
-      });
-    });
-
-    describe('kargo unit', function() {
-      beforeEach(function() {
-        var e = {
-          slot: {
-            L: 'something-kargo-something'
-          }
-        };
-        adUnits.setupMobileSlotClasses(e, adElement);
-      });
-
-      it('adds `kargo` class to the parent', function() {
-        expect($(parentAdElement).hasClass('kargo')).to.be.true;
-      });
-    });
-
-    describe('non-kargo unit', function() {
-      beforeEach(function() {
-        var e = {
-          slot: {
-            L: ''
-          }
-        };
-        adUnits.setupMobileSlotClasses(e, parentAdElement);
-      });
-
-      it('does not add kargo class', function() {
-        expect($(parentAdElement).hasClass('kargo')).to.be.false;
       });
     });
   });
