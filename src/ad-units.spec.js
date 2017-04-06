@@ -198,36 +198,6 @@ describe('Ad Units', function() {
         expect($(parentAdElement).hasClass('mobile')).to.be.true;
       });
     });
-
-    describe('kargo unit', function() {
-      beforeEach(function() {
-        var e = {
-          slot: {
-            L: 'something-kargo-something'
-          }
-        };
-        adUnits.setupMobileSlotClasses(e, adElement);
-      });
-
-      it('adds `kargo` class to the parent', function() {
-        expect($(parentAdElement).hasClass('kargo')).to.be.true;
-      });
-    });
-
-    describe('non-kargo unit', function() {
-      beforeEach(function() {
-        var e = {
-          slot: {
-            L: ''
-          }
-        };
-        adUnits.setupMobileSlotClasses(e, parentAdElement);
-      });
-
-      it('does not add kargo class', function() {
-        expect($(parentAdElement).hasClass('kargo')).to.be.false;
-      });
-    });
   });
 
   describe('#handleMobileHeaderSlot', function() {
