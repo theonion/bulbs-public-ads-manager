@@ -210,7 +210,7 @@ AdManager.prototype.generateId = function() {
  * @returns true if it has the 'dfp' class, false otherwise
 */
 AdManager.prototype.isAd = function (element) {
-  return !!utils.hasClass(element, 'dfp');
+  return !!element.classList.contains('dfp');
 };
 
 /**

@@ -1,16 +1,14 @@
 'use strict';
 
-var utils = require('./utils');
-
 var AdUnits = {
   toggleDelay: 6000,
 
   resetClasses: function(parent) {
-    utils.removeClass(parent, 'pinned');
-    utils.removeClass(parent, 'mobile');
-    utils.removeClass(parent, 'kargo');
-    utils.removeClass(parent, 'page-push');
-    utils.removeClass(parent, 'super-hero');
+    parent.classList.remove('pinned');
+    parent.classList.remove('mobile');
+    parent.classList.remove('kargo');
+    parent.classList.remove('page-push');
+    parent.classList.remove('super-hero');
     parent.style.height = '';
   },
 
@@ -18,9 +16,9 @@ var AdUnits = {
     var toggleButton = document.createElement('div');
     toggleButton.className = 'toggle-btn open';
     this.delayAdToggle(adElement, toggleButton);
-    utils.addClass(adElement.parentElement, 'pinned');
-    utils.addClass(adElement.parentElement, 'open');
-    utils.addClass(adElement.parentElement, 'hide-toggle-btn');
+    adElement.parentElement.classList.add('pinned');
+    adElement.parentElement.classList.add('open');
+    adElement.parentElement.classList.add('hide-toggle-btn');
     adElement.parentElement.appendChild(toggleButton);
   },
 
@@ -37,16 +35,17 @@ var AdUnits = {
     var closedClass = 'closed';
     var toggleButton = adElement.nextElementSibling;
 
-    if (utils.hasClass(toggleButton, 'open')) {
-      utils.removeClass(toggleButton, openedClass);
-      utils.removeClass(adElement.parentElement, openedClass);
-      utils.addClass(toggleButton, closedClass);
-      utils.addClass(adElement.parentElement, closedClass);
+    if (toggleButton.classList.contains('open')) {
+      toggleButton.classList.remove(openedClass);
+      adElement.parentElement.classList.remove(openedClass);
+      toggleButton.classList.add(closedClass);
+      adElement.parentElement.classList.add(closedClass);
     } else {
-      utils.removeClass(toggleButton, closedClass);
-      utils.removeClass(adElement.parentElement, closedClass);
-      utils.addClass(toggleButton, openedClass);
-      utils.addClass(adElement.parentElement, openedClass);
+      toggleButton.classList.remove(closedClass);
+      adElement.parentElement.classList.remove(closedClass);
+
+      toggleButton.classList.add(openedClass);
+      adElement.parentElement.classList.add(openedClass);
     }
   },
 
@@ -54,19 +53,20 @@ var AdUnits = {
     setTimeout(function() {
       AdUnits.toggleAd(adElement);
       AdUnits.initToggleHandler(adElement, toggleButton);
-      utils.removeClass(adElement.parentElement, 'hide-toggle-btn');
+      adElement.parentElement.classList.remove('hide-toggle-btn');
     }, this.toggleDelay);
   },
 
   setupMobileSlotClasses: function(e, el) {
     var parent = el.parentElement;
-    utils.addClass(parent, 'mobile');
+    parent.classList.add('mobile');
   },
 
   handleMobileHeaderSlot: function(e, el) {
     var parent = el.parentElement;
     AdUnits.makeAdTogglable(el);
-    if (!utils.hasClass(parent, 'header-wrapper')) {
+
+    if (!parent.classList.contains('header-wrapper')) {
       return;
     }
 
@@ -78,13 +78,13 @@ var AdUnits = {
   },
 
   handlePagePushHeaderSlot: function(e, el) {
-    utils.addClass(el.parentElement, 'page-push');
+    el.parentElement.classList.add('page-push');
 
     var dfpContainer = document.getElementById(e.slot.getSlotElementId());
     var adIframe = dfpContainer.getElementsByTagName('iframe');
     var iframe = adIframe[0];
     var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    utils.removeClass(dfpContainer, 'collapsed');
+    dfpContainer.classList.remove('collapsed');
 
     if (iframeDoc.readyState === 'complete') {
       AdUnits.prepPagePushIframe(dfpContainer, iframe);
@@ -94,7 +94,7 @@ var AdUnits = {
   },
 
   handleSuperHeroHeaderSlot: function(e, el) {
-    utils.addClass(el.parentElement, 'super-hero');
+    el.parentElement.classList.add('super-hero');
 
     var height = document.documentElement.clientHeight - 175;
     if (height > 720) {
@@ -107,11 +107,11 @@ var AdUnits = {
     var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
 
     iframeDoc.addEventListener('PagePush:Expand', function() {
-      utils.removeClass(dfpContainer, 'collapsed');
+      dfpContainer.classList.remove('collapsed');
     });
 
     iframeDoc.addEventListener('PagePush:Collapse', function () {
-      utils.addClass(dfpContainer, 'collapsed');
+      dfpContainer.classList.add('collapsed');
     });
   },
 
