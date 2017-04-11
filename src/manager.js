@@ -14,7 +14,6 @@ var AdManager = function(options) {
     amazonEnabled: true,
   };
   var options = options || {};
-
   this.adUnits = adUnits;
   this.slots = {};
   this.adId = 0;
