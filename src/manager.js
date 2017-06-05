@@ -478,9 +478,11 @@ AdManager.prototype.asyncRefreshSlot = function(domElement) {
   var adManager = this;
 
   if (this.googletag.apiReady) {
+    this.googletag.pubads().updateCorrelator();
     this.refreshSlot(domElement);
   } else {
     this.googletag.cmd.push(function () {
+      adManager.googletag.pubads().updateCorrelator();
       adManager.refreshSlot(domElement);
     });
   }
