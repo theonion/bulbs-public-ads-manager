@@ -162,7 +162,7 @@ AdUnits.units = {
 
   'kinja-native': {
 		'slotName': 'kinja-native',
-		'size': [
+		'sizes': [
 			[[728, 0], [[728, 150]]],
 			[[0, 0], []]
 		]
