@@ -211,7 +211,7 @@ AdUnits.units = {
   'horizontal-secondary': {
     'slotName': 'horizontal-secondary',
     'sizes': [
-      [[728, 0], [[728, 90]]],
+      [[728, 0], [[728, 90], [728, 150]]],
       [[0, 0], [[320, 50]]]
     ]
   },
