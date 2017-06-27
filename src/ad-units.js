@@ -168,6 +168,14 @@ AdUnits.units = {
 		]
   },
 
+  'kinja-native-inread': {
+    'slotName': 'kinja-native-inread',
+    'sizes': [
+      [[728, 0], []],
+      [[0,0], [[1,1], [300,250]]]
+    ]
+  },
+
   'sidebar-primary': {
     'slotName': 'sidebar-primary',
     'refreshDisabled': true,
