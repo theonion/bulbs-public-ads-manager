@@ -203,7 +203,7 @@ AdUnits.units = {
   'non-mobile-leaderboard': {
     'slotName': 'horizontal-secondary',
     'sizes': [
-      [[728, 0], [728, 90]],
+      [[728, 0], [728, 90], [728, 150]],
       [[0, 0], []]
     ]
   },
