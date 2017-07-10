@@ -22,7 +22,10 @@ var AdManager = function(options) {
   this.oldViewportWidth = window.document.body.clientWidth;
   this.targeting = global.TARGETING;
   this.options = utils.extend(defaultOptions, options);
-  this.amazonId = window.Bulbs.settings.AMAZON_A9_ID;
+
+  if (this.options.amazonEnabled) {
+    this.amazonId = window.Bulbs.settings.AMAZON_A9_ID;
+  }
 
 
   this.bindContext();
