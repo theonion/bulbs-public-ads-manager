@@ -163,7 +163,7 @@ AdUnits.units = {
   'kinja-native': {
 		'slotName': 'kinja-native',
 		'sizes': [
-			['fluid'],
+			['fluid', 'fluid'],
 			[[0, 0], []]
 		]
   },
@@ -171,7 +171,7 @@ AdUnits.units = {
   'kinja-native-inread': {
     'slotName': 'kinja-native-inread',
     'sizes': [
-      ['fluid'],
+      ['fluid', 'fluid'],
       [[0,0], []]
     ]
   },
