@@ -4,8 +4,8 @@
   "description": "Do not install via npm.",
   "private": false,
   "scripts": {
-    "test": "./node_modules/.bin/karma start karma.conf.js",
-    "lint": "./node_modules/.bin/eslint src resources"
+    "test": "karma start karma.conf.js",
+    "lint": "eslint src resources"
   },
   "devDependencies": {
     "browserify": "^11.0.1",
@@ -26,5 +26,17 @@
     "mocha": "^2.2.5",
     "sinon": "^1.16.0",
     "watchify": "^3.7.0"
-  }
+  },
+  "main": "karma.conf.js",
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imakeinterfaces/bulbs-public-ads-manager.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/imakeinterfaces/bulbs-public-ads-manager/issues"
+  },
+  "homepage": "https://github.com/imakeinterfaces/bulbs-public-ads-manager#readme"
 }
