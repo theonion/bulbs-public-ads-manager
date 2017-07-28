@@ -24,7 +24,9 @@ var AdManager = function(options) {
   this.oldViewportWidth = window.document.body.clientWidth;
   this.targeting = global.TARGETING;
   this.options = utils.extend(defaultOptions, options);
-  this.amazonId = '3076';
+  this.amazonId = options.amazonA9ID;
+  this.enableSRA = options.enableSRA;
+  
   this.bindContext();
 
   window.addEventListener('resize', this.handleWindowResize);
@@ -76,7 +78,9 @@ AdManager.prototype.handleWindowResize = function() {
 */
 AdManager.prototype.initGoogleTag = function() {
   var adManager = this;
-  this.googletag.pubads().enableSingleRequest();
+  if (this.enableSingleRequest) {
+   this.googletag.pubads().enableSingleRequest();
+  }
   this.googletag.pubads().disableInitialLoad();
   this.googletag.pubads().enableAsyncRendering();
   this.googletag.pubads().updateCorrelator();
