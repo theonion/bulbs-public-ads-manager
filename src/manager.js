@@ -6,35 +6,35 @@ var targeting = require('./helpers/targetingPairs');
 var ERROR = 'error';
 var TABLE = 'table';
 
-var AdManager = function (options) {
-	var defaultOptions = {
-		doReloadOnResize: true,
-		resizeTimeout: null,
-		debug: false,
-		dfpId: 4246,
-		amazonEnabled: true,
-	};
-	var options = options || {};
+var AdManager = function(options) {
+  var defaultOptions = {
+    doReloadOnResize: true,
+    resizeTimeout: null,
+    debug: false,
+    dfpId: 4246,
+    amazonEnabled: true,
+  };
+  var options = options || {};
 
-	this.adUnits = adUnits;
-	this.slots = {};
-	this.adId = 0;
-	this.initialized = false;
-	this.viewportWidth = 0;
-	this.oldViewportWidth = window.document.body.clientWidth;
-	this.targeting = global.TARGETING;
-	this.options = utils.extend(defaultOptions, options);
-    this.amazonId = options.amazonA9ID;
-	this.bindContext();
+  this.adUnits = adUnits;
+  this.slots = {};
+  this.adId = 0;
+  this.initialized = false;
+  this.viewportWidth = 0;
+  this.oldViewportWidth = window.document.body.clientWidth;
+  this.targeting = global.TARGETING;
+  this.options = utils.extend(defaultOptions, options);
+  this.amazonId = options.amazonA9ID;
+  this.bindContext();
 
-	window.addEventListener('resize', this.handleWindowResize);
+  window.addEventListener('resize', this.handleWindowResize);
 
-	var adManager = this;
+  var adManager = this;
 
-	this.googletag = window.googletag;
-	this.googletag.cmd.push(function () {
-		adManager.initGoogleTag();
-	});
+  this.googletag = window.googletag;
+  this.googletag.cmd.push(function() {
+    adManager.initGoogleTag();
+  });
 };
 
 /**
@@ -149,27 +149,28 @@ AdManager.prototype.reloadAds = function(element) {
  * @param {Event} event - Event passed through the GPT library
  * @returns undefined
  */
-AdManager.prototype.onSlotRenderEnded = function (event) {
-	this.rendered = true;
+AdManager.prototype.onSlotRenderEnded = function(event) {
+  this.rendered = true;
 
-	var slotId = event.slot.getSlotId().getDomId();
-	var element = document.getElementById(slotId);
+  var slotId = event.slot.getSlotId().getDomId();
+  var element = document.getElementById(slotId);
 
-	element.style.removeProperty('height');
-	element.style.removeProperty('width');
+  element.style.removeProperty('height');
+  element.style.removeProperty('width');
 
-	if (event.isEmpty) {
-		element.setAttribute('data-ad-load-state', 'empty');
-	} else {
+  if (event.isEmpty) {
+    element.setAttribute('data-ad-load-state', 'empty');
+  } else {
 
-		if (adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
-			adUnits.units[element.dataset.adUnit].onSlotRenderEnded(event, element);
-		}
+    if (adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
+      adUnits.units[element.dataset.adUnit].onSlotRenderEnded(event, element);
+    }
 
-		element.setAttribute('data-ad-load-state', 'loaded');
-		utils.dispatchEvent(element, 'dfpSlotRenderEnded');
-	}
+    element.setAttribute('data-ad-load-state', 'loaded');
+    utils.dispatchEvent(element, 'dfpSlotRenderEnded');
+  }
 };
+
 
 /**
  * Custom callback to wrap ad slot with additional functionality
@@ -221,40 +222,42 @@ AdManager.prototype.isAd = function (element) {
  * @param {HTMLElement|String|HTMLCollection} element - element to scope the search to
  * @returns {Array} of {Element} objects representing all ad slots
 */
-AdManager.prototype.findAds = function (el) {
-	var ads = [];
+AdManager.prototype.findAds = function(el) {
+  var ads = [];
 
-	if (typeof (el) === 'string') {
-		ads = document.querySelectorAll(el);
-	} else if (el instanceof HTMLElement) {
-		if (this.isAd(el)) {
-			ads = [el];
-		} else {
-			ads = el.getElementsByClassName('dfp');
-		}
-	} else if (el instanceof HTMLCollection) {
-		for (var i = 0; i < el.length; i++) {
-			var thisEl = el[i];
-			if (this.isAd(thisEl)) {
-				ads.push(thisEl);
-			} else {
-				ads = ads.concat(thisEl.getElementsByClassName('dfp'));
-			}
-		}
-	} else {
-		ads = document.getElementsByClassName('dfp');
-	}
+  if (typeof(el) === 'string') {
+    ads = document.querySelectorAll(el);
+  } else if (el instanceof HTMLElement) {
+    if (this.isAd(el)) {
+      ads = [el];
+    } else {
+      ads = el.getElementsByClassName('dfp');
+    }
+  } else if (el instanceof HTMLCollection) {
+    for (var i = 0; i < el.length; i++) {
+      var thisEl = el[i];
+      if (this.isAd(thisEl)) {
+        ads.push(thisEl);
+      } else {
+        ads = ads.concat(thisEl.getElementsByClassName('dfp'));
+      }
+    }
+  } else {
+    ads = document.getElementsByClassName('dfp');
+  }
 
-	return ads;
+  return ads;
 };
 
-AdManager.prototype.logMessage = function (message, logLevel) {
-	if (!console) {
-		return;
-	}
+
+AdManager.prototype.logMessage = function(message, logLevel) {
+  if (!console) {
+    return;
+  }
 
   console[logLevel](message);
 };
+
 
 /**
  * Informational utility function available in debug mode, logs information
@@ -273,10 +276,11 @@ AdManager.prototype.slotInfo = function() {
   }
 };
 
+
 AdManager.prototype.setSlotTargeting = function(element, slot, standardParams) {
   var slotTargeting = {};
   for (var customKey in this.targeting) {
-    if(this.targeting[customKey]) {
+    if (this.targeting[customKey]) {
       slot.setTargeting(customKey, this.targeting[customKey].toString());
     }
   }
@@ -290,7 +294,7 @@ AdManager.prototype.setSlotTargeting = function(element, slot, standardParams) {
   }
 
   for (var customKey in slotTargeting) {
-    if(slotTargeting[customKey]) {
+    if (slotTargeting[customKey]) {
       slot.setTargeting(customKey, slotTargeting[customKey].toString());
     }
   }
@@ -426,47 +430,48 @@ AdManager.prototype.unpause = function() {
  * @param {updateCorrelator} optional flag to force an update of the correlator value
  * @returns undefined
  */
-AdManager.prototype.loadAds = function (element, updateCorrelator) {
-	if (this.paused || !this.initialized) {
-		return;
-	}
+AdManager.prototype.loadAds = function(element, updateCorrelator) {
+  if (this.paused || !this.initialized) {
+    return;
+  }
 
-	var slotsToLoad = [];
-	var ads = this.findAds(element);
+  var slotsToLoad = [];
+  var ads = this.findAds(element);
 
-	if (!this.googletag.pubadsReady) {
-		this.googletag.enableServices();
-	}
+  if (!this.googletag.pubadsReady) {
+    this.googletag.enableServices();
+  }
 
-	if (updateCorrelator) {
-		this.googletag.pubads().updateCorrelator();
-	}
+  if (updateCorrelator) {
+    this.googletag.pubads().updateCorrelator();
+  }
 
-	for (var i = 0; i < ads.length; i++) {
-		var thisEl = ads[i];
+  for (var i = 0; i < ads.length; i++) {
+    var thisEl = ads[i];
 
-		if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
-			continue;
-		}
+    if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
+      continue;
+    }
 
-		var slot = this.configureAd(thisEl);
+    var slot = this.configureAd(thisEl);
 
-		if (slot) {
-			slotsToLoad.push(slot);
-		}
+    if (slot) {
+      slotsToLoad.push(slot);
+    }
 
-		if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
-			this.googletag.display(thisEl.id);
-		} else {
-			window.headertag.display(thisEl.id);
-		}
+    if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
+      this.googletag.display(thisEl.id);
+    } else {
+      window.headertag.display(thisEl.id);
+    }
 
-		if (slot.eagerLoad) {
-			thisEl.setAttribute('data-ad-load-state', 'loading');
-			this.refreshSlots([slot], ads);
-		}
-	}
+    if (slot.eagerLoad) {
+      thisEl.setAttribute('data-ad-load-state', 'loading');
+      this.refreshSlots([slot], ads);
+    }
+  }
 };
+
 
 
 /**
@@ -539,18 +544,18 @@ AdManager.prototype.asyncRefreshSlot = function(slots) {
  * @param {domElement} DOM element containing the DFP ad slot
  * @returns undefined
  */
-AdManager.prototype.refreshAds = function (domElement) {
-	if ((domElement.getAttribute('data-ad-load-state') === 'loaded') || (domElement.getAttribute('data-ad-load-state') === 'loading')) {
-		return;
-	}
+AdManager.prototype.refreshAds = function(domElement) {
+  if ((domElement.getAttribute('data-ad-load-state') === 'loaded') || (domElement.getAttribute('data-ad-load-state') === 'loading')) {
+    return;
+  }
 
-	var slot = this.slots[domElement.id];
-	var ads = this.findAds(domElement);
+  var slot = this.slots[domElement.id];
+  var ads = this.findAds(domElement);
 
-	if (slot) {
-		domElement.setAttribute('data-ad-load-state', 'loading');
-		this.refreshSlots([slot], ads);
-	}
+  if (slot) {
+    domElement.setAttribute('data-ad-load-state', 'loading');
+    this.refreshSlots([slot], ads);
+  }
 };
 
 /**
@@ -559,23 +564,24 @@ AdManager.prototype.refreshAds = function (domElement) {
  * @param {slotsToLoad} One or many slots to fetch new ad for
  * @returns undefined
  */
-AdManager.prototype.refreshSlots = function (slotsToLoad, ads) {
-	if (slotsToLoad.length === 0) {
-		return;
-	}
+AdManager.prototype.refreshSlots = function(slotsToLoad, ads) {
+  if (slotsToLoad.length === 0) {
+    return;
+  }
 
 
-	if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
-		this.googletag.pubads().refresh(slotsToLoad, {
-			changeCorrelator: false
-		});
-	} else {
-		window.headertag = window.googletag;
-		window.headertag.pubads().refresh(slotsToLoad, {
-			changeCorrelator: false
-		});
-	}
+  if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
+    this.googletag.pubads().refresh(slotsToLoad, {
+      changeCorrelator: false
+    });
+  } else {
+    window.headertag = window.googletag;
+    window.headertag.pubads().refresh(slotsToLoad, {
+      changeCorrelator: false
+    });
+  }
 };
+
 
 /**
  * Unloads all ads
