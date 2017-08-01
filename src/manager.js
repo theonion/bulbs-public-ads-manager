@@ -1,6 +1,5 @@
 require('./dfp');
 var utils = require('./utils');
-var adUnits = require('./ad-units');
 var targeting = require('./helpers/targetingPairs');
 
 var ERROR = 'error';
@@ -16,7 +15,7 @@ var AdManager = function(options) {
   };
   var options = options || {};
 
-  this.adUnits = adUnits;
+  this.adUnits = options.adUnits;
   this.slots = {};
   this.adId = 0;
   this.initialized = false;
@@ -24,7 +23,10 @@ var AdManager = function(options) {
   this.oldViewportWidth = window.document.body.clientWidth;
   this.targeting = global.TARGETING;
   this.options = utils.extend(defaultOptions, options);
-  this.amazonId = options.amazonA9ID;
+   if (this.options.amazonEnabled) {
+     this.amazonId = options.amazonA9ID;
+   }
+
   this.bindContext();
 
   window.addEventListener('resize', this.handleWindowResize);
@@ -32,7 +34,7 @@ var AdManager = function(options) {
   var adManager = this;
 
   this.googletag = window.googletag;
-  this.googletag.cmd.push(function() {
+  this.googletag.cmd.push(function () {
     adManager.initGoogleTag();
   });
 };
@@ -42,7 +44,7 @@ var AdManager = function(options) {
  * Binds context for each event handler to always be the `AdManager` prototype
  *
  * @returns undefined;
- */
+*/
 AdManager.prototype.bindContext = function() {
   this.handleWindowResize = this.handleWindowResize.bind(this);
   this.loadAds = this.loadAds.bind(this);
@@ -55,7 +57,7 @@ AdManager.prototype.bindContext = function() {
  * Reloads ads on the page if the window was resized and the functionality is enabled
  *
  * @returns undefined;
- */
+*/
 AdManager.prototype.handleWindowResize = function() {
   if (!this.options.doReloadOnResize) {
     return;
@@ -74,7 +76,7 @@ AdManager.prototype.handleWindowResize = function() {
  * Initializes the google publisher tag and loads ads on the page
  *
  * @returns undefined
- */
+*/
 AdManager.prototype.initGoogleTag = function() {
   var adManager = this;
   this.googletag.pubads().disableInitialLoad();
@@ -99,7 +101,7 @@ AdManager.prototype.initGoogleTag = function() {
  * initializes A9
  *
  * @returns undefined
- */
+*/
 AdManager.prototype.initAmazonA9 = function() {
   if (typeof amznads !== "undefined" && amznads.apiReady) {
     this.amznads = amznads;
@@ -113,7 +115,7 @@ AdManager.prototype.initAmazonA9 = function() {
  * Sets global targeting regardless of ad slot based on the `TARGETING` global on each site
  *
  * @returns undefined
- */
+*/
 AdManager.prototype.initBaseTargeting = function() {
   var baseTargeting = targeting.getTargetingPairs().pageOptions;
   for (var customCriteriaKey in baseTargeting) {
@@ -134,7 +136,7 @@ AdManager.prototype.initBaseTargeting = function() {
  * @param {Element} element - Optional parameter if the ad refresh should be scoped to a particular container on the page
  *
  * @returns undefined
- */
+*/
 AdManager.prototype.reloadAds = function(element) {
   this.googletag.pubads().updateCorrelator();
   this.unloadAds(element);
@@ -146,7 +148,7 @@ AdManager.prototype.reloadAds = function(element) {
  *
  * @param {Event} event - Event passed through the GPT library
  * @returns undefined
- */
+*/
 AdManager.prototype.onSlotRenderEnded = function(event) {
   this.rendered = true;
 
@@ -160,9 +162,9 @@ AdManager.prototype.onSlotRenderEnded = function(event) {
     element.setAttribute('data-ad-load-state', 'empty');
   } else {
 
-    if (adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
-      adUnits.units[element.dataset.adUnit].onSlotRenderEnded(event, element);
-    }
+  if (this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
+    this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded(event, element);
+  }
 
     element.setAttribute('data-ad-load-state', 'loaded');
     utils.dispatchEvent(element, 'dfpSlotRenderEnded');
@@ -174,7 +176,7 @@ AdManager.prototype.onSlotRenderEnded = function(event) {
  *
  * @param {Event} event - Event passed through the GPT library
  * @returns undefined
- */
+*/
 AdManager.prototype.onImpressionViewable = function(event) {
   var slotId = event.slot.getSlotId().getDomId();
   var element = document.getElementById(slotId);
@@ -186,7 +188,7 @@ AdManager.prototype.onImpressionViewable = function(event) {
  *
  * @param {Event} event - Event passed through the GPT library
  * @returns undefined
- */
+*/
 AdManager.prototype.onSlotOnload = function(event) {
   var slotId = event.slot.getSlotId().getDomId();
   var element = document.getElementById(slotId);
@@ -197,7 +199,7 @@ AdManager.prototype.onSlotOnload = function(event) {
  * Generates a unique DOM id for each ad
  *.
  * @returns unique id for the ad
- */
+*/
 AdManager.prototype.generateId = function() {
   this.adId += 1;
   return 'dfp-ad-' + this.adId.toString();
@@ -208,7 +210,7 @@ AdManager.prototype.generateId = function() {
  *
  * @param {Element} element - element to test.
  * @returns true if it has the 'dfp' class, false otherwise
- */
+*/
 AdManager.prototype.isAd = function(element) {
   return !!element.classList.contains('dfp');
 };
@@ -218,7 +220,7 @@ AdManager.prototype.isAd = function(element) {
  *
  * @param {HTMLElement|String|HTMLCollection} element - element to scope the search to
  * @returns {Array} of {Element} objects representing all ad slots
- */
+*/
 AdManager.prototype.findAds = function(el) {
   var ads = [];
 
@@ -260,7 +262,7 @@ AdManager.prototype.logMessage = function(message, logLevel) {
  *
  * @param
  * @returns
- */
+*/
 AdManager.prototype.slotInfo = function() {
   for (var slotElementId in this.slots) {
     if (this.slots[slotElementId]) {
@@ -277,7 +279,7 @@ AdManager.prototype.slotInfo = function() {
  * @param {Element} element - Ad element housing ad slot
  * @param {Object} slot - Configured ad slot from the GPT
  * @returns undefined
- */
+*/
 AdManager.prototype.setSlotTargeting = function(element, slot, standardParams) {
   var slotTargeting = {};
   for (var customKey in this.targeting) {
@@ -306,7 +308,7 @@ AdManager.prototype.setSlotTargeting = function(element, slot, standardParams) {
  *
  * @param {Element} element - Ad element to configure
  * @returns {Element} - Fully configured ad slot
- */
+*/
 AdManager.prototype.configureAd = function(element) {
 
   var slotName = this.options.dfpSiteCode || "",
@@ -409,7 +411,7 @@ AdManager.prototype.configureAd = function(element) {
  *
  * @param None
  * @returns undefined
- */
+*/
 AdManager.prototype.pause = function() {
   this.paused = true;
 };
@@ -419,7 +421,7 @@ AdManager.prototype.pause = function() {
  *
  * @param None
  * @returns undefined
- */
+*/
 AdManager.prototype.unpause = function() {
   this.paused = false;
 };
@@ -430,7 +432,7 @@ AdManager.prototype.unpause = function() {
  * @param {Element} optional element to scope where to load ads in the document
  * @param {updateCorrelator} optional flag to force an update of the correlator value
  * @returns undefined
- */
+*/
 AdManager.prototype.loadAds = function(element, updateCorrelator) {
   if (this.paused || !this.initialized) {
     return;
@@ -480,7 +482,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
  *
  * @param {domElement} DOM element containing the DFP ad slot
  * @returns undefined
- */
+*/
 AdManager.prototype.refreshSlot = function(domElement) {
   var that = this;
   if (this.options.amazonEnabled && this.amznads) {
@@ -524,16 +526,16 @@ AdManager.prototype.amazonAdRefreshThrottled = function(params) {
  *
  * @param {domElement} DOM element containing the DFP ad slot
  * @returns undefined
- */
-AdManager.prototype.asyncRefreshSlot = function(slots) {
+*/
+AdManager.prototype.asyncRefreshSlot = function(domElement) {
   var adManager = this;
 
 
   if (this.googletag.apiReady) {
-    this.refreshSlot(slots);
+    this.refreshSlot(domElement);
   } else {
-    this.googletag.cmd.push(function() {
-      adManager.refreshSlot(slots);
+    this.googletag.cmd.push(function () {
+      adManager.refreshSlot(domElement);
     });
   }
 };
@@ -545,7 +547,7 @@ AdManager.prototype.asyncRefreshSlot = function(slots) {
  *
  * @param {domElement} DOM element containing the DFP ad slot
  * @returns undefined
- */
+*/
 AdManager.prototype.refreshAds = function(domElement) {
   if ((domElement.getAttribute('data-ad-load-state') === 'loaded') || (domElement.getAttribute('data-ad-load-state') === 'loading')) {
     return;
@@ -565,7 +567,7 @@ AdManager.prototype.refreshAds = function(domElement) {
  *
  * @param {slotsToLoad} One or many slots to fetch new ad for
  * @returns undefined
- */
+*/
 AdManager.prototype.refreshSlots = function(slotsToLoad, ads) {
   if (slotsToLoad.length === 0) {
     return;
@@ -590,7 +592,7 @@ AdManager.prototype.refreshSlots = function(slotsToLoad, ads) {
  *
  * @param {Element} optional element to scope where to unload ads in the document
  * @returns undefined
- */
+*/
 AdManager.prototype.unloadAds = function(element) {
   if (!this.initialized) {
     return;
