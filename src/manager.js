@@ -23,9 +23,10 @@ var AdManager = function(options) {
   this.oldViewportWidth = window.document.body.clientWidth;
   this.targeting = global.TARGETING;
   this.options = utils.extend(defaultOptions, options);
-   if (this.options.amazonEnabled) {
-     this.amazonId = options.amazonA9ID;
-   }
+
+  if (this.options.amazonEnabled) {
+    this.amazonId = options.amazonA9ID;
+  }
 
   this.bindContext();
 
@@ -162,9 +163,9 @@ AdManager.prototype.onSlotRenderEnded = function(event) {
     element.setAttribute('data-ad-load-state', 'empty');
   } else {
 
-  if (this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
-    this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded(event, element);
-  }
+    if (this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
+      this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded(event, element);
+    }
 
     element.setAttribute('data-ad-load-state', 'loaded');
     utils.dispatchEvent(element, 'dfpSlotRenderEnded');
