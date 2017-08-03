@@ -4,8 +4,8 @@
   "description": "Do not install via npm.",
   "private": false,
   "scripts": {
-    "test": "karma start karma.conf.js",
-    "lint": "eslint src resources"
+    "test": "./node_modules/.bin/karma start karma.conf.js",
+    "lint": "./node_modules/.bin/eslint src resources"
   },
   "devDependencies": {
     "browserify": "^11.0.1",
