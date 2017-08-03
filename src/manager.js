@@ -494,8 +494,6 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
   }
 };
 
-
-
 /**
  * Fetches a new ad for just single dom element
  *
@@ -514,7 +512,6 @@ AdManager.prototype.refreshSlot = function (domElement) {
     this.refreshAds(slots);
   }
 };
-
 
 AdManager.prototype.amazonAdRefresh = function (domElements) {
   this.googletag.pubads().clearTargeting('amznslots');
@@ -548,7 +545,6 @@ AdManager.prototype.amazonAdRefreshThrottled = function (params) {
 */
 AdManager.prototype.asyncRefreshSlot = function (domElement) {
   var adManager = this;
-
 
   if (this.googletag.apiReady) {
     this.refreshSlot(domElement);
