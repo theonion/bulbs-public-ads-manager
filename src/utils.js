@@ -33,13 +33,13 @@ var Utils = {
         bubbles: true,
         cancelable: true
       });
-    } catch (e) {
+    }
+    catch (e) {
       customEvent = document.createEvent('Event');
       customEvent.initEvent(eventName, true, true);
     }
     el.dispatchEvent(customEvent);
   }
-
 };
 
 module.exports = Utils;
