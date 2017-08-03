@@ -26,5 +26,17 @@
     "mocha": "^2.2.5",
     "sinon": "^1.16.0",
     "watchify": "^3.7.0"
-  }
+  },
+  "main": "karma.conf.js",
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imakeinterfaces/bulbs-public-ads-manager.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/imakeinterfaces/bulbs-public-ads-manager/issues"
+  },
+  "homepage": "https://github.com/imakeinterfaces/bulbs-public-ads-manager#readme"
 }

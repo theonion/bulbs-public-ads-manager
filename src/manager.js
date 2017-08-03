@@ -1,5 +1,6 @@
 require('./dfp');
 var utils = require('./utils');
+var targeting = require('./helpers/targetingPairs');
 
 var ERROR = 'error';
 var TABLE = 'table';
@@ -24,9 +25,8 @@ var AdManager = function(options) {
   this.options = utils.extend(defaultOptions, options);
 
   if (this.options.amazonEnabled) {
-    this.amazonId = window.Bulbs.settings.AMAZON_A9_ID;
+    this.amazonId = options.amazonA9ID;
   }
-
 
   this.bindContext();
 
@@ -39,6 +39,7 @@ var AdManager = function(options) {
     adManager.initGoogleTag();
   });
 };
+
 
 /**
  * Binds context for each event handler to always be the `AdManager` prototype
@@ -79,7 +80,6 @@ AdManager.prototype.handleWindowResize = function() {
 */
 AdManager.prototype.initGoogleTag = function() {
   var adManager = this;
-
   this.googletag.pubads().disableInitialLoad();
   this.googletag.pubads().enableAsyncRendering();
   this.googletag.pubads().updateCorrelator();
@@ -104,7 +104,7 @@ AdManager.prototype.initGoogleTag = function() {
  * @returns undefined
 */
 AdManager.prototype.initAmazonA9 = function() {
-  if (typeof amznads !== "undefined"  && amznads.apiReady) {
+  if (typeof amznads !== "undefined" && amznads.apiReady) {
     this.amznads = amznads;
     this.amznads.getAds(this.amazonId);
     this.amznads.setTargetingForGPTAsync('amznslots');
@@ -118,10 +118,19 @@ AdManager.prototype.initAmazonA9 = function() {
  * @returns undefined
 */
 AdManager.prototype.initBaseTargeting = function() {
+  var baseTargeting = targeting.getTargetingPairs().pageOptions;
+
+  // Bulbs Targeting Pairs
   for (var customCriteriaKey in this.targeting) {
     var customCriteriaValue = this.targeting[customCriteriaKey];
-
-    if(customCriteriaValue) {
+    if (customCriteriaValue) {
+      this.googletag.pubads().setTargeting(customCriteriaKey, customCriteriaValue.toString());
+    }
+  }
+  // Kinja Targeting Pairs
+  for (var customCriteriaKey in baseTargeting) {
+    var customCriteriaValue = baseTargeting[customCriteriaKey];
+    if (customCriteriaValue) {
       this.googletag.pubads().setTargeting(customCriteriaKey, customCriteriaValue.toString());
     }
   }
@@ -234,7 +243,7 @@ AdManager.prototype.findAds = function (el) {
       ads = el.getElementsByClassName('dfp');
     }
   } else if (el instanceof HTMLCollection) {
-    for(var i=0; i < el.length; i++) {
+    for (var i = 0; i < el.length; i++) {
       var thisEl = el[i];
       if (this.isAd(thisEl)) {
         ads.push(thisEl);
@@ -281,20 +290,24 @@ AdManager.prototype.slotInfo = function() {
  * @param {Object} slot - Configured ad slot from the GPT
  * @returns undefined
 */
-AdManager.prototype.setSlotTargeting = function(element, slot) {
+AdManager.prototype.setSlotTargeting = function(element, slot, standardParams) {
+  var slotTargeting = {};
   for (var customKey in this.targeting) {
-    if(this.targeting[customKey]) {
+    if (this.targeting[customKey]) {
       slot.setTargeting(customKey, this.targeting[customKey].toString());
     }
   }
 
-  var slotTargeting = {};
   if (element.dataset.targeting) {
     slotTargeting = JSON.parse(element.dataset.targeting);
   }
 
+  if (standardParams) {
+    Object.assign(slotTargeting, standardParams);
+  }
+
   for (var customKey in slotTargeting) {
-    if(slotTargeting[customKey]) {
+    if (slotTargeting[customKey]) {
       slot.setTargeting(customKey, slotTargeting[customKey].toString());
     }
   }
@@ -307,50 +320,99 @@ AdManager.prototype.setSlotTargeting = function(element, slot) {
  * @returns {Element} - Fully configured ad slot
 */
 AdManager.prototype.configureAd = function (element) {
+
+  var slotName = this.options.dfpSiteCode || "",
+    kinjaMeta = window.kinja.meta,
+    postMeta = window.kinja.postMeta || {},
+    currentBlog = kinjaMeta.blog,
+    blogSales = kinjaMeta.blogSales,
+    pageType = kinjaMeta.pageType,
+    getExperimentVariation = function(scope) {
+      var expScope = scope || window,
+        variation = expScope.cxApi ? expScope.cxApi.getChosenVariation(expScope.gaExperimentId) : null;
+      return (variation !== null && variation >= 0 && variation < 26) ? String.fromCharCode(variation + 65) : null;
+    },
+
+    getExperimentId = function(scope) {
+      var expScope = scope || window;
+      return (expScope.gaExperimentId !== undefined) ? expScope.gaExperimentId : null;
+    },
+
+    getQueryParameter = function(name) {
+      var regexS = '[\\?&]' + name + '=([^&#]*)',
+        regex = new RegExp(regexS),
+        results = regex.exec(window.location.search),
+        retval = '';
+
+      if (results) {
+        return decodeURIComponent(results[1].replace(/\+/g, ' '));
+      }
+
+      return retval;
+    },
+    expVar = (getExperimentVariation() !== null && getExperimentId() !== null) ? getExperimentId() + '_' + getExperimentVariation() : null,
+    paramZone = getQueryParameter('adzone'),
+    forcedAdZone = (function(pZone, meta) {
+      var tags = meta.tags,
+        forceNonCollapse = /why your team sucks|wyts/.test(tags),
+        forceCollapse = /nsfw|gamergate/.test(tags),
+        forceCollapseZone = !forceNonCollapse && forceCollapse ? 'collapse' : null,
+        post = meta.post,
+        postZone = post ? post.adZone : null;
+      return pZone || forceCollapseZone || postZone;
+      // kinjaMeta.post is not available at this time so we must reference kinja.postMeta
+    }(paramZone, postMeta)),
+
+    // figure out the defined adZone
+    adZone = forcedAdZone && forcedAdZone === 'collapse' ? 'collapse' : (pageType === 'frontpage' ? 'front' : pageType),
+    networkId = blogSales.adNetworkId || 4246,
+    unitName = '/' + [networkId, blogSales.adSiteName, adZone].join('/'),
+    adUnitConfig = this.adUnits.units[element.dataset.adUnit],
+    size = adUnitConfig.sizes[0][1],
+    tags = kinjaMeta.tags,
+    post = postMeta.post;
+
+  element.id = this.generateId();
+  slot = this.googletag.defineSlot(unitName, size, element.id);
+
   if (element.id && element.id in this.slots) {
     // Slot has already been configured
     return this.slots[element.id];
   }
-
-  element.id = this.generateId();
 
   if (!element.dataset) {
     this.logMessage('Browser does not support dataset', ERROR);
     return;
   }
 
-  var adUnitConfig = this.adUnits.units[element.dataset.adUnit];
   if (!adUnitConfig) {
     this.logMessage('Ad unit (' + element.dataset.adUnit + ') missing configuration', ERROR);
     return;
   }
 
-  var positionTargeting = adUnitConfig.slotName || element.dataset.adUnit;
-
-  var slotName = this.options.dfpSiteCode;
-  if (window.dfpSiteSection) {
-    slotName += '/' + window.dfpSiteSection;
-  }
-  var adUnitPath = '/' + this.options.dfpId + '/' + slotName;
-
-  // Use first ad size as the default
-  var size = adUnitConfig.sizes[0][1];
-  var slot = this.googletag.defineSlot(adUnitPath, size, element.id);
   slot.defineSizeMapping(adUnitConfig.sizes);
 
   if (slot === null) {
     // This probably means that the slot has already been filled.
     return;
   }
-
-  var slotTargeting = {};
-  if (element.dataset.targeting) {
-    slotTargeting = JSON.parse(element.dataset.targeting);
+  slotTargeting = targeting.getTargetingPairs(forcedAdZone);
+  
+  if (element.dataset.targeting && slotTargeting.slotOptions) {
+   utils.extend(slotTargeting.slotOptions, JSON.parse(element.dataset.targeting));
+  } else {
+	slotTargeting = JSON.parse(element.dataset.targeting);
+    slotTargeting.pos = positionTargeting;
+    element.dataset.targeting = JSON.stringify(slotTargeting);
   }
-  slotTargeting.pos = positionTargeting;
-  element.dataset.targeting = JSON.stringify(slotTargeting);
 
-  this.setSlotTargeting(element, slot);
+  this.setSlotTargeting(element, slot, slotTargeting.slotOptions);
+
+  slot.addService(this.googletag.pubads());
+
+  if (adUnitConfig.eagerLoad) {
+    slot.eagerLoad = true;
+  }
 
   slot.addService(this.googletag.pubads());
 
@@ -395,6 +457,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
     return;
   }
 
+  var slotsToLoad = [];
   var ads = this.findAds(element);
 
   if (!this.googletag.pubadsReady) {
@@ -405,7 +468,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
     this.googletag.pubads().updateCorrelator();
   }
 
-  for(var i = 0; i < ads.length; i++) {
+  for (var i = 0; i < ads.length; i++) {
     var thisEl = ads[i];
 
     if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
@@ -414,14 +477,19 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
 
     var slot = this.configureAd(thisEl);
 
-    if (typeof window.index_headertag_lightspeed === 'undefined') {
+    if (slot) {
+      slotsToLoad.push(slot);
+    }
+
+    if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
       this.googletag.display(thisEl.id);
     } else {
-      window.index_headertag_lightspeed.slotDisplay(thisEl.id, ads);
+      window.headertag.display(thisEl.id);
     }
 
     if (slot.eagerLoad) {
-      this.refreshSlot(thisEl);
+      thisEl.setAttribute('data-ad-load-state', 'loading');
+      this.refreshSlots([slot], ads);
     }
   }
 };
@@ -432,30 +500,29 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
  * @param {domElement} DOM element containing the DFP ad slot
  * @returns undefined
 */
-AdManager.prototype.refreshSlot = function(domElement) {
+AdManager.prototype.refreshSlot = function (domElement) {
+  var that = this;
   if (this.options.amazonEnabled && this.amznads) {
     params = {
-      id: this.amazonId,
-      callback: this.amazonAdRefresh.bind(this, domElement),
-      timeout: 500
-    };
-    this.amazonAdRefreshThrottled(params);
-    this.amznads.lastGetAdsCallback = Date.now();
+     id: this.amazonId,
+     callback: this.amazonAdRefresh.bind(this, domElement),
+     timeout: 500
+   };
   } else {
-    this.refreshAds(domElement);
+    this.refreshAds(slots);
   }
 };
 
-AdManager.prototype.amazonAdRefresh = function (domElement) {
+AdManager.prototype.amazonAdRefresh = function (domElements) {
   this.googletag.pubads().clearTargeting('amznslots');
   this.amznads.setTargetingForGPTAsync('amznslots');
-  this.refreshAds(domElement);
-}
+  this.refreshAds(domElements);
+};
 
 AdManager.prototype.doGetAmazonAdsCallback = function (params) {
   this.amznads.lastGetAdsCallback = Date.now();
   this.amznads.getAdsCallback(params.id, params.callback, params.timeout);
-}
+};
 
 AdManager.prototype.amazonAdRefreshThrottled = function (params) {
   if (typeof this.amznads.lastGetAdsCallback === 'undefined') {
@@ -466,7 +533,7 @@ AdManager.prototype.amazonAdRefreshThrottled = function (params) {
   } else {
     params.callback.call();
   }
-}
+};
 
 /**
   * Uses the `cmd` async GPT queue to enqueue ad manager function to run
@@ -476,7 +543,7 @@ AdManager.prototype.amazonAdRefreshThrottled = function (params) {
   * @param {domElement} DOM element containing the DFP ad slot
   * @returns undefined
 */
-AdManager.prototype.asyncRefreshSlot = function(domElement) {
+AdManager.prototype.asyncRefreshSlot = function (domElement) {
   var adManager = this;
 
   if (this.googletag.apiReady) {
@@ -514,19 +581,27 @@ AdManager.prototype.refreshAds = function (domElement) {
  * Fetches a new ad for each slot passed in
  *
  * @param {slotsToLoad} One or many slots to fetch new ad for
+ * @param {domElement} DOM element containing the DFP ad
  * @returns undefined
 */
-AdManager.prototype.refreshSlots = function (slotsToLoad, ads) {
-  if (slotsToLoad.length == 0) {
+AdManager.prototype.refreshSlots = function(slotsToLoad, domElement) {
+
+  if (slotsToLoad.length === 0) {
     return;
   }
 
-  if (typeof window.index_headertag_lightspeed === 'undefined') {
-    this.googletag.pubads().refresh(slotsToLoad, { changeCorrelator: false });
+  if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
+    this.googletag.pubads().refresh(slotsToLoad, {
+      changeCorrelator: false
+    });
   } else {
-    window.index_headertag_lightspeed.slotRefresh(slotsToLoad, ads, { changeCorrelator: false });
+    window.headertag = window.googletag;
+    window.headertag.pubads().refresh(slotsToLoad, {
+      changeCorrelator: false
+    });
   }
 };
+
 
 /**
  * Unloads all ads
@@ -535,7 +610,7 @@ AdManager.prototype.refreshSlots = function (slotsToLoad, ads) {
  * @returns undefined
 */
 AdManager.prototype.unloadAds = function(element) {
-  if (! this.initialized) {
+  if (!this.initialized) {
     return;
   }
 
