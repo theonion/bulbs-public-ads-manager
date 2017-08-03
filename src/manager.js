@@ -493,35 +493,35 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
  * @param {domElement} DOM element containing the DFP ad slot
  * @returns undefined
 */
-AdManager.prototype.refreshSlot = function(domElement) {
+AdManager.prototype.refreshSlot = function (domElement) {
   var that = this;
   if (this.options.amazonEnabled && this.amznads) {
-    this.amznads.getAdsCallback(this.amazonId, function() {
-      that.amznads.setTargetingForGPTAsync('amznslots');
-      that.refreshAds(slots);
-    }, 500);
-    this.googletag.pubads().clearTargeting('amznslots');
+    params = {
+     id: this.amazonId,
+     callback: this.amazonAdRefresh.bind(this, domElement),
+     timeout: 500
+   };
   } else {
     this.refreshAds(slots);
   }
 };
 
 
-AdManager.prototype.amazonAdRefresh = function(domElements) {
+AdManager.prototype.amazonAdRefresh = function (domElements) {
   this.googletag.pubads().clearTargeting('amznslots');
   this.amznads.setTargetingForGPTAsync('amznslots');
   this.refreshAds(domElements);
 };
 
-AdManager.prototype.doGetAmazonAdsCallback = function(params) {
+AdManager.prototype.doGetAmazonAdsCallback = function (params) {
   this.amznads.lastGetAdsCallback = Date.now();
   this.amznads.getAdsCallback(params.id, params.callback, params.timeout);
 };
 
-AdManager.prototype.amazonAdRefreshThrottled = function(params) {
+AdManager.prototype.amazonAdRefreshThrottled = function (params) {
   if (typeof this.amznads.lastGetAdsCallback === 'undefined') {
     this.doGetAmazonAdsCallback(params);
-    // returns true if amznads.lastGetAdsCallback was updated > 10 seconds ago
+  // returns true if amznads.lastGetAdsCallback was updated > 10 seconds ago
   } else if (Date.now() - this.amznads.lastGetAdsCallback > 1e4) {
     this.doGetAmazonAdsCallback(params);
   } else {
@@ -530,14 +530,14 @@ AdManager.prototype.amazonAdRefreshThrottled = function(params) {
 };
 
 /**
- * Uses the `cmd` async GPT queue to enqueue ad manager function to run
- * if the GPT API is not yet ready.  Assures slots have been configured,
- * etc. prior to trying to make the ad request
- *
- * @param {domElement} DOM element containing the DFP ad slot
- * @returns undefined
+  * Uses the `cmd` async GPT queue to enqueue ad manager function to run
+  * if the GPT API is not yet ready.  Assures slots have been configured,
+  * etc. prior to trying to make the ad request
+  *
+  * @param {domElement} DOM element containing the DFP ad slot
+  * @returns undefined
 */
-AdManager.prototype.asyncRefreshSlot = function(domElement) {
+AdManager.prototype.asyncRefreshSlot = function (domElement) {
   var adManager = this;
 
 
@@ -551,14 +551,14 @@ AdManager.prototype.asyncRefreshSlot = function(domElement) {
 };
 
 /**
- * Uses the `cmd` async GPT queue to enqueue ad manager function to run
- * if the GPT API is not yet ready.  Assures slots have been configured,
- * etc. prior to trying to make the ad request
- *
- * @param {domElement} DOM element containing the DFP ad slot
- * @returns undefined
+  * Uses the `cmd` async GPT queue to enqueue ad manager function to run
+  * if the GPT API is not yet ready.  Assures slots have been configured,
+  * etc. prior to trying to make the ad request
+  *
+  * @param {domElement} DOM element containing the DFP ad slot
+  * @returns undefined
 */
-AdManager.prototype.refreshAds = function(domElement) {
+AdManager.prototype.refreshAds = function (domElement) {
   if ((domElement.getAttribute('data-ad-load-state') === 'loaded') || (domElement.getAttribute('data-ad-load-state') === 'loading')) {
     return;
   }
@@ -576,13 +576,14 @@ AdManager.prototype.refreshAds = function(domElement) {
  * Fetches a new ad for each slot passed in
  *
  * @param {slotsToLoad} One or many slots to fetch new ad for
+ * @param {domElement} DOM element containing the DFP ad
  * @returns undefined
 */
-AdManager.prototype.refreshSlots = function(slotsToLoad, ads) {
+AdManager.prototype.refreshSlots = function(slotsToLoad, domElement) {
+
   if (slotsToLoad.length === 0) {
     return;
   }
-
 
   if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
     this.googletag.pubads().refresh(slotsToLoad, {
