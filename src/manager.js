@@ -119,6 +119,15 @@ AdManager.prototype.initAmazonA9 = function() {
 */
 AdManager.prototype.initBaseTargeting = function() {
   var baseTargeting = targeting.getTargetingPairs().pageOptions;
+
+  // Bulbs Targeting Pairs
+  for (var customCriteriaKey in this.targeting) {
+    var customCriteriaValue = this.targeting[customCriteriaKey];
+    if (customCriteriaValue) {
+      this.googletag.pubads().setTargeting(customCriteriaKey, customCriteriaValue.toString());
+    }
+  }
+  // Kinja Targeting Pairs
   for (var customCriteriaKey in baseTargeting) {
     var customCriteriaValue = baseTargeting[customCriteriaKey];
     if (customCriteriaValue) {
@@ -212,7 +221,7 @@ AdManager.prototype.generateId = function() {
  * @param {Element} element - element to test.
  * @returns true if it has the 'dfp' class, false otherwise
 */
-AdManager.prototype.isAd = function(element) {
+AdManager.prototype.isAd = function (element) {
   return !!element.classList.contains('dfp');
 };
 
@@ -222,7 +231,7 @@ AdManager.prototype.isAd = function(element) {
  * @param {HTMLElement|String|HTMLCollection} element - element to scope the search to
  * @returns {Array} of {Element} objects representing all ad slots
 */
-AdManager.prototype.findAds = function(el) {
+AdManager.prototype.findAds = function (el) {
   var ads = [];
 
   if (typeof(el) === 'string') {
@@ -310,7 +319,7 @@ AdManager.prototype.setSlotTargeting = function(element, slot, standardParams) {
  * @param {Element} element - Ad element to configure
  * @returns {Element} - Fully configured ad slot
 */
-AdManager.prototype.configureAd = function(element) {
+AdManager.prototype.configureAd = function (element) {
 
   var slotName = this.options.dfpSiteCode || "",
     kinjaMeta = window.kinja.meta,
