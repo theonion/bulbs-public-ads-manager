@@ -397,6 +397,15 @@ AdManager.prototype.configureAd = function (element) {
     return;
   }
   slotTargeting = targeting.getTargetingPairs(forcedAdZone);
+  
+  if (element.dataset.targeting && slotTargeting.slotOptions) {
+   utils.extend(slotTargeting.slotOptions, JSON.parse(element.dataset.targeting));
+  } else {
+	slotTargeting = JSON.parse(element.dataset.targeting);
+    slotTargeting.pos = positionTargeting;
+    element.dataset.targeting = JSON.stringify(slotTargeting);
+  }
+
   this.setSlotTargeting(element, slot, slotTargeting.slotOptions);
 
   slot.addService(this.googletag.pubads());
