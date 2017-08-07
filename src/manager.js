@@ -501,15 +501,16 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
  * @returns undefined
 */
 AdManager.prototype.refreshSlot = function (domElement) {
-  var that = this;
   if (this.options.amazonEnabled && this.amznads) {
     params = {
-     id: this.amazonId,
-     callback: this.amazonAdRefresh.bind(this, domElement),
-     timeout: 500
-   };
+      id: this.amazonId,
+      callback: this.amazonAdRefresh.bind(this, domElement),
+      timeout: 500
+    };
+    this.amazonAdRefreshThrottled(params);
+    this.amznads.lastGetAdsCallback = Date.now();
   } else {
-    this.refreshAds(slots);
+    this.refreshAds(domElements);
   }
 };
 
