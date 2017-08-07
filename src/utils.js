@@ -45,10 +45,10 @@ var Utils = {
     // Properly escape array values in param
     name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
 
-    let regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
 
     // Grab params from query string
-    let results = regex.exec(queryString);
+    var results = regex.exec(queryString);
     if (results) {
       results = decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
