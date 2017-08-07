@@ -1,6 +1,7 @@
 describe('AdManager', function() {
   var AdManager, AdManagerWrapper, adManager;
   var MockGoogleTag = require('mock_google_tag');
+  var utils = require('./utils');
 
   beforeEach(function() {
     AdManagerWrapper = require('./manager');
@@ -228,6 +229,55 @@ describe('AdManager', function() {
       });
     });
 
+    context('UTM parameters are present', function() {
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'setUtmTargeting');
+        adManager.initBaseTargeting();
+      });
+
+      it('sets UTM targeting', function() {
+        expect(adManager.setUtmTargeting.called).to.be.true;
+      });
+    });
+
+  });
+
+  describe('#setUtmTargeting', function() {
+    beforeEach(function() {
+      TestHelper.stub(adManager.googletag, 'pubads').returns({
+        setTargeting: sinon.spy()
+      });
+    });
+
+    context('with UTM params', function() {
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'searchString').returns('?utm_source=Facebook&utm_medium=cpc&utm_campaign=foobar');
+        adManager.setUtmTargeting();
+      });
+
+      it('sets utm source as targeting key-val', function() {
+        expect(googletag.pubads().setTargeting.calledWith('utm_source', 'Facebook')).to.be.true;
+      });
+
+      it('sets utm campaign as targeting key-val', function() {
+        expect(googletag.pubads().setTargeting.calledWith('utm_campaign', 'foobar')).to.be.true;
+      });
+
+      it('sets utm medium as targeting key-val', function() {
+        expect(googletag.pubads().setTargeting.calledWith('utm_medium', 'cpc')).to.be.true;
+      });
+    });
+
+    context('without UTM params', function() {
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'searchString').returns('');
+        adManager.setUtmTargeting();
+      });
+
+      it('does not set anything', function() {
+        expect(googletag.pubads().setTargeting.called).to.be.false;
+      });
+    });
   });
 
   describe('#reloadAds', function() {
@@ -1269,3 +1319,4 @@ describe('AdManager', function() {
     });
   });
 });
+
