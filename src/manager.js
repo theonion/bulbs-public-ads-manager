@@ -127,6 +127,40 @@ AdManager.prototype.initBaseTargeting = function() {
   if (window.Krux && window.Krux.user) {
     this.googletag.pubads().setTargeting('kuid', Krux.user);
   }
+
+  this.setUtmTargeting();
+};
+
+/**
+  * Returns window.location.search value (primarily to make test stubbing a breeze, maybe a better way)
+*/
+AdManager.prototype.searchString = function () {
+  return window.location.search;
+}
+
+/**
+  * Sets UTM key-vals as base targeting, if present
+  *
+  * @returns undefined
+*/
+AdManager.prototype.setUtmTargeting = function () {
+  var searchString = this.searchString();
+
+  var utmSource = utils.parseParam('utm_source', searchString);
+  var utmMedium = utils.parseParam('utm_medium', searchString);
+  var utmCampaign = utils.parseParam('utm_campaign', searchString);
+
+  if (utmSource) {
+    googletag.pubads().setTargeting('utm_source', utmSource);
+  }
+
+  if (utmMedium) {
+    googletag.pubads().setTargeting('utm_medium', utmMedium);
+  }
+
+  if (utmCampaign) {
+    googletag.pubads().setTargeting('utm_campaign', utmCampaign);
+  }
 };
 
 /**
