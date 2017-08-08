@@ -21,7 +21,7 @@ var AdManager = function(options) {
   this.initialized = false;
   this.viewportWidth = 0;
   this.oldViewportWidth = window.document.body.clientWidth;
-  this.targeting = global.TARGETING;
+  this.targeting = global.TARGETING || targeting.getTargetingPairs().pageOptions;
   this.options = utils.extend(defaultOptions, options);
 
   if (this.options.amazonEnabled) {
@@ -118,18 +118,9 @@ AdManager.prototype.initAmazonA9 = function() {
  * @returns undefined
 */
 AdManager.prototype.initBaseTargeting = function() {
-  var baseTargeting = targeting.getTargetingPairs().pageOptions;
-
   // Bulbs Targeting Pairs
   for (var customCriteriaKey in this.targeting) {
     var customCriteriaValue = this.targeting[customCriteriaKey];
-    if (customCriteriaValue) {
-      this.googletag.pubads().setTargeting(customCriteriaKey, customCriteriaValue.toString());
-    }
-  }
-  // Kinja Targeting Pairs
-  for (var customCriteriaKey in baseTargeting) {
-    var customCriteriaValue = baseTargeting[customCriteriaKey];
     if (customCriteriaValue) {
       this.googletag.pubads().setTargeting(customCriteriaKey, customCriteriaValue.toString());
     }
