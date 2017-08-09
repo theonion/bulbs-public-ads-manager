@@ -139,6 +139,10 @@ AdManager.prototype.searchString = function () {
 }
 
 _updateUtmCookie = function (utmSource, utmMedium, utmCampaign) {
+  if (!window.Cookies) {
+    return;
+  }
+
   var inThirtyMinutes = new Date(new Date().getTime() + 30 * 60 * 1000);
   Cookies.set('utmSession', {
     utmSource: utmSource,
@@ -175,7 +179,7 @@ AdManager.prototype.setUtmTargeting = function () {
     _updateGptTargeting('utm_campaign', utmCampaign);
 
     _updateUtmCookie(utmSource, utmMedium, utmCampaign);
-  } else {
+  } else if (window.Cookies) {
     var utmSession = JSON.parse(Cookies.get('utmSession') || '{}');
 
     _updateGptTargeting('utm_source', utmSession.utmSource);
