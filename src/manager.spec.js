@@ -2,7 +2,6 @@ describe('AdManager', function() {
   var AdManager, AdManagerWrapper, adManager;
   var MockGoogleTag = require('mock_google_tag');
   var utils = require('./utils');
-  var Cookies = require('js-cookie/src/js.cookie');
 
   beforeEach(function() {
     AdManagerWrapper = require('./manager');
