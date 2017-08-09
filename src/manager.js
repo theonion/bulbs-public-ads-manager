@@ -143,7 +143,7 @@ _updateUtmCookie = function (utmSource, utmMedium, utmCampaign) {
   Cookies.set('utmSession', {
     utmSource: utmSource,
     utmMedium: utmMedium,
-    utmCampaign
+    utmCampaign: utmCampaign
   }, {
     expires: inThirtyMinutes
   });

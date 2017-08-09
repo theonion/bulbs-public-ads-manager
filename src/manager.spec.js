@@ -257,6 +257,7 @@ describe('AdManager', function() {
 
     context('with UTM params', function() {
       beforeEach(function() {
+        Cookies.remove('utmSession')
         TestHelper.stub(adManager, 'searchString').returns('?utm_source=Facebook&utm_medium=cpc&utm_campaign=foobar');
         adManager.setUtmTargeting();
       });
