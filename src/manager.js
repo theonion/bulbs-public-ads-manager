@@ -1,7 +1,7 @@
 require('./dfp');
 var utils = require('./utils');
 var adUnits = require('./ad-units');
-var Cookies = require('../node_modules/js-cookie/src/js.cookie');
+var Cookies = require('js-cookie/src/js.cookie');
 
 var ERROR = 'error';
 var TABLE = 'table';
