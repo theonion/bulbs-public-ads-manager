@@ -138,6 +138,29 @@ AdManager.prototype.searchString = function () {
   return window.location.search;
 }
 
+_updateUtmCookie = function (utmSource, utmMedium, utmCampaign) {
+  if (!window.Cookies) {
+    return;
+  }
+
+  var inThirtyMinutes = new Date(new Date().getTime() + 30 * 60 * 1000);
+  Cookies.set('utmSession', {
+    utmSource: utmSource,
+    utmMedium: utmMedium,
+    utmCampaign: utmCampaign
+  }, {
+    expires: inThirtyMinutes
+  });
+};
+
+_updateGptTargeting = function (key, value) {
+  if (!value) {
+    return;
+  }
+
+  googletag.pubads().setTargeting(key, value);
+};
+
 /**
   * Sets UTM key-vals as base targeting, if present
   *
@@ -150,16 +173,18 @@ AdManager.prototype.setUtmTargeting = function () {
   var utmMedium = utils.parseParam('utm_medium', searchString);
   var utmCampaign = utils.parseParam('utm_campaign', searchString);
 
-  if (utmSource) {
-    googletag.pubads().setTargeting('utm_source', utmSource);
-  }
+  if (utmSource || utmMedium || utmCampaign) {
+    _updateGptTargeting('utm_source', utmSource);
+    _updateGptTargeting('utm_medium', utmMedium);
+    _updateGptTargeting('utm_campaign', utmCampaign);
 
-  if (utmMedium) {
-    googletag.pubads().setTargeting('utm_medium', utmMedium);
-  }
+    _updateUtmCookie(utmSource, utmMedium, utmCampaign);
+  } else if (window.Cookies) {
+    var utmSession = JSON.parse(Cookies.get('utmSession') || '{}');
 
-  if (utmCampaign) {
-    googletag.pubads().setTargeting('utm_campaign', utmCampaign);
+    _updateGptTargeting('utm_source', utmSession.utmSource);
+    _updateGptTargeting('utm_medium', utmSession.utmMedium);
+    _updateGptTargeting('utm_campaign', utmSession.utmCampaign);
   }
 };
 

@@ -12,11 +12,17 @@ describe('AdManager', function() {
       dfp_site: 'onion',
       dfp_pagetype: 'homepage'
     };
+    TestHelper.spyOn(Cookies, 'set');
+    TestHelper.spyOn(Cookies, 'get');
 
     adManager = AdManagerWrapper.init({
       dfpSiteCode: 'fmg.onion'
     });
     adManager.googletag.cmd = [];
+  });
+
+  afterEach(function() {
+    Cookies.remove('utmSession');
   });
 
   describe('new AdManager', function() {
@@ -251,6 +257,7 @@ describe('AdManager', function() {
 
     context('with UTM params', function() {
       beforeEach(function() {
+        Cookies.remove('utmSession')
         TestHelper.stub(adManager, 'searchString').returns('?utm_source=Facebook&utm_medium=cpc&utm_campaign=foobar');
         adManager.setUtmTargeting();
       });
@@ -266,6 +273,13 @@ describe('AdManager', function() {
       it('sets utm medium as targeting key-val', function() {
         expect(googletag.pubads().setTargeting.calledWith('utm_medium', 'cpc')).to.be.true;
       });
+
+      it('cookies the UTM parameters', function() {
+        var cookies = JSON.parse(Cookies.get('utmSession'));
+        expect(cookies.utmSource).to.equal('Facebook');
+        expect(cookies.utmCampaign).to.equal('foobar');
+        expect(cookies.utmMedium).to.equal('cpc');
+      });
     });
 
     context('without UTM params', function() {
@@ -276,6 +290,55 @@ describe('AdManager', function() {
 
       it('does not set anything', function() {
         expect(googletag.pubads().setTargeting.called).to.be.false;
+      });
+    });
+
+    context('cookied UTM params', function() {
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'searchString').returns('');
+        Cookies.set('utmSession', {
+          utmSource: 'Karma',
+          utmMedium: 'cpc',
+          utmCampaign: 'test'
+        });
+        adManager.setUtmTargeting();
+      });
+
+      it('sets utm source as targeting key-val', function() {
+        expect(googletag.pubads().setTargeting.calledWith('utm_source', 'Karma')).to.be.true;
+      });
+
+      it('sets utm campaign as targeting key-val', function() {
+        expect(googletag.pubads().setTargeting.calledWith('utm_campaign', 'test')).to.be.true;
+      });
+
+      it('sets utm medium as targeting key-val', function() {
+        expect(googletag.pubads().setTargeting.calledWith('utm_medium', 'cpc')).to.be.true;
+      });
+    });
+
+    context('cookied UTM params, but overriding new params', function() {
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'searchString').returns('?utm_source=Facebook&utm_campaign=foobar');
+        Cookies.set('utmSession', {
+          utmSource: 'Karma',
+          utmMedium: 'test',
+          utmCampaign: 'cpc'
+        });
+        adManager.setUtmTargeting();
+      });
+
+      it('sets utm source as targeting key-val', function() {
+        expect(googletag.pubads().setTargeting.calledWith('utm_source', 'Facebook')).to.be.true;
+      });
+
+      it('sets utm campaign as targeting key-val', function() {
+        expect(googletag.pubads().setTargeting.calledWith('utm_campaign', 'foobar')).to.be.true;
+      });
+
+      it('would not have called setTargeting with old utmMedium param', function() {
+        expect(googletag.pubads().setTargeting.calledTwice).to.be.true;
+        expect(googletag.pubads().setTargeting.calledWith('utm_medium', 'cpc')).to.be.false;
       });
     });
   });
