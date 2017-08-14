@@ -160,6 +160,22 @@ AdUnits.units = {
     ]
   },
 
+  'kinja-native': {
+		'slotName': 'kinja-native',
+		'sizes': [
+			['fluid', 'fluid'],
+			[[0, 0], []]
+		]
+  },
+
+  'kinja-native-inread': {
+    'slotName': 'kinja-native-inread',
+    'sizes': [
+      ['fluid', 'fluid'],
+      [[0,0], []]
+    ]
+  },
+
   'sidebar-primary': {
     'slotName': 'sidebar-primary',
     'refreshDisabled': true,
@@ -203,7 +219,7 @@ AdUnits.units = {
   'non-mobile-leaderboard': {
     'slotName': 'horizontal-secondary',
     'sizes': [
-      [[728, 0], [728, 90]],
+      [[728, 0], [728, 90], [728, 150]],
       [[0, 0], []]
     ]
   },
@@ -211,7 +227,7 @@ AdUnits.units = {
   'horizontal-secondary': {
     'slotName': 'horizontal-secondary',
     'sizes': [
-      [[728, 0], [[728, 90]]],
+      [[728, 0], [[728, 90], [728, 150]]],
       [[0, 0], [[320, 50]]]
     ]
   },
