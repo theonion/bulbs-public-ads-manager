@@ -129,6 +129,12 @@ var AdUnits = {
     } else if ((e.size[0] === 1280) && (e.size[1] === 720)) {
       AdUnits.handleSuperHeroHeaderSlot(e, el);
     }
+  },
+
+  inreadSlotRenderEnded: function(e, el) {
+    if(!e.isEmpty) {
+      el.innerHTML = 'Content continues below advertisement';
+    }
   }
 };
 
@@ -237,7 +243,8 @@ AdUnits.units = {
     'sizes': [
       [[728, 0], []],
       [[0,0], [[1,1], [300,250]]]
-    ]
+    ],
+    onSlotRenderEnded: AdUnits.inreadSlotRenderEnded
   },
 
   'instant-article-inread': {
