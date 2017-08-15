@@ -129,6 +129,14 @@ var AdUnits = {
     } else if ((e.size[0] === 1280) && (e.size[1] === 720)) {
       AdUnits.handleSuperHeroHeaderSlot(e, el);
     }
+  },
+
+  fluidSlotRenderEnded: function(e, el) {
+    var fluidClass = 'dfp-fluid';
+    el.classList.remove(fluidClass);
+    if (e.size[0] === 0 && !e.isEmpty) {
+      el.addClass(fluidClass);
+    }
   }
 };
 
@@ -203,9 +211,10 @@ AdUnits.units = {
   'non-mobile-leaderboard': {
     'slotName': 'horizontal-secondary',
     'sizes': [
-      [[728, 0], [728, 90]],
+      [[728, 0], ['fluid', [728, 90]]],
       [[0, 0], []]
-    ]
+    ],
+    onSlotRenderEnded: AdUnits.fluidSlotRenderEnded
   },
 
   'horizontal-secondary': {
