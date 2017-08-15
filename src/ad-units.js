@@ -244,9 +244,10 @@ AdUnits.units = {
   'inread': {
     'slotName': 'inread',
     'sizes': [
-      [[728, 0], []],
-      [[0,0], [[1,1], [300,250]]]
-    ]
+      [[728, 0], ['fluid']],
+      [[0,0], ['fluid', [1,1], [300,250]]]
+    ],
+    onSlotRenderEnded: AdUnits.fluidSlotRenderEnded
   },
 
   'instant-article-inread': {
