@@ -1,6 +1,8 @@
 require('./dfp');
 var utils = require('./utils');
 var targeting = require('./helpers/targetingPairs');
+var AdZone = require('./helpers/AdZone');
+
 
 var ERROR = 'error';
 var TABLE = 'table';
@@ -329,31 +331,8 @@ AdManager.prototype.configureAd = function (element) {
       return (expScope.gaExperimentId !== undefined) ? expScope.gaExperimentId : null;
     },
 
-    getQueryParameter = function(name) {
-      var regexS = '[\\?&]' + name + '=([^&#]*)',
-        regex = new RegExp(regexS),
-        results = regex.exec(window.location.search),
-        retval = '';
-
-      if (results) {
-        return decodeURIComponent(results[1].replace(/\+/g, ' '));
-      }
-
-      return retval;
-    },
     expVar = (getExperimentVariation() !== null && getExperimentId() !== null) ? getExperimentId() + '_' + getExperimentVariation() : null,
-    paramZone = getQueryParameter('adzone'),
-    forcedAdZone = (function(pZone, meta) {
-      var tags = meta.tags,
-        forceNonCollapse = /why your team sucks|wyts/.test(tags),
-        forceCollapse = /nsfw|gamergate/.test(tags),
-        forceCollapseZone = !forceNonCollapse && forceCollapse ? 'collapse' : null,
-        post = meta.post,
-        postZone = post ? post.adZone : null;
-      return pZone || forceCollapseZone || postZone;
-      // kinjaMeta.post is not available at this time so we must reference kinja.postMeta
-    }(paramZone, postMeta)),
-
+	forcedAdZone = AdZone.forcedAdZone();
     // figure out the defined adZone
     adZone = forcedAdZone && forcedAdZone === 'collapse' ? 'collapse' : (pageType === 'frontpage' ? 'front' : pageType),
     networkId = blogSales.adNetworkId || 4246,
