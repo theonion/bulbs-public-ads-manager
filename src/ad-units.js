@@ -135,7 +135,7 @@ var AdUnits = {
     var fluidClass = 'dfp-fluid';
     el.classList.remove(fluidClass);
     if (e.size[0] === 0 && !e.isEmpty) {
-      el.addClass(fluidClass);
+      el.classList.add(fluidClass);
     }
   }
 };
@@ -209,6 +209,7 @@ AdUnits.units = {
   },
 
   'non-mobile-leaderboard': {
+    'isFluid': true,
     'slotName': 'horizontal-secondary',
     'sizes': [
       [[728, 0], ['fluid', [728, 90]]],
@@ -242,9 +243,10 @@ AdUnits.units = {
   },
 
   'inread': {
+    'isFluid': true,
     'slotName': 'inread',
     'sizes': [
-      [[728, 0], ['fluid']],
+      [[728, 0], []],
       [[0,0], ['fluid', [1,1], [300,250]]]
     ],
     onSlotRenderEnded: AdUnits.fluidSlotRenderEnded

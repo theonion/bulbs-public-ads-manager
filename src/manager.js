@@ -391,7 +391,13 @@ AdManager.prototype.configureAd = function (element) {
   var adUnitPath = '/' + this.options.dfpId + '/' + slotName;
 
   // Use first ad size as the default
-  var size = adUnitConfig.sizes[0][1];
+  var size;
+  if (adUnitConfig.isFluid || false) {
+    size = 'fluid';
+  } else {
+    size = adUnitConfig.sizes[0][1];
+  }
+
   var slot = this.googletag.defineSlot(adUnitPath, size, element.id);
   slot.defineSizeMapping(adUnitConfig.sizes);
 
