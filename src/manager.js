@@ -321,19 +321,29 @@ AdManager.prototype.configureAd = function (element) {
     blogSales = kinjaMeta.blogSales,
     pageType = kinjaMeta.pageType,
     expVar = (Experiments.getExperimentVariation() !== null && Experiments.getExperimentId() !== null) ? Experiments.getExperimentId() + '_' + Experiments.getExperimentVariation() : null,
-	forcedAdZone = AdZone.forcedAdZone(),
+    forcedAdZone = AdZone.forcedAdZone(),
     // figure out the defined adZone
     adUnitName = forcedAdZone && forcedAdZone === 'collapse' ? 'collapse' : (pageType === 'frontpage' ? 'front' : pageType),
-    networkId = blogSales.adNetworkId || 4246,
-    unitName = '/' + [networkId, blogSales.adSiteName, adUnitName].join('/'),
+    kinjaNetworkId = blogSales.adNetworkId || false,
+    adUnitPath,
     adUnitConfig = this.adUnits.units[element.dataset.adUnit],
-	positionTargeting = adUnitConfig.pos;
+    positionTargeting = adUnitConfig.pos || adUnitConfig.slotName || element.dataset.adUnit,
     size = adUnitConfig.sizes[0][1],
     tags = kinjaMeta.tags,
     post = postMeta.post;
- 
+
   element.id = this.generateId();
-  slot = this.googletag.defineSlot(unitName, size, element.id);
+
+  if (kinjaNetworkId) {
+    adUnitPath = '/' + [kinjaNetworkId, blogSales.adSiteName, adUnitName].join('/');
+  } else {
+    if (window.dfpSiteSection) {
+      slotName += '/' + window.dfpSiteSection;
+    }
+    adUnitPath = '/' + this.options.dfpId + '/' + slotName;
+  }
+
+  slot = this.googletag.defineSlot(adUnitPath, size, element.id);
 
   if (element.id && element.id in this.slots) {
     // Slot has already been configured
