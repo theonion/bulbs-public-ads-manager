@@ -1,6 +1,6 @@
 require('./dfp');
 var utils = require('./utils');
-var targeting = require('./helpers/targetingPairs');
+var targeting = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
 var Experiments = require('./helpers/Experiments');
 
