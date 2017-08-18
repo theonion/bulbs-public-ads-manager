@@ -20,5 +20,4 @@ export function forcedAdZone() {
   const post = postMeta.post;
   const postZone = post ? post.adZone : null;
   return paramZone || forceCollapseZone || postZone;
-  // kinjaMeta.post is not available at this time so we must reference kinja.postMeta
 }

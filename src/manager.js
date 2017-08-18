@@ -2,7 +2,7 @@ require('./dfp');
 var utils = require('./utils');
 var targeting = require('./helpers/targetingPairs');
 var AdZone = require('./helpers/AdZone');
-
+var Experiments = require('./helpers/Experiments');
 
 var ERROR = 'error';
 var TABLE = 'table';
@@ -320,28 +320,18 @@ AdManager.prototype.configureAd = function (element) {
     currentBlog = kinjaMeta.blog,
     blogSales = kinjaMeta.blogSales,
     pageType = kinjaMeta.pageType,
-    getExperimentVariation = function(scope) {
-      var expScope = scope || window,
-        variation = expScope.cxApi ? expScope.cxApi.getChosenVariation(expScope.gaExperimentId) : null;
-      return (variation !== null && variation >= 0 && variation < 26) ? String.fromCharCode(variation + 65) : null;
-    },
-
-    getExperimentId = function(scope) {
-      var expScope = scope || window;
-      return (expScope.gaExperimentId !== undefined) ? expScope.gaExperimentId : null;
-    },
-
-    expVar = (getExperimentVariation() !== null && getExperimentId() !== null) ? getExperimentId() + '_' + getExperimentVariation() : null,
-	forcedAdZone = AdZone.forcedAdZone();
+    expVar = (Experiments.getExperimentVariation() !== null && Experiments.getExperimentId() !== null) ? Experiments.getExperimentId() + '_' + Experiments.getExperimentVariation() : null,
+	forcedAdZone = AdZone.forcedAdZone(),
     // figure out the defined adZone
-    adZone = forcedAdZone && forcedAdZone === 'collapse' ? 'collapse' : (pageType === 'frontpage' ? 'front' : pageType),
+    adUnitName = forcedAdZone && forcedAdZone === 'collapse' ? 'collapse' : (pageType === 'frontpage' ? 'front' : pageType),
     networkId = blogSales.adNetworkId || 4246,
-    unitName = '/' + [networkId, blogSales.adSiteName, adZone].join('/'),
+    unitName = '/' + [networkId, blogSales.adSiteName, adUnitName].join('/'),
     adUnitConfig = this.adUnits.units[element.dataset.adUnit],
+	positionTargeting = adUnitConfig.pos;
     size = adUnitConfig.sizes[0][1],
     tags = kinjaMeta.tags,
     post = postMeta.post;
-
+ 
   element.id = this.generateId();
   slot = this.googletag.defineSlot(unitName, size, element.id);
 
@@ -374,6 +364,10 @@ AdManager.prototype.configureAd = function (element) {
 	slotTargeting = JSON.parse(element.dataset.targeting);
     slotTargeting.pos = positionTargeting;
     element.dataset.targeting = JSON.stringify(slotTargeting);
+  }
+  
+  if (expVar !== null) {
+    slotTargeting.exp_var = expVar + '_' + positionTargeting;
   }
 
   this.setSlotTargeting(element, slot, slotTargeting.slotOptions);
