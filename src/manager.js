@@ -1,6 +1,6 @@
 require('./dfp');
 var utils = require('./utils');
-var targeting = require('./helpers/TargetingPairs');
+var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
 var Experiments = require('./helpers/Experiments');
 
@@ -23,7 +23,7 @@ var AdManager = function(options) {
   this.initialized = false;
   this.viewportWidth = 0;
   this.oldViewportWidth = window.document.body.clientWidth;
-  this.targeting = global.TARGETING || targeting.getTargetingPairs().pageOptions;
+  this.targeting = global.TARGETING || TargetingPairs.getTargetingPairs().pageOptions;
   this.options = utils.extend(defaultOptions, options);
 
   if (this.options.amazonEnabled) {
@@ -366,8 +366,9 @@ AdManager.prototype.configureAd = function (element) {
     // This probably means that the slot has already been filled.
     return;
   }
-  slotTargeting = targeting.getTargetingPairs(forcedAdZone);
-  
+
+  slotTargeting = this.targeting;
+
   if (element.dataset.targeting && slotTargeting.slotOptions) {
    utils.extend(slotTargeting.slotOptions, JSON.parse(element.dataset.targeting));
   } else {
