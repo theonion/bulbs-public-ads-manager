@@ -1,8 +1,14 @@
 var AdZone = {
+
+  // Primarily for test stubbing purposes
+  locationSearch: function() {
+    return window.location.search;
+  },
+
   getQueryParameter: function(name) {
     const regexS = '[\\?&]' + name + '=([^&#]*)';
     const regex = new RegExp(regexS);
-    const results = regex.exec(window.location.search);
+    const results = regex.exec(this.locationSearch());
     const retval = '';
 
     if (results) {
