@@ -18,7 +18,7 @@ module.exports = function (config) {
     files: [
       'node_modules/jquery/dist/jquery.min.js',
       'resources/test/test_helper.js',
-      'src/*.spec.js'
+      'src/**/*.spec.js'
     ],
 
     // list of files to exclude
@@ -27,7 +27,7 @@ module.exports = function (config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'src/*.spec.js': 'browserify'
+      'src/**/*.spec.js': 'browserify'
     },
 
     // test results reporter to use
