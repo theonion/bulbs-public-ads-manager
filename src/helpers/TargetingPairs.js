@@ -3,7 +3,9 @@
 /**
  * Utility functions for handling base DFP targeting
  */
-var experiments = require('./Experiments');
+var Experiments = require('./Experiments');
+var SocialReferrer = require('./SocialReferrer');
+var PageDepth = require('./PageDepth');
 
 var TargetingPairs = {
   /**
@@ -16,62 +18,18 @@ var TargetingPairs = {
     var kinjaMeta = scope.kinja.meta,
       post = scope.kinja.postMeta || {},
       content = scope.kinja.postContentRatings || [],
-      experimentVariation = experiments.getExperimentVariation(scope),
-      experimentId = experiments.getExperimentId(scope),
+      experimentVariation = Experiments.getExperimentVariation(scope),
+      experimentId = Experiments.getExperimentId(scope),
       socialTargeting, key,
       targeting = {};
-
-    function getPageDepth() {
-      var cookies = (scope.document.cookie + '').split('; ') || [],
-        pdCookieValue = -1;
-
-      cookies.forEach(function(cookie) {
-        var parts, name, value;
-
-        parts = cookie.split('=');
-        name = scope.decodeURIComponent(parts.shift());
-        value = scope.decodeURIComponent(parts.shift());
-
-        // The cookie is named 'pageDepth' ~~~
-        if (name === 'pageDepth') {
-          pdCookieValue = scope.parseInt(value, 10);
-        }
-      });
-
-      if (pdCookieValue === -1) {
-        pdCookieValue = 1;
-      } else {
-        if (pdCookieValue < 5) {
-          pdCookieValue += 1;
-        }
-      }
-      scope.document.cookie = 'pageDepth=' + pdCookieValue + '; expires=1; path=/';
-
-      return scope.parseInt(pdCookieValue, 10);
-    }
-
-    socialTargeting = (function() {
-      var socialReferrer = (scope.document.referrer || '').match(/\b(?:facebook|instagram|pinterest|reddit|twitter|tumblr|t\.co)\b/i);
-
-      if (socialReferrer) {
-        socialReferrer = socialReferrer[0].toLowerCase();
-
-        // SPECIAL CASE: Map 't.co' --> 'twitter'
-        if (socialReferrer === 't.co') {
-          socialReferrer = 'twitter';
-        }
-      }
-
-      return socialReferrer;
-    })();
 
     // Begin slot level params AKA 'scp'
     targeting.slotOptions = {
       // Standard targeting options
       postId: post ? post.postId : null,
-      socialReferrer: socialTargeting,
+      socialReferrer: SocialReferrer.isSocialReferrer(),
       page: kinjaMeta.pageType,
-      pd: getPageDepth(),
+      pd: PageDepth.getPageDepth(),
       mtfIFPath: '\/assets\/vendor\/doubleclick\/'
     };
 
@@ -101,7 +59,7 @@ var TargetingPairs = {
     var targetingOptions = this.buildTargetingPairs(window);
 
     if (forcedAdZone) {
-      targetingOptions.slotOptions.forcedAdZone = forcedAdZone || false;
+      targetingOptions.pageOptions.forcedAdZone = forcedAdZone || false;
     }
 
     return targetingOptions;
