@@ -37,8 +37,8 @@ var TargetingPairs = {
     targeting.pageOptions = {
       tags: (post.tags || '').split(','),
       blogName: kinjaMeta.blog.name,
-      ksg: scope.Krux.segments,
-      kuid: scope.Krux.user
+      ksg: (scope.Krux && scope.Krux.segments) ? scope.Krux.segments : undefined,
+      kuid: (scope.Krux && scope.Krux.user) ? scope.Krux.user : undefined
     };
 
     if (experimentVariation !== null && experimentId !== null) {
