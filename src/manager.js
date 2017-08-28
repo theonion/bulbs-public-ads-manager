@@ -23,7 +23,7 @@ var AdManager = function(options) {
   this.initialized = false;
   this.viewportWidth = 0;
   this.oldViewportWidth = window.document.body.clientWidth;
-  this.targeting = global.TARGETING || TargetingPairs.getTargetingPairs().pageOptions;
+  this.targeting = global.TARGETING || TargetingPairs.getTargetingPairs(AdZone.forcedAdZone()).pageOptions;
   this.options = utils.extend(defaultOptions, options);
 
   if (this.options.amazonEnabled) {
