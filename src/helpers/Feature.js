@@ -18,12 +18,11 @@ var Feature = {
    */
   isOn: function(name) {
     return feature.value(name) === 'on';
-  }
+  },
 
-    value: function(name) {
+  value: function(name) {
     return feature.getFeatures()[name];
   }
-
 
     features: null,
 
@@ -58,4 +57,4 @@ var Feature = {
     return feature.features;
   }
 };
-module.exports = Feature;
+module.exports = isOn;
