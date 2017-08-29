@@ -31,6 +31,16 @@ describe('AdZone', function() {
   });
 
   describe('#forcedAdZone', function() {
+    describe('kinja is not on window', function() {
+      beforeEach(function() {
+        delete window.kinja;
+      });
+
+      it('returns null', function() {
+        expect(AdZone.forcedAdZone()).to.be.null;
+      });
+    });
+
     describe('forced ad zone query param present', function() {
       beforeEach(function() {
         TestHelper.stub(AdZone, 'locationSearch', '?adzone=foo');

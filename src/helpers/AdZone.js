@@ -19,6 +19,10 @@ var AdZone = {
   },
 
   forcedAdZone: function() {
+    if (!window.kinja) {
+      return null;
+    }
+
     var paramZone = this.getQueryParameter('adzone');
     var postMeta = window.kinja.postMeta || {};
     var tags = postMeta.tags;
