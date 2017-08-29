@@ -148,4 +148,28 @@ describe('TargetingPairs', function() {
       });
     });
   });
+
+  describe('#getTargetingPairs', function() {
+    beforeEach(function() {
+      TestHelper.stub(TargetingPairs, 'buildTargetingPairs').returns({
+        pageOptions: {
+          blogName: 'Onion'
+        }
+      });
+    });
+
+    describe('without forced ad zone', function() {
+      it('sets forced ad zone as false', function() {
+        var pairs =  TargetingPairs.getTargetingPairs();
+        expect(pairs.pageOptions.forcedAdZone).to.be.false;
+      });
+    });
+
+    describe('with forced ad zone', function() {
+      it('uses forced ad zone', function() {
+        var pairs =  TargetingPairs.getTargetingPairs('advertiser');
+        expect(pairs.pageOptions.forcedAdZone).to.equal('advertiser');
+      });
+    });
+  });
 });

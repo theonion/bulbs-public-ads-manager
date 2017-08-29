@@ -58,9 +58,7 @@ var TargetingPairs = {
   getTargetingPairs: function(forcedAdZone) {
     var targetingOptions = this.buildTargetingPairs(window);
 
-    if (forcedAdZone) {
-      targetingOptions.pageOptions.forcedAdZone = forcedAdZone || false;
-    }
+    targetingOptions.pageOptions.forcedAdZone = forcedAdZone || false;
 
     return targetingOptions;
   }
