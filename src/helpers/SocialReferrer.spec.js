@@ -12,18 +12,18 @@ describe('SocialReferrer', function() {
       });
 
       it('this referrer should be a social one', function() {
-        expect(SocialReferrer.isSocialReferrer()).to.equal(true);
+        expect(SocialReferrer.isSocialReferrer()).to.be.true;
       });
     });
 
     describe('test for instagram as a social referrer', function() {
       beforeEach(function() {
           TestHelper.stub(SocialReferrer, 'getReferrer').returns('instagram.com');
-        
+
       });
 
       it('this referrer should be a social one', function() {
-        expect(SocialReferrer.isSocialReferrer()).to.equal(true);
+        expect(SocialReferrer.isSocialReferrer()).to.be.true;
       });
     });
 
@@ -33,7 +33,7 @@ describe('SocialReferrer', function() {
         });
 
       it('this referrer should not be a social one', function() {
-        expect(SocialReferrer.isSocialReferrer()).to.equal(false);
+        expect(SocialReferrer.isSocialReferrer()).to.be.false;
       });
     });
 

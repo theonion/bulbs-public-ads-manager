@@ -158,17 +158,31 @@ describe('TargetingPairs', function() {
       });
     });
 
-    describe('without forced ad zone', function() {
+    context('without forced ad zone', function() {
       it('sets forced ad zone as false', function() {
         var pairs =  TargetingPairs.getTargetingPairs();
         expect(pairs.pageOptions.forcedAdZone).to.be.false;
       });
     });
 
-    describe('with forced ad zone', function() {
+    context('with forced ad zone', function() {
       it('uses forced ad zone', function() {
         var pairs =  TargetingPairs.getTargetingPairs('advertiser');
         expect(pairs.pageOptions.forcedAdZone).to.equal('advertiser');
+      });
+    });
+
+    context('missing scope.kinja', function() {
+      beforeEach(function() {
+        delete window.kinja
+      });
+
+      it('never tries to call buildTargetingPairs', function() {
+        expect(TargetingPairs.buildTargetingPairs.called).to.be.false;
+      });
+
+      it('returns an empty object', function() {
+        expect(TargetingPairs.getTargetingPairs()).to.eql({});
       });
     });
   });

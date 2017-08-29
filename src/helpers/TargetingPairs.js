@@ -56,6 +56,10 @@ var TargetingPairs = {
    *
    */
   getTargetingPairs: function(forcedAdZone) {
+    if (!window.kinja) {
+      return {};
+    }
+
     var targetingOptions = this.buildTargetingPairs(window);
 
     targetingOptions.pageOptions.forcedAdZone = forcedAdZone || false;
