@@ -11,27 +11,26 @@
  */
 var Feature = {
 
+  features: null,
   /**
    * Returns true if the feature of that name exists and is on
    * @param string name Name of the feature.
    * @return {boolean} True if the feature is on.
    */
   isOn: function(name) {
-    return feature.value(name) === 'on';
+    return this.value(name) === 'on';
   },
 
   value: function(name) {
-    return feature.getFeatures()[name];
-  }
-
-    features: null,
+    return this.getFeatures()[name];
+  },
 
   /**
    * Reads the features from the body classes and returns a map of them
    * @return {Object}
    */
   getFeatures: function() {
-    if (feature.features === null) {
+    if (this.features === null) {
       var features = {},
         bodyClass = ((document.body.classList.length || !window.frameElement) ?
           document.body.classList : window.parent.document.body.classList) || [],
@@ -52,9 +51,9 @@ var Feature = {
           }
         }
       }
-      feature.features = features;
+      this.features = features;
     }
-    return feature.features;
+    return this.features;
   }
 };
-module.exports = isOn;
+module.exports = Feature;

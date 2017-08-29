@@ -18,10 +18,7 @@ module.exports = function (config) {
     files: [
       'node_modules/jquery/dist/jquery.min.js',
       'resources/test/test_helper.js',
-      'src/helpers/**/*.spec.js',
-      'src/**/*.spec.js'
-
-		
+      'src/**/*.spec.js',
     ],
 
     // list of files to exclude
