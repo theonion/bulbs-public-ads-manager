@@ -23,7 +23,6 @@ var AdManager = function(options) {
   this.initialized = false;
   this.viewportWidth = 0;
   this.oldViewportWidth = window.document.body.clientWidth;
-  this.targeting = global.TARGETING || TargetingPairs.getTargetingPairs(AdZone.forcedAdZone()).pageOptions;
   this.options = utils.extend(defaultOptions, options);
 
   if (this.options.amazonEnabled) {
@@ -90,7 +89,9 @@ AdManager.prototype.initGoogleTag = function() {
   this.googletag.pubads().addEventListener('impressionViewable', adManager.onImpressionViewable);
   this.googletag.pubads().addEventListener('slotOnload', adManager.onSlotOnload);
 
-  this.initBaseTargeting();
+  this.targeting = global.TARGETING || TargetingPairs.getTargetingPairs(AdZone.forcedAdZone()).pageOptions;
+
+  this.setPageTargeting();
   if (this.options.amazonEnabled) {
     this.initAmazonA9();
   }
@@ -119,7 +120,7 @@ AdManager.prototype.initAmazonA9 = function() {
  *
  * @returns undefined
 */
-AdManager.prototype.initBaseTargeting = function() {
+AdManager.prototype.setPageTargeting = function() {
   // Bulbs Targeting Pairs
   for (var customCriteriaKey in this.targeting) {
     var customCriteriaValue = this.targeting[customCriteriaKey];
@@ -283,27 +284,42 @@ AdManager.prototype.slotInfo = function() {
  * @param {Object} slot - Configured ad slot from the GPT
  * @returns undefined
 */
-AdManager.prototype.setSlotTargeting = function(element, slot, standardParams) {
+AdManager.prototype.setSlotTargeting = function(element, slot, adUnitConfig) {
   var slotTargeting = {};
-  for (var customKey in this.targeting) {
-    if (this.targeting[customKey]) {
-      slot.setTargeting(customKey, this.targeting[customKey].toString());
-    }
-  }
+  var positionTargeting = adUnitConfig.pos || adUnitConfig.slotName || element.dataset.adUnit;
+  var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone()).slotOptions;
 
   if (element.dataset.targeting) {
     slotTargeting = JSON.parse(element.dataset.targeting);
   }
 
-  if (standardParams) {
-    Object.assign(slotTargeting, standardParams);
+  if (positionTargeting) {
+    slotTargeting.pos = positionTargeting;
   }
+
+  slotTargeting = utils.extend(slotTargeting, kinjaPairs);
 
   for (var customKey in slotTargeting) {
     if (slotTargeting[customKey]) {
       slot.setTargeting(customKey, slotTargeting[customKey].toString());
     }
   }
+};
+
+AdManager.prototype.getAdUnitCode = function() {
+  var adUnitCodes = [this.options.dfpId, this.options.dfpSiteCode];
+
+  if (window.kinja) {
+    var forcedAdZone = AdZone.forcedAdZone();
+    var targetingPairs = TargetingPairs.getTargetingPairs(forcedAdZone);
+    var adUnitName = forcedAdZone === 'collapse' ? 'collapse' : (targetingPairs.slotOptions.page === 'frontpage' ? 'front' : targetingPairs.slotOptions.page)
+
+    adUnitCodes.push(adUnitName);
+  } else if (window.dfpSiteSection) {
+    adUnitCodes.push(window.dfpSiteSection);
+  }
+
+  return '/' + adUnitCodes.join('/');
 };
 
 /**
@@ -313,35 +329,18 @@ AdManager.prototype.setSlotTargeting = function(element, slot, standardParams) {
  * @returns {Element} - Fully configured ad slot
 */
 AdManager.prototype.configureAd = function (element) {
+  var adUnitConfig = this.adUnits.units[element.dataset.adUnit];
+  var adUnitPath = this.getAdUnitCode();
+  var size;
 
-  var slotName = this.options.dfpSiteCode || "",
-    kinjaMeta = window.kinja.meta,
-    postMeta = window.kinja.postMeta || {},
-    currentBlog = kinjaMeta.blog,
-    blogSales = kinjaMeta.blogSales,
-    pageType = kinjaMeta.pageType,
-    expVar = (Experiments.getExperimentVariation() !== null && Experiments.getExperimentId() !== null) ? Experiments.getExperimentId() + '_' + Experiments.getExperimentVariation() : null,
-    forcedAdZone = AdZone.forcedAdZone(),
-    // figure out the defined adZone
-    adUnitName = forcedAdZone && forcedAdZone === 'collapse' ? 'collapse' : (pageType === 'frontpage' ? 'front' : pageType),
-    kinjaNetworkId = blogSales.adNetworkId || false,
-    adUnitPath,
-    adUnitConfig = this.adUnits.units[element.dataset.adUnit],
-    positionTargeting = adUnitConfig.pos || adUnitConfig.slotName || element.dataset.adUnit,
-    size = adUnitConfig.sizes[0][1],
-    tags = kinjaMeta.tags,
-    post = postMeta.post;
+  if (!adUnitConfig) {
+    this.logMessage('Ad unit (' + element.dataset.adUnit + ') missing configuration', ERROR);
+    return;
+  }
+
+  size = adUnitConfig.sizes[0][1];
 
   element.id = this.generateId();
-
-  if (kinjaNetworkId) {
-    adUnitPath = '/' + [kinjaNetworkId, blogSales.adSiteName, adUnitName].join('/');
-  } else {
-    if (window.dfpSiteSection) {
-      slotName += '/' + window.dfpSiteSection;
-    }
-    adUnitPath = '/' + this.options.dfpId + '/' + slotName;
-  }
 
   slot = this.googletag.defineSlot(adUnitPath, size, element.id);
 
@@ -355,11 +354,6 @@ AdManager.prototype.configureAd = function (element) {
     return;
   }
 
-  if (!adUnitConfig) {
-    this.logMessage('Ad unit (' + element.dataset.adUnit + ') missing configuration', ERROR);
-    return;
-  }
-
   slot.defineSizeMapping(adUnitConfig.sizes);
 
   if (slot === null) {
@@ -367,27 +361,7 @@ AdManager.prototype.configureAd = function (element) {
     return;
   }
 
-  slotTargeting = this.targeting;
-
-  if (element.dataset.targeting && slotTargeting.slotOptions) {
-   utils.extend(slotTargeting.slotOptions, JSON.parse(element.dataset.targeting));
-  } else {
-	slotTargeting = JSON.parse(element.dataset.targeting);
-    slotTargeting.pos = positionTargeting;
-    element.dataset.targeting = JSON.stringify(slotTargeting);
-  }
-  
-  if (expVar !== null) {
-    slotTargeting.exp_var = expVar + '_' + positionTargeting;
-  }
-
-  this.setSlotTargeting(element, slot, slotTargeting.slotOptions);
-
-  slot.addService(this.googletag.pubads());
-
-  if (adUnitConfig.eagerLoad) {
-    slot.eagerLoad = true;
-  }
+  this.setSlotTargeting(element, slot, adUnitConfig);
 
   slot.addService(this.googletag.pubads());
 
@@ -464,7 +438,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
 
     if (slot.eagerLoad) {
       thisEl.setAttribute('data-ad-load-state', 'loading');
-      this.refreshSlots([slot], ads);
+      this.refreshSlot(thisEl);
     }
   }
 };
@@ -485,14 +459,14 @@ AdManager.prototype.refreshSlot = function (domElement) {
     this.amazonAdRefreshThrottled(params);
     this.amznads.lastGetAdsCallback = Date.now();
   } else {
-    this.refreshAds(domElements);
+    this.refreshAds(domElement);
   }
 };
 
-AdManager.prototype.amazonAdRefresh = function (domElements) {
+AdManager.prototype.amazonAdRefresh = function (domElement) {
   this.googletag.pubads().clearTargeting('amznslots');
   this.amznads.setTargetingForGPTAsync('amznslots');
-  this.refreshAds(domElements);
+  this.refreshAds(domElement);
 };
 
 AdManager.prototype.doGetAmazonAdsCallback = function (params) {

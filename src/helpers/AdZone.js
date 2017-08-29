@@ -6,10 +6,10 @@ var AdZone = {
   },
 
   getQueryParameter: function(name) {
-    const regexS = '[\\?&]' + name + '=([^&#]*)';
-    const regex = new RegExp(regexS);
-    const results = regex.exec(this.locationSearch());
-    const retval = '';
+    var regexS = '[\\?&]' + name + '=([^&#]*)';
+    var regex = new RegExp(regexS);
+    var results = regex.exec(this.locationSearch());
+    var retval = '';
 
     if (results) {
       return decodeURIComponent(results[1].replace(/\+/g, ' '));
@@ -19,14 +19,14 @@ var AdZone = {
   },
 
   forcedAdZone: function() {
-    const paramZone = this.getQueryParameter('adzone');
-    const postMeta = window.kinja.postMeta || {};
-    const tags = postMeta.tags;
-    const forceNonCollapse = /why your team sucks|wyts/.test(tags);
-    const forceCollapse = /nsfw|gamergate/.test(tags);
-    const forceCollapseZone = !forceNonCollapse && forceCollapse ? 'collapse' : null;
-    const post = postMeta.post;
-    const postZone = post ? post.adZone : null;
+    var paramZone = this.getQueryParameter('adzone');
+    var postMeta = window.kinja.postMeta || {};
+    var tags = postMeta.tags;
+    var forceNonCollapse = /why your team sucks|wyts/.test(tags);
+    var forceCollapse = /nsfw|gamergate/.test(tags);
+    var forceCollapseZone = !forceNonCollapse && forceCollapse ? 'collapse' : null;
+    var post = postMeta.post;
+    var postZone = post ? post.adZone : null;
     return paramZone || forceCollapseZone || postZone;
   }
 }
