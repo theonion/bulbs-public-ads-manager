@@ -5,7 +5,7 @@
 var Experiments = {
 
   /**
-   * Retreives the current Google Experiments variation.
+   * Retrieves the current Google Experiments variation.
    * This is a letter from A-C or null if the user is not participating.
    */
   getExperimentVariation: function(scope) {
