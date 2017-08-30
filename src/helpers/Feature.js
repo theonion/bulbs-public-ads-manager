@@ -15,7 +15,7 @@ var Feature = {
   /**
    * Returns true if the feature of that name exists and is on
    * @param string name Name of the feature.
-   * @return {boolean} True if the feature is on.
+   * @return {Boolean} True if the feature is on.
    */
   isOn: function(name) {
     return this.value(name) === 'on';

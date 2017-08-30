@@ -4,7 +4,12 @@ var AdZone = {
   locationSearch: function() {
     return window.location.search;
   },
-
+  
+ /**
+  * Derives the query string parameter from window.location
+  *
+  * @returns {String};
+ */
   getQueryParameter: function(name) {
     var regexS = '[\\?&]' + name + '=([^&#]*)';
     var regex = new RegExp(regexS);
@@ -17,7 +22,12 @@ var AdZone = {
 
     return retval;
   },
-
+  
+ /**
+  * Retrieves the adzone from the list of query params
+  *
+  * @returns String;
+ */
   forcedAdZone: function() {
     if (!window.kinja) {
       return null;

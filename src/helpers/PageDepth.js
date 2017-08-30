@@ -1,4 +1,9 @@
 var PageDepth = {
+   /**
+    * Retrieves the current page depth from the site cookie
+    *
+    * @returns {Number}
+    */
   getPageDepth : function () {
     var cookies = (window.document.cookie + '').split('; ') || [],
       pdCookieValue = -1;
