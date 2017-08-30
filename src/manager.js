@@ -437,7 +437,6 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
     }
 
     if (slot.eagerLoad) {
-      thisEl.setAttribute('data-ad-load-state', 'loading');
       this.refreshSlot(thisEl);
     }
   }
