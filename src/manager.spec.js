@@ -1,10 +1,14 @@
+var TargetingPairs = require('./helpers/TargetingPairs');
+var AdZone = require('./helpers/AdZone');
+
 describe('AdManager', function() {
-  var AdManager, AdManagerWrapper, adManager;
+  var AdManager, AdManagerWrapper, adManager, adUnits;
   var MockGoogleTag = require('mock_google_tag');
   var utils = require('./utils');
 
   beforeEach(function() {
     AdManagerWrapper = require('./manager');
+    adUnits = require('./ad-units');
     window.googletag = new MockGoogleTag();
 
     window.Bulbs = { settings: { AMAZON_A9_ID: '1234' } };
@@ -16,7 +20,8 @@ describe('AdManager', function() {
     TestHelper.spyOn(Cookies, 'get');
 
     adManager = AdManagerWrapper.init({
-      dfpSiteCode: 'fmg.onion'
+      dfpSiteCode: 'fmg.onion',
+      adUnits: adUnits
     });
     adManager.googletag.cmd = [];
   });
@@ -34,13 +39,6 @@ describe('AdManager', function() {
       expect(adManager.adId).to.equal(0);
     });
 
-    it('merges global TARGETING with ad unit dfp site param', function() {
-      expect(adManager.targeting).to.eql({
-        dfp_site: 'onion',
-        dfp_pagetype: 'homepage'
-      });
-    });
-
     it('is not initialized', function() {
       expect(adManager.initialized).to.be.false;
     });
@@ -55,7 +53,8 @@ describe('AdManager', function() {
       it('allows override of defaults', function() {
         adManager = AdManagerWrapper.init({
           doReloadOnResize: false,
-          dfpSiteCode: 'fmg.onion'
+          dfpSiteCode: 'fmg.onion',
+          adUnits: adUnits
          });
         expect(adManager.options.doReloadOnResize).to.be.false;
       });
@@ -65,7 +64,8 @@ describe('AdManager', function() {
       beforeEach(function() {
         adManager.googletag.cmd = [];
         adManager = AdManagerWrapper.init({
-          dfpSiteCode: 'fmg.onion'
+          dfpSiteCode: 'fmg.onion',
+          adUnits: adUnits
         });
         TestHelper.stub(adManager, 'initGoogleTag');
         // Call the anonymous function pushed onto the async cmd array
@@ -115,7 +115,7 @@ describe('AdManager', function() {
         updateCorrelator: sinon.spy(),
         enableAsyncRendering: sinon.spy()
       });
-      TestHelper.stub(adManager, 'initBaseTargeting');
+      TestHelper.stub(adManager, 'setPageTargeting');
       TestHelper.stub(adManager, 'loadAds');
       TestHelper.stub(adManager.googletag, 'enableServices');
       sinon.stub(adManager, 'initAmazonA9');
@@ -152,7 +152,7 @@ describe('AdManager', function() {
     });
 
     it('sets the global targeting on the pub ads service', function() {
-      expect(adManager.initBaseTargeting.called).to.be.true;
+      expect(adManager.setPageTargeting.called).to.be.true;
     });
 
     it('sets the initialize flag to true', function() {
@@ -172,6 +172,13 @@ describe('AdManager', function() {
       adManager.options.amazonEnabled = false;
       adManager.initGoogleTag();
       expect(adManager.initAmazonA9.calledTwice).to.be.false;
+    });
+
+    it('merges global TARGETING with ad unit dfp site param', function() {
+      expect(adManager.targeting).to.eql({
+        dfp_site: 'onion',
+        dfp_pagetype: 'homepage'
+      });
     });
   });
 
@@ -201,7 +208,7 @@ describe('AdManager', function() {
     });
   });
 
-  describe('#initBaseTargeting', function() {
+  describe('#setPageTargeting', function() {
     beforeEach(function() {
       adManager.targeting = {
         dfp_site: 'onion',
@@ -210,7 +217,7 @@ describe('AdManager', function() {
       TestHelper.stub(adManager.googletag, 'pubads').returns({
         setTargeting: sinon.spy()
       });
-      adManager.initBaseTargeting();
+      adManager.setPageTargeting();
     });
 
     it('sets targeting for each key-value pair', function() {
@@ -223,7 +230,7 @@ describe('AdManager', function() {
         window.Krux = {
           user: '12345'
         };
-        adManager.initBaseTargeting();
+        adManager.setPageTargeting();
       });
 
       afterEach(function() {
@@ -684,11 +691,32 @@ describe('AdManager', function() {
 
       adManager.targeting = { dfp_site: 'onion', dfp_pagetype: 'article' };
 
+      TestHelper.stub(TargetingPairs, 'getTargetingPairs').returns({});
+      TestHelper.stub(AdZone, 'forcedAdZone').returns('');
+
       stubSlot = { setTargeting: sinon.spy() };
     });
 
     afterEach(function() {
       $(container1).remove();
+    });
+
+    context('kinja targeting pairs', function() {
+      beforeEach(function() {
+        TargetingPairs.getTargetingPairs.returns({
+          slotOptions: {
+            postId: 1234,
+            page: 'permalink'
+          }
+        });
+        adManager.setSlotTargeting(adSlot1, stubSlot, {});
+      });
+
+      it('sets targeting for each slot option', function() {
+        expect(stubSlot.setTargeting.callCount).to.equal(2);
+        expect(stubSlot.setTargeting.calledWith('postId', '1234')).to.be.true;
+        expect(stubSlot.setTargeting.calledWith('page', 'permalink')).to.be.true;
+      });
     });
 
     context('element has dataset targeting', function() {
@@ -698,13 +726,11 @@ describe('AdManager', function() {
           dfp_feature: 'american-voices'
         });
         $(adSlot1).attr('data-targeting', elementTargeting);
-        adManager.setSlotTargeting(adSlot1, stubSlot);
+        adManager.setSlotTargeting(adSlot1, stubSlot, {});
       });
 
       it('sets all the targeting', function() {
-        expect(stubSlot.setTargeting.callCount).to.equal(4);
-        expect(stubSlot.setTargeting.calledWith('dfp_site', 'onion')).to.be.true;
-        expect(stubSlot.setTargeting.calledWith('dfp_pagetype', 'article')).to.be.true;
+        expect(stubSlot.setTargeting.callCount).to.equal(2);
         expect(stubSlot.setTargeting.calledWith('dfp_content_id', '12345')).to.be.true;
         expect(stubSlot.setTargeting.calledWith('dfp_feature', 'american-voices')).to.be.true;
       });
@@ -712,13 +738,11 @@ describe('AdManager', function() {
 
     context('element has no dataset targeting', function() {
       beforeEach(function() {
-        adManager.setSlotTargeting(adSlot1, stubSlot);
+        adManager.setSlotTargeting(adSlot1, stubSlot, {});
       });
 
-      it('sets all the targeting', function() {
-        expect(stubSlot.setTargeting.callCount).to.equal(2);
-        expect(stubSlot.setTargeting.calledWith('dfp_site', 'onion')).to.be.true;
-        expect(stubSlot.setTargeting.calledWith('dfp_pagetype', 'article')).to.be.true;
+      it('sets no targeting', function() {
+        expect(stubSlot.setTargeting.callCount).to.equal(0);
       });
     });
   });
@@ -727,6 +751,7 @@ describe('AdManager', function() {
     var adSlot1, container1;
 
     beforeEach(function() {
+      TestHelper.stub(adManager, 'getAdUnitCode').returns('/4246/fmg.onion');
       container1 = document.createElement('div');
       adSlot1 = document.createElement('div');
       adSlot1.className = 'dfp';
@@ -783,18 +808,14 @@ describe('AdManager', function() {
       it('returns the configured slot and adds it to the slots object', function() {
         expect(typeof adManager.slots['dfp-ad-1'].addService).to.equal('function');
       });
-
-      it('sets the `pos` targeting key/value based on the ad unit config', function() {
-        var targeting = JSON.parse(adSlot1.dataset.targeting);
-        expect(targeting.pos).to.equal('header');
-      });
     });
 
     context('site section configured', function() {
       var configuredSlot, slotStub;
 
       beforeEach(function() {
-        window.dfpSiteSection = 'front';
+        delete window.kinja;
+        adManager.getAdUnitCode.returns('/4246/fmg.onion/front');
         TestHelper.stub(adManager, 'setSlotTargeting');
         TestHelper.stub(adManager, 'generateId').returns('dfp-ad-1');
         TestHelper.stub(window.googletag, 'pubads').returns('Stub pub ads');
@@ -911,20 +932,18 @@ describe('AdManager', function() {
 
     context('with wrapper tag', function() {
       beforeEach(function() {
-        window.index_headertag_lightspeed = {
-          slotDisplay: sinon.stub()
+        window.headertag = {
+          display: sinon.stub(),
+          apiReady: true
         };
         adManager.loadAds();
       });
 
       it('calls wrapper tag instead of googletag', function() {
-        expect(window.index_headertag_lightspeed.slotDisplay.callCount).to.equal(3);
-        window.index_headertag_lightspeed.slotDisplay.args.forEach(function(args, index) {
-          expect(args[0]).to.equal('dfp-ad-' + (index + 1));
-          expect(args[1][0]).to.equal(adSlot1);
-          expect(args[1][1]).to.equal(adSlot2);
-          expect(args[1][2]).to.equal(adSlot3);
-        });
+        expect(window.headertag.display.callCount).to.equal(3);
+        expect(window.headertag.display.args[0][0]).to.equal('dfp-ad-1');
+        expect(window.headertag.display.args[1][0]).to.equal('dfp-ad-2');
+        expect(window.headertag.display.args[2][0]).to.equal('dfp-ad-3');
       });
 
       it('triggers refresh of each slot through wrapper tag', function() {
@@ -937,7 +956,7 @@ describe('AdManager', function() {
 
     context('without wrapper tag', function() {
       beforeEach(function() {
-        window.index_headertag_lightspeed = undefined;
+        delete window.headertag;
         adManager.loadAds();
       });
 
@@ -1378,6 +1397,59 @@ describe('AdManager', function() {
       it('resets the load state attribute', function() {
         expect($(adSlot1).data('ad-load-state')).to.equal('unloaded');
         expect($(adSlot2).data('ad-load-state')).to.equal('unloaded');
+      });
+    });
+  });
+
+  describe('#getAdUnitCode', function() {
+    context('Bulbs', function() {
+      beforeEach(function() {
+        delete window.kinja;
+      });
+
+      afterEach(function() {
+        delete window.dfpSiteSection;
+      });
+
+      it('returns the bulbs convention', function() {
+        expect(adManager.getAdUnitCode()).to.equal('/4246/fmg.onion');
+      });
+
+      it('tacks on the dfpSiteSection to the ad unit code if available', function() {
+        window.dfpSiteSection = 'front';
+        expect(adManager.getAdUnitCode()).to.equal('/4246/fmg.onion/front');
+      });
+    });
+
+    context('Kinja', function() {
+      beforeEach(function() {
+        window.kinja = {};
+        TestHelper.stub(AdZone, 'forcedAdZone').returns(false);
+        TestHelper.stub(TargetingPairs, 'getTargetingPairs').returns({
+          slotOptions: { page: 'frontpage' }
+        })
+      });
+
+      context('forced ad zone is set to collapse', function() {
+        it('uses collapse sub-level ad unit', function() {
+          AdZone.forcedAdZone.returns('collapse');
+          expect(adManager.getAdUnitCode()).to.equal('/4246/fmg.onion/collapse');
+        });
+      });
+
+      context('front page, no forced ad zone', function() {
+        it('uses front', function() {
+          expect(adManager.getAdUnitCode()).to.equal('/4246/fmg.onion/front');
+        });
+      });
+
+      context('most pages', function() {
+        it('uses the page type on meta', function() {
+          TargetingPairs.getTargetingPairs.returns({
+            slotOptions: { page: 'permalink' }
+          });
+          expect(adManager.getAdUnitCode()).to.equal('/4246/fmg.onion/permalink');
+        });
       });
     });
   });

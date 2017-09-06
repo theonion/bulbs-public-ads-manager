@@ -1,6 +1,8 @@
 require('./dfp');
 var utils = require('./utils');
-var adUnits = require('./ad-units');
+var TargetingPairs = require('./helpers/TargetingPairs');
+var AdZone = require('./helpers/AdZone');
+var Experiments = require('./helpers/Experiments');
 
 var ERROR = 'error';
 var TABLE = 'table';
@@ -15,16 +17,17 @@ var AdManager = function(options) {
   };
   var options = options || {};
 
-  this.adUnits = adUnits;
+  this.adUnits = options.adUnits;
   this.slots = {};
   this.adId = 0;
   this.initialized = false;
   this.viewportWidth = 0;
   this.oldViewportWidth = window.document.body.clientWidth;
-  this.targeting = global.TARGETING;
   this.options = utils.extend(defaultOptions, options);
-  this.amazonId = window.Bulbs.settings.AMAZON_A9_ID;
 
+  if (this.options.amazonEnabled) {
+    this.amazonId = options.amazonA9ID;
+  }
 
   this.bindContext();
 
@@ -37,6 +40,7 @@ var AdManager = function(options) {
     adManager.initGoogleTag();
   });
 };
+
 
 /**
  * Binds context for each event handler to always be the `AdManager` prototype
@@ -77,7 +81,6 @@ AdManager.prototype.handleWindowResize = function() {
 */
 AdManager.prototype.initGoogleTag = function() {
   var adManager = this;
-
   this.googletag.pubads().disableInitialLoad();
   this.googletag.pubads().enableAsyncRendering();
   this.googletag.pubads().updateCorrelator();
@@ -86,7 +89,9 @@ AdManager.prototype.initGoogleTag = function() {
   this.googletag.pubads().addEventListener('impressionViewable', adManager.onImpressionViewable);
   this.googletag.pubads().addEventListener('slotOnload', adManager.onSlotOnload);
 
-  this.initBaseTargeting();
+  this.targeting = global.TARGETING || TargetingPairs.getTargetingPairs(AdZone.forcedAdZone()).pageOptions;
+
+  this.setPageTargeting();
   if (this.options.amazonEnabled) {
     this.initAmazonA9();
   }
@@ -102,7 +107,7 @@ AdManager.prototype.initGoogleTag = function() {
  * @returns undefined
 */
 AdManager.prototype.initAmazonA9 = function() {
-  if (typeof amznads !== "undefined"  && amznads.apiReady) {
+  if (typeof amznads !== "undefined" && amznads.apiReady) {
     this.amznads = amznads;
     this.amznads.getAds(this.amazonId);
     this.amznads.setTargetingForGPTAsync('amznslots');
@@ -115,11 +120,11 @@ AdManager.prototype.initAmazonA9 = function() {
  *
  * @returns undefined
 */
-AdManager.prototype.initBaseTargeting = function() {
+AdManager.prototype.setPageTargeting = function() {
+  // Bulbs Targeting Pairs
   for (var customCriteriaKey in this.targeting) {
     var customCriteriaValue = this.targeting[customCriteriaKey];
-
-    if(customCriteriaValue) {
+    if (customCriteriaValue) {
       this.googletag.pubads().setTargeting(customCriteriaKey, customCriteriaValue.toString());
     }
   }
@@ -220,8 +225,8 @@ AdManager.prototype.onSlotRenderEnded = function(event) {
     element.setAttribute('data-ad-load-state', 'empty');
   } else {
 
-    if (adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
-      adUnits.units[element.dataset.adUnit].onSlotRenderEnded(event, element);
+    if (this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
+      this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded(event, element);
     }
 
     element.setAttribute('data-ad-load-state', 'loaded');
@@ -291,7 +296,7 @@ AdManager.prototype.findAds = function (el) {
       ads = el.getElementsByClassName('dfp');
     }
   } else if (el instanceof HTMLCollection) {
-    for(var i=0; i < el.length; i++) {
+    for (var i = 0; i < el.length; i++) {
       var thisEl = el[i];
       if (this.isAd(thisEl)) {
         ads.push(thisEl);
@@ -338,23 +343,42 @@ AdManager.prototype.slotInfo = function() {
  * @param {Object} slot - Configured ad slot from the GPT
  * @returns undefined
 */
-AdManager.prototype.setSlotTargeting = function(element, slot) {
-  for (var customKey in this.targeting) {
-    if(this.targeting[customKey]) {
-      slot.setTargeting(customKey, this.targeting[customKey].toString());
-    }
-  }
-
+AdManager.prototype.setSlotTargeting = function(element, slot, adUnitConfig) {
   var slotTargeting = {};
+  var positionTargeting = adUnitConfig.pos || adUnitConfig.slotName || element.dataset.adUnit;
+  var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone()).slotOptions;
+
   if (element.dataset.targeting) {
     slotTargeting = JSON.parse(element.dataset.targeting);
   }
 
+  if (positionTargeting) {
+    slotTargeting.pos = positionTargeting;
+  }
+
+  slotTargeting = utils.extend(slotTargeting, kinjaPairs);
+
   for (var customKey in slotTargeting) {
-    if(slotTargeting[customKey]) {
+    if (slotTargeting[customKey]) {
       slot.setTargeting(customKey, slotTargeting[customKey].toString());
     }
   }
+};
+
+AdManager.prototype.getAdUnitCode = function() {
+  var adUnitCodes = [this.options.dfpId, this.options.dfpSiteCode];
+
+  if (window.kinja) {
+    var forcedAdZone = AdZone.forcedAdZone();
+    var targetingPairs = TargetingPairs.getTargetingPairs(forcedAdZone);
+    var adUnitName = forcedAdZone === 'collapse' ? 'collapse' : (targetingPairs.slotOptions.page === 'frontpage' ? 'front' : targetingPairs.slotOptions.page)
+
+    adUnitCodes.push(adUnitName);
+  } else if (window.dfpSiteSection) {
+    adUnitCodes.push(window.dfpSiteSection);
+  }
+
+  return '/' + adUnitCodes.join('/');
 };
 
 /**
@@ -364,35 +388,31 @@ AdManager.prototype.setSlotTargeting = function(element, slot) {
  * @returns {Element} - Fully configured ad slot
 */
 AdManager.prototype.configureAd = function (element) {
+  var adUnitConfig = this.adUnits.units[element.dataset.adUnit];
+  var adUnitPath = this.getAdUnitCode();
+  var size;
+
+  if (!adUnitConfig) {
+    this.logMessage('Ad unit (' + element.dataset.adUnit + ') missing configuration', ERROR);
+    return;
+  }
+
+  size = adUnitConfig.sizes[0][1];
+
+  element.id = this.generateId();
+
+  slot = this.googletag.defineSlot(adUnitPath, size, element.id);
+
   if (element.id && element.id in this.slots) {
     // Slot has already been configured
     return this.slots[element.id];
   }
-
-  element.id = this.generateId();
 
   if (!element.dataset) {
     this.logMessage('Browser does not support dataset', ERROR);
     return;
   }
 
-  var adUnitConfig = this.adUnits.units[element.dataset.adUnit];
-  if (!adUnitConfig) {
-    this.logMessage('Ad unit (' + element.dataset.adUnit + ') missing configuration', ERROR);
-    return;
-  }
-
-  var positionTargeting = adUnitConfig.slotName || element.dataset.adUnit;
-
-  var slotName = this.options.dfpSiteCode;
-  if (window.dfpSiteSection) {
-    slotName += '/' + window.dfpSiteSection;
-  }
-  var adUnitPath = '/' + this.options.dfpId + '/' + slotName;
-
-  // Use first ad size as the default
-  var size = adUnitConfig.sizes[0][1];
-  var slot = this.googletag.defineSlot(adUnitPath, size, element.id);
   slot.defineSizeMapping(adUnitConfig.sizes);
 
   if (slot === null) {
@@ -400,14 +420,7 @@ AdManager.prototype.configureAd = function (element) {
     return;
   }
 
-  var slotTargeting = {};
-  if (element.dataset.targeting) {
-    slotTargeting = JSON.parse(element.dataset.targeting);
-  }
-  slotTargeting.pos = positionTargeting;
-  element.dataset.targeting = JSON.stringify(slotTargeting);
-
-  this.setSlotTargeting(element, slot);
+  this.setSlotTargeting(element, slot, adUnitConfig);
 
   slot.addService(this.googletag.pubads());
 
@@ -452,6 +465,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
     return;
   }
 
+  var slotsToLoad = [];
   var ads = this.findAds(element);
 
   if (!this.googletag.pubadsReady) {
@@ -462,7 +476,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
     this.googletag.pubads().updateCorrelator();
   }
 
-  for(var i = 0; i < ads.length; i++) {
+  for (var i = 0; i < ads.length; i++) {
     var thisEl = ads[i];
 
     if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
@@ -471,10 +485,14 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
 
     var slot = this.configureAd(thisEl);
 
-    if (typeof window.index_headertag_lightspeed === 'undefined') {
+    if (slot) {
+      slotsToLoad.push(slot);
+    }
+
+    if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
       this.googletag.display(thisEl.id);
     } else {
-      window.index_headertag_lightspeed.slotDisplay(thisEl.id, ads);
+      window.headertag.display(thisEl.id);
     }
 
     if (slot.eagerLoad) {
@@ -489,7 +507,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
  * @param {domElement} DOM element containing the DFP ad slot
  * @returns undefined
 */
-AdManager.prototype.refreshSlot = function(domElement) {
+AdManager.prototype.refreshSlot = function (domElement) {
   if (this.options.amazonEnabled && this.amznads) {
     params = {
       id: this.amazonId,
@@ -507,12 +525,12 @@ AdManager.prototype.amazonAdRefresh = function (domElement) {
   this.googletag.pubads().clearTargeting('amznslots');
   this.amznads.setTargetingForGPTAsync('amznslots');
   this.refreshAds(domElement);
-}
+};
 
 AdManager.prototype.doGetAmazonAdsCallback = function (params) {
   this.amznads.lastGetAdsCallback = Date.now();
   this.amznads.getAdsCallback(params.id, params.callback, params.timeout);
-}
+};
 
 AdManager.prototype.amazonAdRefreshThrottled = function (params) {
   if (typeof this.amznads.lastGetAdsCallback === 'undefined') {
@@ -523,7 +541,7 @@ AdManager.prototype.amazonAdRefreshThrottled = function (params) {
   } else {
     params.callback.call();
   }
-}
+};
 
 /**
   * Uses the `cmd` async GPT queue to enqueue ad manager function to run
@@ -533,7 +551,7 @@ AdManager.prototype.amazonAdRefreshThrottled = function (params) {
   * @param {domElement} DOM element containing the DFP ad slot
   * @returns undefined
 */
-AdManager.prototype.asyncRefreshSlot = function(domElement) {
+AdManager.prototype.asyncRefreshSlot = function (domElement) {
   var adManager = this;
 
   if (this.googletag.apiReady) {
@@ -571,19 +589,27 @@ AdManager.prototype.refreshAds = function (domElement) {
  * Fetches a new ad for each slot passed in
  *
  * @param {slotsToLoad} One or many slots to fetch new ad for
+ * @param {domElement} DOM element containing the DFP ad
  * @returns undefined
 */
-AdManager.prototype.refreshSlots = function (slotsToLoad, ads) {
-  if (slotsToLoad.length == 0) {
+AdManager.prototype.refreshSlots = function(slotsToLoad, domElement) {
+
+  if (slotsToLoad.length === 0) {
     return;
   }
 
-  if (typeof window.index_headertag_lightspeed === 'undefined') {
-    this.googletag.pubads().refresh(slotsToLoad, { changeCorrelator: false });
+  if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
+    this.googletag.pubads().refresh(slotsToLoad, {
+      changeCorrelator: false
+    });
   } else {
-    window.index_headertag_lightspeed.slotRefresh(slotsToLoad, ads, { changeCorrelator: false });
+    window.headertag = window.googletag;
+    window.headertag.pubads().refresh(slotsToLoad, {
+      changeCorrelator: false
+    });
   }
 };
+
 
 /**
  * Unloads all ads
@@ -592,7 +618,7 @@ AdManager.prototype.refreshSlots = function (slotsToLoad, ads) {
  * @returns undefined
 */
 AdManager.prototype.unloadAds = function(element) {
-  if (! this.initialized) {
+  if (!this.initialized) {
     return;
   }
 

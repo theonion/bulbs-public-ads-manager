@@ -4,6 +4,7 @@
 
 window.googletag = window.googletag || {};
 window.googletag.cmd = window.googletag.cmd || [];
+window.headertag = window.headertag || {};
 
 var gads = document.createElement('script');
 gads.async = true;

@@ -27,5 +27,17 @@
     "mocha": "^2.2.5",
     "sinon": "^1.16.0",
     "watchify": "^3.7.0"
-  }
+  },
+  "main": "karma.conf.js",
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theonion/bulbs-public-ads-manager.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/theonion/bulbs-public-ads-manager.git"
+  },
+  "homepage": "https://github.com/theonion/bulbs-public-ads-manager.git#readme"
 }
