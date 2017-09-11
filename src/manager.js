@@ -13,7 +13,8 @@ var AdManager = function(options) {
     resizeTimeout: null,
     debug: false,
     dfpId: 4246,
-    amazonEnabled: true,
+    amazonEnabled: false,
+	enableSRA: false
   };
   var options = options || {};
 
@@ -84,6 +85,10 @@ AdManager.prototype.initGoogleTag = function() {
   this.googletag.pubads().disableInitialLoad();
   this.googletag.pubads().enableAsyncRendering();
   this.googletag.pubads().updateCorrelator();
+  
+  if (this.options.enableSRA) {
+    this.googletag.pubads().enableSingleRequest();
+  }
 
   this.googletag.pubads().addEventListener('slotRenderEnded', adManager.onSlotRenderEnded);
   this.googletag.pubads().addEventListener('impressionViewable', adManager.onImpressionViewable);
@@ -436,9 +441,12 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
       window.headertag.display(thisEl.id);
     }
 
-    if (slot.eagerLoad) {
-      this.refreshSlot(thisEl);
-    }
+     // If SRA and its the final ad in the queue
+     if (ads.length === i + 1 && slot.eagerLoad && this.options.enableSRA) {
+       this.refreshSlot(slotsToLoad);
+     } else if (slot.eagerLoad) {
+       this.refreshSlot(thisEl);
+     }
   }
 };
 
