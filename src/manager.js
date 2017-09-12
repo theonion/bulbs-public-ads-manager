@@ -13,8 +13,8 @@ var AdManager = function(options) {
     resizeTimeout: null,
     debug: false,
     dfpId: 4246,
-    amazonEnabled: false,
-	enableSRA: false
+    amazonEnabled: true,
+    enableSRA: false
   };
   var options = options || {};
 
@@ -443,8 +443,8 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
 
      // If SRA and its the final ad in the queue
      if (ads.length === i + 1 && slot.eagerLoad && this.options.enableSRA) {
-       this.refreshSlot(slotsToLoad);
-     } else if (slot.eagerLoad) {
+       this.refreshSlots(slotsToLoad);
+     } else if (slot.eagerLoad && !this.options.enableSRA) {
        this.refreshSlot(thisEl);
      }
   }
@@ -541,7 +541,7 @@ AdManager.prototype.refreshAds = function (domElement) {
  * @param {domElement} DOM element containing the DFP ad
  * @returns undefined
 */
-AdManager.prototype.refreshSlots = function(slotsToLoad, domElement) {
+AdManager.prototype.refreshSlots = function(slotsToLoad) {
 
   if (slotsToLoad.length === 0) {
     return;
