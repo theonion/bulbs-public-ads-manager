@@ -552,7 +552,6 @@ AdManager.prototype.refreshSlots = function(slotsToLoad) {
       changeCorrelator: false
     });
   } else {
-    window.headertag = window.googletag;
     window.headertag.pubads().refresh(slotsToLoad, {
       changeCorrelator: false
     });
