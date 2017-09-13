@@ -431,7 +431,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
 
     var slot = this.configureAd(thisEl);
 
-    if (slot) {
+    if (slot && slot.eagerLoad) {
       slotsToLoad.push(slot);
     }
 
@@ -441,13 +441,15 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
       window.headertag.display(thisEl.id);
     }
 
-     // If SRA and its the final ad in the queue
-     if (ads.length === i + 1 && slot.eagerLoad && this.options.enableSRA) {
-       this.refreshSlots(slotsToLoad);
-     } else if (slot.eagerLoad && !this.options.enableSRA) {
-       this.refreshSlot(thisEl);
-     }
+    if (slot.eagerLoad && !this.options.enableSRA) {
+      this.refreshSlot(thisEl);
+    }
   }
+
+  if (slotsToLoad.length && this.options.enableSRA) {
+    this.refreshSlots(slotsToLoad);
+  }
+
 };
 
 /**
