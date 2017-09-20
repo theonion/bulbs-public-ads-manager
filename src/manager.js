@@ -25,11 +25,6 @@ var AdManager = function(options) {
   this.viewportWidth = 0;
   this.oldViewportWidth = window.document.body.clientWidth;
   this.options = utils.extend(defaultOptions, options);
-
-  if (this.options.amazonEnabled) {
-    this.amazonId = options.amazonA9ID;
-  }
-
   this.bindContext();
 
   window.addEventListener('resize', this.handleWindowResize);
@@ -97,9 +92,6 @@ AdManager.prototype.initGoogleTag = function() {
   this.targeting = global.TARGETING || TargetingPairs.getTargetingPairs(AdZone.forcedAdZone()).pageOptions;
 
   this.setPageTargeting();
-  if (this.options.amazonEnabled) {
-    this.initAmazonA9();
-  }
 
   this.initialized = true;
 
@@ -107,16 +99,23 @@ AdManager.prototype.initGoogleTag = function() {
 };
 
 /**
- * initializes A9
+ * Fetch Amazon A9/Matchbuy/APS bids
  *
  * @returns undefined
 */
-AdManager.prototype.initAmazonA9 = function() {
-  if (typeof amznads !== "undefined" && amznads.apiReady) {
-    this.amznads = amznads;
-    this.amznads.getAds(this.amazonId);
-    this.amznads.setTargetingForGPTAsync('amznslots');
-  }
+AdManager.prototype.fetchAPSBids = function(element, gptSizes) {
+	window.apstag.fetchBids({
+		slots: [{
+			slotID: element,
+			sizes: gptSizes
+		}],
+		timeout: 2e3
+	}, function (bids) {
+		// Your callback method, in this example it triggers the first DFP request for googletag's disableInitialLoad integration after bids have been set
+		window.headertag.cmd.push(function () {
+			window.apstag.setDisplayBids();
+		});
+	});
 };
 
 
@@ -271,6 +270,22 @@ AdManager.prototype.onSlotOnload = function(event) {
 AdManager.prototype.generateId = function() {
   this.adId += 1;
   return 'dfp-ad-' + this.adId.toString();
+};
+
+/**
+ * Check if a size is eligible to serve given the viewport dimensions.
+ *
+ * @param {Array} Viewport size specifications for the ad slot, and list of eligbile sizes for each.
+ * @returns {Array} A list of ad sizes eligible to serve into the current slot given the viewport size.
+*/
+
+AdManager.prototype.adSizesMatchingViewport = function (gptSizes) {
+  return gptSizes.filter(function(sizes) {
+    var minWidth = sizes[0][0];
+    if (window.matchMedia('(min-width:' + minWidth + 'px)').matches) {
+      return sizes[1];
+    }
+  });
 };
 
 /**
@@ -482,17 +497,29 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
   }
 
   for (var i = 0; i < ads.length; i++) {
-    var thisEl = ads[i];
+    var thisEl = ads[i],
+      slot,
+      adUnitConfig,
+      activeSizes;
 
-    if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
+	if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
       continue;
     }
 
-    var slot = this.configureAd(thisEl);
+    slot = this.configureAd(thisEl);
 
     if (slot && slot.eagerLoad) {
       slotsToLoad.push(slot);
     }
+
+	if (this.options.amazonEnabled) {
+      adUnitConfig = this.adUnits.units[thisEl.dataset.adUnit];
+      activeSizes = this.adSizesMatchingViewport(adUnitConfig.sizes)
+      if (activeSizes && activeSizes.length) {
+       this.fetchAPSBids(thisEl, activeSizes);
+      }
+      
+	}
 
     if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
       this.googletag.display(thisEl.id);
@@ -518,39 +545,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
  * @returns undefined
 */
 AdManager.prototype.refreshSlot = function (domElement) {
-  if (this.options.amazonEnabled && this.amznads) {
-    params = {
-      id: this.amazonId,
-      callback: this.amazonAdRefresh.bind(this, domElement),
-      timeout: 500
-    };
-    this.amazonAdRefreshThrottled(params);
-    this.amznads.lastGetAdsCallback = Date.now();
-  } else {
     this.refreshAds(domElement);
-  }
-};
-
-AdManager.prototype.amazonAdRefresh = function (domElement) {
-  this.googletag.pubads().clearTargeting('amznslots');
-  this.amznads.setTargetingForGPTAsync('amznslots');
-  this.refreshAds(domElement);
-};
-
-AdManager.prototype.doGetAmazonAdsCallback = function (params) {
-  this.amznads.lastGetAdsCallback = Date.now();
-  this.amznads.getAdsCallback(params.id, params.callback, params.timeout);
-};
-
-AdManager.prototype.amazonAdRefreshThrottled = function (params) {
-  if (typeof this.amznads.lastGetAdsCallback === 'undefined') {
-    this.doGetAmazonAdsCallback(params);
-  // returns true if amznads.lastGetAdsCallback was updated > 10 seconds ago
-  } else if (Date.now() - this.amznads.lastGetAdsCallback > 1e4) {
-    this.doGetAmazonAdsCallback(params);
-  } else {
-    params.callback.call();
-  }
 };
 
 /**
