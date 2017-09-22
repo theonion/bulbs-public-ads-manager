@@ -510,11 +510,16 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
 
   for (var i = 0; i < ads.length; i++) {
     var thisEl = ads[i],
+      adUnitConfig = this.adUnits.units[thisEl.dataset.adUnit],
       slot,
-      adUnitConfig,
       activeSizes,
       gptSlotSizes,
       adUnitSizes;
+
+    // Makes shouldRun optional in the config. Only check for shouldRuns that are falsy
+	if (adUnitConfig.hasOwnProperty('shouldRun') && !adUnitConfig.shouldRun()) {
+      return;
+    }
 
 	if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
       continue;
@@ -535,7 +540,6 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
      * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
     */
 	
-      adUnitConfig = this.adUnits.units[thisEl.dataset.adUnit];
       adUnitSizes = this.adUnitSizes(adUnitConfig.sizes)[1];
 
       if (typeof gptSlotSizes == 'function') {
