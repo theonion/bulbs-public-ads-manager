@@ -103,10 +103,10 @@ AdManager.prototype.initGoogleTag = function() {
  *
  * @returns undefined
 */
-AdManager.prototype.fetchAPSBids = function(element, gptSizes) {
+AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes) {
 	window.apstag.fetchBids({
 		slots: [{
-			slotID: element,
+			slotID: elementId,
 			sizes: gptSizes
 		}],
 		timeout: 2e3
@@ -282,10 +282,10 @@ AdManager.prototype.generateId = function() {
 AdManager.prototype.adSizesMatchingViewport = function (gptSizes) {
   return gptSizes.filter(function(sizes) {
     var minWidth = sizes[0][0];
-    if (window.matchMedia('(min-width:' + minWidth + 'px)').matches) {
+    if (window.matchMedia('(min-width:' + minWidth + 'px)').matches && sizes[1].length) {
       return sizes[1];
     }
-  });
+  })[0];
 };
 
 /**
@@ -515,10 +515,9 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
 	if (this.options.amazonEnabled) {
       adUnitConfig = this.adUnits.units[thisEl.dataset.adUnit];
       activeSizes = this.adSizesMatchingViewport(adUnitConfig.sizes)
-      if (activeSizes && activeSizes.length) {
-       this.fetchAPSBids(thisEl, activeSizes);
+      if (adUnitConfig.amazonEnabled && activeSizes && activeSizes.length) {
+       this.fetchAmazonBids(thisEl.id, activeSizes[1]);
       }
-      
 	}
 
     if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
