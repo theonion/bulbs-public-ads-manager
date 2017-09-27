@@ -1279,6 +1279,9 @@ describe('AdManager', function() {
 
     beforeEach(function() {
       TestHelper.stub(adManager, 'refreshSlot');
+      TestHelper.stub(adManager.googletag, 'pubads').returns({
+        updateCorrelator: sinon.spy(),
+      });
 
       baseContainer = document.createElement('div');
       container1 = document.createElement('div');
@@ -1306,6 +1309,10 @@ describe('AdManager', function() {
       it('refreshes the slot right away', function() {
         expect(adManager.refreshSlot.calledWith(adSlot1)).to.be.true;
       });
+
+      it('updates the correlator', function() {
+        expect(adManager.googletag.pubads().updateCorrelator.called).to.be.true;
+      });
     });
 
     context('api is not ready', function() {
@@ -1324,6 +1331,10 @@ describe('AdManager', function() {
 
       it('refreshes the slot by way of the `cmd` async queue', function () {
         expect(adManager.refreshSlot.calledWith(adSlot1)).to.be.true;
+      });
+
+      it('updates the correlator', function() {
+        expect(adManager.googletag.pubads().updateCorrelator.called).to.be.true;
       });
     });
   });
