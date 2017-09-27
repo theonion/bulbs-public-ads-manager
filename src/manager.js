@@ -14,6 +14,7 @@ var AdManager = function(options) {
     debug: false,
     dfpId: 4246,
     amazonEnabled: true,
+    enableSRA: false
   };
   var options = options || {};
 
@@ -84,6 +85,10 @@ AdManager.prototype.initGoogleTag = function() {
   this.googletag.pubads().disableInitialLoad();
   this.googletag.pubads().enableAsyncRendering();
   this.googletag.pubads().updateCorrelator();
+  
+  if (this.options.enableSRA) {
+    this.googletag.pubads().enableSingleRequest();
+  }
 
   this.googletag.pubads().addEventListener('slotRenderEnded', adManager.onSlotRenderEnded);
   this.googletag.pubads().addEventListener('impressionViewable', adManager.onImpressionViewable);
@@ -485,7 +490,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
 
     var slot = this.configureAd(thisEl);
 
-    if (slot) {
+    if (slot && slot.eagerLoad) {
       slotsToLoad.push(slot);
     }
 
@@ -495,10 +500,15 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
       window.headertag.display(thisEl.id);
     }
 
-    if (slot.eagerLoad) {
+    if (slot.eagerLoad && !this.options.enableSRA) {
       this.refreshSlot(thisEl);
     }
   }
+
+  if (slotsToLoad.length && this.options.enableSRA) {
+    this.refreshSlots(slotsToLoad);
+  }
+
 };
 
 /**
@@ -592,7 +602,7 @@ AdManager.prototype.refreshAds = function (domElement) {
  * @param {domElement} DOM element containing the DFP ad
  * @returns undefined
 */
-AdManager.prototype.refreshSlots = function(slotsToLoad, domElement) {
+AdManager.prototype.refreshSlots = function(slotsToLoad) {
 
   if (slotsToLoad.length === 0) {
     return;
@@ -603,7 +613,6 @@ AdManager.prototype.refreshSlots = function(slotsToLoad, domElement) {
       changeCorrelator: false
     });
   } else {
-    window.headertag = window.googletag;
     window.headertag.pubads().refresh(slotsToLoad, {
       changeCorrelator: false
     });

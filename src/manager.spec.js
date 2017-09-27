@@ -123,8 +123,11 @@ describe('AdManager', function() {
       adManager.initGoogleTag();
     });
 
-    it('does not enable single request mode', function() {
+    it('enable single request mode when option enabled, otherwise disable it', function() {
       expect(adManager.googletag.pubads().enableSingleRequest.called).to.be.false;
+      adManager.options.enableSRA = true;
+      adManager.initGoogleTag();
+      expect(adManager.googletag.pubads().enableSingleRequest.called).to.be.true;
     });
 
     it('disables initial load of ads, to defer to the eager/lazy loading logic', function() {
