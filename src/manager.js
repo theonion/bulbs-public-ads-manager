@@ -104,6 +104,7 @@ AdManager.prototype.initGoogleTag = function() {
  * @returns undefined
 */
 AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes) {
+	
 	window.apstag.fetchBids({
 		slots: [{
 			slotID: elementId,
@@ -273,19 +274,30 @@ AdManager.prototype.generateId = function() {
 };
 
 /**
- * Check if a size is eligible to serve given the viewport dimensions.
- *
+ * Sorts through viewports slot sizes and returns all dimensions as an array.
+ * Note, that this function does NOT filter out sizes that aren't able to display based on the viewport dimensions in the ad unit config.
+
  * @param {Array} Viewport size specifications for the ad slot, and list of eligbile sizes for each.
- * @returns {Array} A list of ad sizes eligible to serve into the current slot given the viewport size.
+ * @returns {Array} An array of ad sizes belonging to the slot
 */
 
-AdManager.prototype.adSizesMatchingViewport = function (gptSizes) {
-  return gptSizes.filter(function(sizes) {
-    var minWidth = sizes[0][0];
-    if (window.matchMedia('(min-width:' + minWidth + 'px)').matches && sizes[1].length) {
-      return sizes[1];
-    }
+AdManager.prototype.adUnitSizes = function(adUnitSizes) {
+  return adUnitSizes.filter(function (sizes) {
+    return sizes[1];
   })[0];
+};
+
+/**
+ * Returns the active sizes object from GPT as an array.
+ *
+ * @param {Array} A list of all sizes eligible to serve for an ad slot given the viewport size sent requirements to GPT in defineSlot.
+ * @returns {Array} An array of ad sizes belonging to the slot
+*/
+
+AdManager.prototype.adSlotSizes = function(gptSizes) {
+  return gptSizes.map(function (key) {
+    return [key[Object.keys(key)[0]], key[Object.keys(key)[1]]];
+  })
 };
 
 /**
@@ -500,7 +512,9 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
     var thisEl = ads[i],
       slot,
       adUnitConfig,
-      activeSizes;
+      activeSizes,
+      gptSlotSizes,
+      adUnitSizes;
 
 	if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
       continue;
@@ -512,13 +526,29 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
       slotsToLoad.push(slot);
     }
 
-	if (this.options.amazonEnabled) {
+    if (this.options.amazonEnabled) {
+ 
+    /**
+     * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters inside the ad config.
+     * This method is undocumented, and could be removed. When not available, fall back to all sizes specified in the ad unit itself.
+     * This is not optimal, as sizes which cannot be displayed due to the viewport dimensions will be requested from A9. It is thus used as a fallback.
+     * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
+    */
+	
       adUnitConfig = this.adUnits.units[thisEl.dataset.adUnit];
-      activeSizes = this.adSizesMatchingViewport(adUnitConfig.sizes)
-      if (adUnitConfig.amazonEnabled && activeSizes && activeSizes.length) {
-       this.fetchAmazonBids(thisEl.id, activeSizes[1]);
+      adUnitSizes = this.adUnitSizes(adUnitConfig.sizes)[1];
+
+      if (typeof gptSlotSizes == 'function') {
+        gptSlotSizes = slot.getSizes();
+        activeSizes = this.adSlotSizes(gptSlotSizes);
+      } else {
+        activeSizes = adUnitSizes;
       }
-	}
+
+      if (adUnitConfig.amazonEnabled && activeSizes && activeSizes.length) {
+        this.fetchAmazonBids(thisEl.id, activeSizes);
+      }
+    }
 
     if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
       this.googletag.display(thisEl.id);
