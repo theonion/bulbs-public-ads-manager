@@ -103,24 +103,19 @@ AdManager.prototype.initGoogleTag = function() {
 /**
  * initializes A9
  * Fetch Amazon A9/Matchbuy/APS bids
- *
+ * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters inside the ad config.
+ * This method is undocumented, and could be removed. When not available, fall back to all sizes specified in the ad unit itself.
+ * This is not optimal, as sizes which cannot be displayed due to the viewport dimensions will be requested from A9. It is thus used as a fallback.
+ * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
  * @returns undefined
 */
 AdManager.prototype.initAmazonA9 = function(element, slot) {
-  var gptSlotSizes = slot.getSizes();
-	
-  /**
-   * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters inside the ad config.
-   * This method is undocumented, and could be removed. When not available, fall back to all sizes specified in the ad unit itself.
-   * This is not optimal, as sizes which cannot be displayed due to the viewport dimensions will be requested from A9. It is thus used as a fallback.
-   * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
-  */
 
-  adUnitConfig = this.adUnits.units[element.dataset.adUnit];
-  adUnitSizes = this.adUnitSizes(adUnitConfig.sizes)[1];
+  var adUnitConfig = this.adUnits.units[element.dataset.adUnit],
+    adUnitSizes = this.adUnitSizes(adUnitConfig.sizes)[1];
 
-  if (typeof gptSlotSizes == 'function') {
-    activeSizes = this.adSlotSizes(gptSlotSizes);
+  if (slot && typeof slot.getSizes == 'function') {
+    activeSizes = this.adSlotSizes(slot.getSizes());
   } else {
     activeSizes = adUnitSizes;
   }
@@ -550,9 +545,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
   for (var i = 0; i < ads.length; i++) {
     var thisEl = ads[i],
       slot,
-      adUnitConfig,
-      activeSizes,
-      adUnitSizes;
+      activeSizes;
 
 	if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
       continue;
