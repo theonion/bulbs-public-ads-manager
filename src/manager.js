@@ -80,7 +80,7 @@ AdManager.prototype.initGoogleTag = function() {
   this.googletag.pubads().disableInitialLoad();
   this.googletag.pubads().enableAsyncRendering();
   this.googletag.pubads().updateCorrelator();
-  
+
   if (this.options.enableSRA) {
     this.googletag.pubads().enableSingleRequest();
   }
@@ -131,14 +131,19 @@ AdManager.prototype.initAmazonA9 = function(element, slot) {
  *
  * @returns undefined
 */
-AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes) {
+AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes, optionalCallback) {
   window.apstag.fetchBids({
     slots: [{
       slotID: elementId,
       sizes: gptSizes
     }],
-    timeout: 2e3
-	}, this.handleFetchedAmazonBids)
+    timeout: 1000
+	}, function (bids) {
+    this.handleFetchedAmazonBids(bids);
+    if (optionalCallback) {
+      // TODO optionalCallback.invoke();
+    }
+  }.bind(this));
 };
 
 AdManager.prototype.handleFetchedAmazonBids = function(bids) {
@@ -558,7 +563,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
     }
 
     if (this.options.amazonEnabled) {
-      this.initAmazonA9(thisEl, slot)
+      this.fetchAmazonBids(thisEl, slot);
     }
 
     if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
@@ -599,12 +604,23 @@ AdManager.prototype.refreshSlot = function (domElement) {
 AdManager.prototype.asyncRefreshSlot = function (domElement) {
   var adManager = this;
 
-  if (this.googletag.apiReady) {
-    this.refreshSlot(domElement);
+  // TODO - move into a separate helper function or something
+  var temp = function () {
+    if (this.googletag.apiReady) {
+      this.refreshSlot(domElement);
+    } else {
+      this.googletag.cmd.push(function () {
+        adManager.refreshSlot(domElement);
+      });
+    }
+  };
+
+  // to get slot, var slot = this.slots[domElement.id];
+  if (this.options.amazonEnabled) { // check slot instead of globally
+    var sizes = // get me somewhere
+    this.fetchAmazonBids(domElement.id, sizes, temp);
   } else {
-    this.googletag.cmd.push(function () {
-      adManager.refreshSlot(domElement);
-    });
+    temp();
   }
 };
 
