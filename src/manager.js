@@ -132,27 +132,27 @@ AdManager.prototype.initAmazonA9 = function(element, slot) {
  * @returns undefined
 */
 AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes) {
-	
   window.apstag.fetchBids({
     slots: [{
       slotID: elementId,
       sizes: gptSizes
     }],
     timeout: 2e3
-	}, function(bids) {
-    // Your callback method, in this example it triggers the first DFP request for googletag's disableInitialLoad integration after bids have been set
-        if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
-          window.googletag.cmd.push(function() {
-            window.apstag.setDisplayBids();
-          });
-        } else {
-          window.headertag.cmd.push(function() {
-            window.apstag.setDisplayBids();
-          });
-        }
-	});
+	}, this.handleFetchedAmazonBids)
 };
 
+AdManager.prototype.handleFetchedAmazonBids = function(bids) {
+  // Your callback method, in this example it triggers the first DFP request for googletag's disableInitialLoad integration after bids have been set
+  if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
+    window.googletag.cmd.push(function() {
+      window.apstag.setDisplayBids();
+    });
+  } else {
+    window.headertag.cmd.push(function() {
+      window.apstag.setDisplayBids();
+    });
+  }
+}
 
 /**
  * Sets global targeting regardless of ad slot based on the `TARGETING` global on each site
