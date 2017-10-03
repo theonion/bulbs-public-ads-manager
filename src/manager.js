@@ -105,17 +105,23 @@ AdManager.prototype.initGoogleTag = function() {
 */
 AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes) {
 	
-	window.apstag.fetchBids({
-		slots: [{
-			slotID: elementId,
-			sizes: gptSizes
-		}],
-		timeout: 2e3
-	}, function (bids) {
-		// Your callback method, in this example it triggers the first DFP request for googletag's disableInitialLoad integration after bids have been set
-		window.headertag.cmd.push(function () {
-			window.apstag.setDisplayBids();
-		});
+  window.apstag.fetchBids({
+    slots: [{
+      slotID: elementId,
+      sizes: gptSizes
+    }],
+    timeout: 2e3
+	}, function(bids) {
+    // Your callback method, in this example it triggers the first DFP request for googletag's disableInitialLoad integration after bids have been set
+        if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
+          window.googletag.cmd.push(function() {
+            window.apstag.setDisplayBids();
+          });
+        } else {
+          window.headertag.cmd.push(function() {
+            window.apstag.setDisplayBids();
+          });
+        }
 	});
 };
 
