@@ -101,7 +101,6 @@ AdManager.prototype.initGoogleTag = function() {
 
 
 /**
- * initializes A9
  * Fetch Amazon A9/Matchbuy/APS bids
  * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters inside the ad config.
  * This method is undocumented, and could be removed. When not available, fall back to all sizes specified in the ad unit itself.
@@ -109,7 +108,7 @@ AdManager.prototype.initGoogleTag = function() {
  * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
  * @returns undefined
 */
-AdManager.prototype.initAmazonA9 = function(element, slot) {
+AdManager.prototype.fetchAmazonBids = function(element, slot, refreshCallback) {
 
   var adUnitConfig = this.adUnits.units[element.dataset.adUnit],
     adUnitSizes = this.adUnitSizes(adUnitConfig.sizes)[1];
@@ -121,30 +120,21 @@ AdManager.prototype.initAmazonA9 = function(element, slot) {
   }
 
   if (adUnitConfig.amazonEnabled && activeSizes && activeSizes.length) {
-    this.fetchAmazonBids(element.id, activeSizes);
+    window.apstag.fetchBids({
+      slots: [{
+        slotID: element.id,
+        sizes: activeSizes
+      }],
+      timeout: 2e3
+    }, function (bids) {
+      this.handleFetchedAmazonBids(bids);
+      if (refreshCallback) {
+        refreshCallback.call();
+      }
+    }.bind(this));
   }
 
 }
-
-/**
- * Fetch Amazon A9/Matchbuy/APS bids
- *
- * @returns undefined
-*/
-AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes, optionalCallback) {
-  window.apstag.fetchBids({
-    slots: [{
-      slotID: elementId,
-      sizes: gptSizes
-    }],
-    timeout: 1000
-	}, function (bids) {
-    this.handleFetchedAmazonBids(bids);
-    if (optionalCallback) {
-      // TODO optionalCallback.invoke();
-    }
-  }.bind(this));
-};
 
 AdManager.prototype.handleFetchedAmazonBids = function(bids) {
   // Your callback method, in this example it triggers the first DFP request for googletag's disableInitialLoad integration after bids have been set
@@ -590,7 +580,13 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
  * @returns undefined
 */
 AdManager.prototype.refreshSlot = function (domElement) {
+  if (this.googletag.apiReady) {
     this.refreshAds(domElement);
+  } else {
+    this.googletag.cmd.push(function () {
+      this.refreshAds(domElement);
+    });
+  }
 };
 
 /**
@@ -604,23 +600,12 @@ AdManager.prototype.refreshSlot = function (domElement) {
 AdManager.prototype.asyncRefreshSlot = function (domElement) {
   var adManager = this;
 
-  // TODO - move into a separate helper function or something
-  var temp = function () {
-    if (this.googletag.apiReady) {
-      this.refreshSlot(domElement);
-    } else {
-      this.googletag.cmd.push(function () {
-        adManager.refreshSlot(domElement);
-      });
-    }
-  };
-
   // to get slot, var slot = this.slots[domElement.id];
   if (this.options.amazonEnabled) { // check slot instead of globally
     var sizes = // get me somewhere
-    this.fetchAmazonBids(domElement.id, sizes, temp);
+    this.fetchAmazonBids(domElement.id, sizes, this.refreshSlot);
   } else {
-    temp();
+    this.refreshSlot()
   }
 };
 
