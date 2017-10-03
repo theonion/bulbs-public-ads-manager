@@ -98,6 +98,39 @@ AdManager.prototype.initGoogleTag = function() {
   this.loadAds();
 };
 
+
+
+/**
+ * initializes A9
+ * Fetch Amazon A9/Matchbuy/APS bids
+ *
+ * @returns undefined
+*/
+AdManager.prototype.initAmazonA9 = function(element, slot) {
+  var gptSlotSizes = slot.getSizes();
+	
+  /**
+   * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters inside the ad config.
+   * This method is undocumented, and could be removed. When not available, fall back to all sizes specified in the ad unit itself.
+   * This is not optimal, as sizes which cannot be displayed due to the viewport dimensions will be requested from A9. It is thus used as a fallback.
+   * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
+  */
+
+  adUnitConfig = this.adUnits.units[element.dataset.adUnit];
+  adUnitSizes = this.adUnitSizes(adUnitConfig.sizes)[1];
+
+  if (typeof gptSlotSizes == 'function') {
+    activeSizes = this.adSlotSizes(gptSlotSizes);
+  } else {
+    activeSizes = adUnitSizes;
+  }
+
+  if (adUnitConfig.amazonEnabled && activeSizes && activeSizes.length) {
+    this.fetchAmazonBids(element.id, activeSizes);
+  }
+
+}
+
 /**
  * Fetch Amazon A9/Matchbuy/APS bids
  *
@@ -519,7 +552,6 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
       slot,
       adUnitConfig,
       activeSizes,
-      gptSlotSizes,
       adUnitSizes;
 
 	if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
@@ -533,27 +565,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
     }
 
     if (this.options.amazonEnabled) {
- 
-    /**
-     * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters inside the ad config.
-     * This method is undocumented, and could be removed. When not available, fall back to all sizes specified in the ad unit itself.
-     * This is not optimal, as sizes which cannot be displayed due to the viewport dimensions will be requested from A9. It is thus used as a fallback.
-     * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
-    */
-	
-      adUnitConfig = this.adUnits.units[thisEl.dataset.adUnit];
-      adUnitSizes = this.adUnitSizes(adUnitConfig.sizes)[1];
-
-      if (typeof gptSlotSizes == 'function') {
-        gptSlotSizes = slot.getSizes();
-        activeSizes = this.adSlotSizes(gptSlotSizes);
-      } else {
-        activeSizes = adUnitSizes;
-      }
-
-      if (adUnitConfig.amazonEnabled && activeSizes && activeSizes.length) {
-        this.fetchAmazonBids(thisEl.id, activeSizes);
-      }
+      this.initAmazonA9(thisEl, slot)
     }
 
     if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
