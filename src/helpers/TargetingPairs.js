@@ -14,7 +14,7 @@ var TargetingPairs = {
    * @param Window scope the window to use for the kinja meta info.
    *
    */
-  buildTargetingPairs: function(scope) {
+  buildTargetingPairs: function(scope, position) {
     var kinjaMeta = scope.kinja.meta,
       post = scope.kinja.postMeta || {},
       content = scope.kinja.postContentRatings || [],
@@ -41,8 +41,8 @@ var TargetingPairs = {
       kuid: (scope.Krux && scope.Krux.user) ? scope.Krux.user : undefined
     };
 
-    if (experimentVariation !== null && experimentId !== null) {
-      targeting.pageOptions.exp_variation = experimentId + '_' + experimentVariation;
+    if (experimentVariation !== null && experimentId !== null && position) {
+      targeting.pageOptions.exp_variation = experimentId + '_' + experimentVariation + '_' + position;
     }
 
     return targeting;
@@ -55,12 +55,12 @@ var TargetingPairs = {
    * @param Window scope the window to use for the kinja meta info.
    *
    */
-  getTargetingPairs: function(forcedAdZone) {
+  getTargetingPairs: function(forcedAdZone, position) {
     if (!window.kinja) {
       return {};
     }
 
-    var targetingOptions = this.buildTargetingPairs(window);
+    var targetingOptions = this.buildTargetingPairs(window, position);
 
     targetingOptions.pageOptions.forcedAdZone = forcedAdZone || false;
 
