@@ -316,7 +316,7 @@ AdManager.prototype.isAd = function (element) {
  * @param {HTMLElement|String|HTMLCollection} element - element to scope the search to
  * @returns {Array} of {Element} objects representing all ad slots
 */
-AdManager.prototype.findAds = function (el) {
+AdManager.prototype.findAds = function(el, useScopedSelector) {
   var ads = [];
 
   if (typeof(el) === 'string') {
@@ -337,7 +337,13 @@ AdManager.prototype.findAds = function (el) {
       }
     }
   } else {
-    ads = document.getElementsByClassName('dfp');
+    if (useScopedSelector) {
+      if (el.length) {
+        ads = el.getElementsByClassName('dfp');
+      }
+    } else {
+      ads = document.getElementsByClassName('dfp');
+    }
   }
 
   return ads;
@@ -433,7 +439,7 @@ AdManager.prototype.configureAd = function (element) {
   element.id = this.generateId();
 
   if (adUnitConfig.outOfPage) {
-    slot = this.googletag.defineSlot(adUnitPath, element.id);
+    slot = this.googletag.defineOutOfPageSlot(adUnitPath, element.id);
   } else {
     size = adUnitConfig.sizes[0][1];
     slot = this.googletag.defineSlot(adUnitPath, size, element.id);
@@ -502,13 +508,13 @@ AdManager.prototype.unpause = function() {
  * @param {updateCorrelator} optional flag to force an update of the correlator value
  * @returns undefined
 */
-AdManager.prototype.loadAds = function(element, updateCorrelator) {
+AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelector) {
   if (this.paused || !this.initialized) {
     return;
   }
 
   var slotsToLoad = [];
-  var ads = this.findAds(element);
+  var ads = this.findAds(element, useScopedSelector);
 
   if (!this.googletag.pubadsReady) {
     this.googletag.enableServices();
