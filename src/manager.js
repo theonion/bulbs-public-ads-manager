@@ -429,11 +429,17 @@ AdManager.prototype.configureAd = function (element) {
     return;
   }
 
-  size = adUnitConfig.sizes[0][1];
 
   element.id = this.generateId();
 
-  slot = this.googletag.defineSlot(adUnitPath, size, element.id);
+  if (adUnitConfig.outOfPage) {
+    slot = this.googletag.defineSlot(adUnitPath, element.id);
+  } else {
+    size = adUnitConfig.sizes[0][1];
+    slot = this.googletag.defineSlot(adUnitPath, size, element.id);
+	slot.defineSizeMapping(adUnitConfig.sizes);
+  }
+
 
   if (element.id && element.id in this.slots) {
     // Slot has already been configured
@@ -445,7 +451,7 @@ AdManager.prototype.configureAd = function (element) {
     return;
   }
 
-  slot.defineSizeMapping(adUnitConfig.sizes);
+
 
   if (slot === null) {
     // This probably means that the slot has already been filled.
@@ -458,6 +464,10 @@ AdManager.prototype.configureAd = function (element) {
 
   if (adUnitConfig.eagerLoad) {
     slot.eagerLoad = true;
+  }
+  
+  if (adUnitConfig.outOfPage) {
+    slot.outOfPage = true;
   }
 
   this.slots[element.id] = slot;
@@ -531,8 +541,8 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
       slotsToLoad.push(slot);
     }
 
-    if (this.options.amazonEnabled) {
- 
+    if (this.options.amazonEnabled && !slot.outOfPage) {
+
     /**
      * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters inside the ad config.
      * This method is undocumented, and could be removed. When not available, fall back to all sizes specified in the ad unit itself.
