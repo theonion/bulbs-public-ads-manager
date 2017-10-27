@@ -338,7 +338,7 @@ AdManager.prototype.findAds = function(el, useScopedSelector) {
     }
   } else {
     if (useScopedSelector) {
-      if (el.length) {
+      if (el) {
         ads = el.getElementsByClassName('dfp');
       }
     } else {
