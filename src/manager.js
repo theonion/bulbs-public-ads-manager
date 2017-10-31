@@ -588,16 +588,6 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
 };
 
 /**
- * Fetches a new ad for just single dom element
- *
- * @param {domElement} DOM element containing the DFP ad slot
- * @returns undefined
-*/
-AdManager.prototype.refreshSlot = function (domElement) {
-    this.refreshAds(domElement);
-};
-
-/**
   * Uses the `cmd` async GPT queue to enqueue ad manager function to run
   * if the GPT API is not yet ready.  Assures slots have been configured,
   * etc. prior to trying to make the ad request
@@ -618,6 +608,7 @@ AdManager.prototype.asyncRefreshSlot = function (domElement) {
 };
 
 /**
+  * Fetches a new ad for just single dom element
   * Uses the `cmd` async GPT queue to enqueue ad manager function to run
   * if the GPT API is not yet ready.  Assures slots have been configured,
   * etc. prior to trying to make the ad request
@@ -625,7 +616,7 @@ AdManager.prototype.asyncRefreshSlot = function (domElement) {
   * @param {domElement} DOM element containing the DFP ad slot
   * @returns undefined
 */
-AdManager.prototype.refreshAds = function (domElement) {
+AdManager.prototype.refreshSlot = function (domElement) {
   if ((domElement.getAttribute('data-ad-load-state') === 'loaded') || (domElement.getAttribute('data-ad-load-state') === 'loading')) {
     return;
   }
