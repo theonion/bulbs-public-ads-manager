@@ -345,7 +345,7 @@ AdManager.prototype.isAd = function (element) {
  * @param {HTMLElement|String|HTMLCollection} element - element to scope the search to
  * @returns {Array} of {Element} objects representing all ad slots
 */
-AdManager.prototype.findAds = function (el) {
+AdManager.prototype.findAds = function(el, useScopedSelector) {
   var ads = [];
 
   if (typeof(el) === 'string') {
@@ -366,7 +366,13 @@ AdManager.prototype.findAds = function (el) {
       }
     }
   } else {
-    ads = document.getElementsByClassName('dfp');
+    if (useScopedSelector) {
+      if (el) {
+        ads = el.getElementsByClassName('dfp');
+      }
+    } else {
+      ads = document.getElementsByClassName('dfp');
+    }
   }
 
   return ads;
@@ -458,11 +464,17 @@ AdManager.prototype.configureAd = function (element) {
     return;
   }
 
-  size = adUnitConfig.sizes[0][1];
 
   element.id = this.generateId();
 
-  slot = this.googletag.defineSlot(adUnitPath, size, element.id);
+  if (adUnitConfig.outOfPage) {
+    slot = this.googletag.defineOutOfPageSlot(adUnitPath, element.id);
+  } else {
+    size = adUnitConfig.sizes[0][1];
+    slot = this.googletag.defineSlot(adUnitPath, size, element.id);
+	slot.defineSizeMapping(adUnitConfig.sizes);
+  }
+
 
   if (element.id && element.id in this.slots) {
     // Slot has already been configured
@@ -474,7 +486,7 @@ AdManager.prototype.configureAd = function (element) {
     return;
   }
 
-  slot.defineSizeMapping(adUnitConfig.sizes);
+
 
   if (slot === null) {
     // This probably means that the slot has already been filled.
@@ -487,6 +499,10 @@ AdManager.prototype.configureAd = function (element) {
 
   if (adUnitConfig.eagerLoad) {
     slot.eagerLoad = true;
+  }
+  
+  if (adUnitConfig.outOfPage) {
+    slot.outOfPage = true;
   }
 
   this.slots[element.id] = slot;
@@ -521,13 +537,13 @@ AdManager.prototype.unpause = function() {
  * @param {updateCorrelator} optional flag to force an update of the correlator value
  * @returns undefined
 */
-AdManager.prototype.loadAds = function(element, updateCorrelator) {
+AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelector) {
   if (this.paused || !this.initialized) {
     return;
   }
 
   var slotsToLoad = [];
-  var ads = this.findAds(element);
+  var ads = this.findAds(element, useScopedSelector);
 
   if (!this.googletag.pubadsReady) {
     this.googletag.enableServices();
@@ -539,8 +555,16 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
 
   for (var i = 0; i < ads.length; i++) {
     var thisEl = ads[i],
+      adUnitConfig = this.adUnits.units[thisEl.dataset.adUnit],
       slot,
-      activeSizes;
+      activeSizes,
+      gptSlotSizes,
+      adUnitSizes;
+
+    // Makes slotEnabled optional in the config. Only check for slotEnableds that are falsy
+	if (adUnitConfig.hasOwnProperty('slotEnabled') && !adUnitConfig.slotEnabled()) {
+      return;
+    }
 
 	if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
       continue;
@@ -552,8 +576,27 @@ AdManager.prototype.loadAds = function(element, updateCorrelator) {
       slotsToLoad.push(slot);
     }
 
-    if (this.options.amazonEnabled) {
-      this.fetchAmazonBids(thisEl, slot);
+    if (this.options.amazonEnabled && !slot.outOfPage) {
+
+    /**
+     * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters inside the ad config.
+     * This method is undocumented, and could be removed. When not available, fall back to all sizes specified in the ad unit itself.
+     * This is not optimal, as sizes which cannot be displayed due to the viewport dimensions will be requested from A9. It is thus used as a fallback.
+     * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
+    */
+	
+      adUnitSizes = this.adUnitSizes(adUnitConfig.sizes)[1];
+
+      if (typeof gptSlotSizes == 'function') {
+        gptSlotSizes = slot.getSizes();
+        activeSizes = this.adSlotSizes(gptSlotSizes);
+      } else {
+        activeSizes = adUnitSizes;
+      }
+
+      if (adUnitConfig.amazonEnabled && activeSizes && activeSizes.length) {
+        this.fetchAmazonBids(thisEl.id, activeSizes);
+      }
     }
 
     if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
