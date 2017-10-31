@@ -111,7 +111,7 @@ AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes) {
 			sizes: gptSizes
 		}],
 		timeout: 2e3
-	}, function (bids) {
+	}, callback = function (bids) {
 		// Your callback method, in this example it triggers the first DFP request for googletag's disableInitialLoad integration after bids have been set
 		window.headertag.cmd.push(function () {
 			window.apstag.setDisplayBids();
@@ -533,7 +533,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
       adUnitSizes;
 
     // Makes slotEnabled optional in the config. Only check for slotEnableds that are falsy
-	if (adUnitConfig.hasOwnProperty('slotEnabled') && !adUnitConfig.slotEnabled()) {
+	if (adUnitConfig && adUnitConfig.hasOwnProperty('slotEnabled') && !adUnitConfig.slotEnabled()) {
       return;
     }
 

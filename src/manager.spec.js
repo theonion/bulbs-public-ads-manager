@@ -118,7 +118,6 @@ describe('AdManager', function() {
       TestHelper.stub(adManager, 'setPageTargeting');
       TestHelper.stub(adManager, 'loadAds');
       TestHelper.stub(adManager.googletag, 'enableServices');
-      sinon.stub(adManager, 'initAmazonA9');
       adManager.initialized = false;
       adManager.initGoogleTag();
     });
@@ -166,48 +165,13 @@ describe('AdManager', function() {
       expect(adManager.loadAds.calledOnce).to.be.true;
     });
 
-    it('calls initAmazonA9 by default', function () {
-      expect(adManager.initAmazonA9.calledOnce).to.be.true;
-    });
 
-    it('no call to initAmazonA9 if parameter amazonEnalbed is false', function() {
-      expect(adManager.initAmazonA9.calledOnce).to.be.true;
-      adManager.options.amazonEnabled = false;
-      adManager.initGoogleTag();
-      expect(adManager.initAmazonA9.calledTwice).to.be.false;
-    });
 
     it('merges global TARGETING with ad unit dfp site param', function() {
       expect(adManager.targeting).to.eql({
         dfp_site: 'onion',
         dfp_pagetype: 'homepage'
       });
-    });
-  });
-
-  describe('#initAmazonA9', function () {
-    var sandbox;
-    var getAds;
-    var setTargetingForGPTAsync;
-
-    beforeEach(function() {
-      sandbox = sinon.sandbox.create();
-      adManager.amznads = {
-        getAds: function () {},
-        setTargetingForGPTAsync: function () {}
-      };
-      sandbox.stub(adManager.amznads, 'getAds');
-      sandbox.stub(adManager.amznads, 'setTargetingForGPTAsync');
-    });
-
-    afterEach(function() {
-      sandbox.restore();
-    });
-
-    it('no call to amznads functions if amznads is undefined', function () {
-      adManager.initAmazonA9();
-      expect(adManager.amznads.getAds.called).to.be.false;
-      expect(adManager.amznads.setTargetingForGPTAsync.called).to.be.false;
     });
   });
 
@@ -248,7 +212,7 @@ describe('AdManager', function() {
     context('UTM parameters are present', function() {
       beforeEach(function() {
         TestHelper.stub(adManager, 'setUtmTargeting');
-        adManager.initBaseTargeting();
+        adManager.setPageTargeting();
       });
 
       it('sets UTM targeting', function() {
@@ -547,6 +511,26 @@ describe('AdManager', function() {
     });
   });
 
+  describe('#adUnitSizes', function() {
+    beforeEach(function() {
+    });
+
+    it('filters ad unit sizes into an array', function() {
+      expect(adManager.generateId()).to.equal('dfp-ad-1');
+      expect(adManager.adId).to.equal(1);
+    });
+  });
+
+  describe('#adSlotSizes', function() {
+    beforeEach(function() {
+    });
+
+    it('filters active gpt sizes  into an array', function() {
+      expect(adManager.generateId()).to.equal('dfp-ad-1');
+      expect(adManager.adId).to.equal(1);
+    });
+  });
+
   describe('#isAd', function() {
     var container;
 
@@ -661,6 +645,20 @@ describe('AdManager', function() {
         TestHelper.stub(adManager, 'isAd').returns(false);
         containers = document.getElementsByClassName('expected');
         ads = adManager.findAds(containers);
+      });
+
+      it('should return ads within all the containers', function() {
+        expect(ads.length).to.equal(2);
+        expect(ads[0][0]).to.eql(adSlot1);
+        expect(ads[1][0]).to.eql(adSlot3);
+      });
+    });
+	
+    context('passed in an element context containing ads', function() {
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'isAd').returns(false);
+        containers = document.getElementsByClassName('expected');
+        ads = adManager.findAds(containers, false, true);
       });
 
       it('should return ads within all the containers', function() {
@@ -869,7 +867,7 @@ describe('AdManager', function() {
   });
 
   describe('#loadAds', function() {
-    var baseContainer, container1, container2, container3, adSlot1, adSlot2, adSlot3, ads;
+	var baseContainer, container1, container2, container3, adSlot1, adSlot2, adSlot3, ads;
 
     beforeEach(function() {
       adManager.paused = false;
@@ -888,6 +886,14 @@ describe('AdManager', function() {
       });
       TestHelper.stub(adManager.googletag, 'display');
       TestHelper.stub(adManager.googletag, 'enableServices');
+      TestHelper.stub(adManager, 'fetchAmazonBids');
+
+      it('no call to fetchAmazonBids if parameter amazonEnalbed is false', function() {
+        expect(adManager.fetchAmazonBids.calledOnce).to.be.true;
+        adManager.options.amazonEnabled = false;
+        adManager.initGoogleTag();
+        expect(adManager.fetchAmazonBids.calledTwice).to.be.false;
+      });
 
       baseContainer = document.createElement('div');
       container1 = document.createElement('div');
@@ -935,6 +941,7 @@ describe('AdManager', function() {
 
     context('with wrapper tag', function() {
       beforeEach(function() {
+
         window.headertag = {
           display: sinon.stub(),
           apiReady: true
@@ -1111,136 +1118,53 @@ describe('AdManager', function() {
     });
   });
 
+  describe('#fetchAmazonBids', function () {
+
+    beforeEach(function() {
+	   var headertag = window.headertag = {};
+      sandbox = sinon.sandbox.create();
+      window.apstag = {
+        fetchBids: function () {
+			this.callArg(callback)
+		}
+      };
+
+      headertag.cmd = {
+        push: function() {
+         window.apstag.setDisplayBids()
+        }
+      };
+
+      sandbox.stub(window.headertag.cmd, 'push')
+      sandbox.stub(window.apstag, 'fetchBids');
+    });
+
+    afterEach(function() {
+      sandbox.restore();
+    });
+
+    it('call to apstag functions if apstag is defined', function () {
+      adManager.fetchAmazonBids();
+      expect(window.apstag.fetchBids.called).to.be.true;
+    });
+
+    it('fetches bids from apstag api', function (done) {
+      adManager.fetchAmazonBids();
+      callback();
+      expect(window.headertag.cmd.push.calledOnce).to.be.true;
+      done();
+    });
+
+    it('no call to apstag functions if apstag is undefined', function () {
+      expect(window.apstag.fetchBids.called).to.be.false;
+    });
+  });
+
   describe('#refreshSlot', function() {
-    var domElement, getAdsCallback;
-    beforeEach(function () {
-      TestHelper.stub(adManager, 'refreshAds');
-      TestHelper.stub(adManager.googletag, 'pubads').returns({
-        clearTargeting: sinon.spy(),
-      });
-      TestHelper.stub(adManager, 'amazonAdRefreshThrottled');
-
-      getAdsCallback = function () {};
-      adManager.amznads = { getAdsCallback: getAdsCallback };
-      TestHelper.stub(adManager.amznads, 'getAdsCallback');
-
-      domElement = document.createElement('div');
-      document.body.appendChild(domElement);
-    });
-
-    afterEach(function () {
-      $(domElement).remove();
-    });
-
-    context('amazonEnabled = true', function () {
-      it('calls getAds callback', function () {
-        adManager.refreshSlot(domElement);
-        expect(adManager.amazonAdRefreshThrottled.calledOnce).to.be.true;
-      });
-
-    });
-
-    context('amazonEnabled = false', function () {
-      it('calls refreshAds', function () {
-        adManager.options.amazonEnabled = false;
-        adManager.refreshSlot(domElement);
-        expect(adManager.refreshAds.calledOnce).to.be.true;
-      });
-    });
-  });
-
-  describe('#amazonAdRefresh', function () {
-    var domElement;
-    beforeEach(function () {
-      TestHelper.stub(adManager, 'refreshAds');
-      TestHelper.stub(adManager.googletag, 'pubads').returns({
-        clearTargeting: sinon.spy(),
-      });
-
-      adManager.amznads = {
-        setTargetingForGPTAsync: sinon.spy(),
-      };
-
-      domElement = document.createElement('div');
-      document.body.appendChild(domElement);
-      adManager.amazonAdRefresh(domElement);
-    });
-
-    it('calls setTargetingForGPTAsync', function () {
-      expect(adManager.amznads.setTargetingForGPTAsync.calledOnce).to.be.true;
-    });
-
-    it('calls refreshAds', function () {
-      expect(adManager.refreshAds.calledWith(domElement)).to.be.true;
-    });
-
-    it('clears targeting', function () {
-      var expected = adManager.googletag.pubads().clearTargeting.calledOnce;
-      expect(expected).to.be.true;
-    });
-  });
-
-  describe('#doGetAmazonAdsCallback', function () {
-    var params;
-    beforeEach(function () {
-      adManager.amznads = {
-        getAdsCallback: sinon.stub()
-      };
-      params = { id: 1, callback: function () {}, timeout: 1e4 };
-    });
-
-    it('sets lastGetAdsCallback', function () {
-      expect(adManager.amznads.lastGetAdsCallback).to.be.undefined;
-      adManager.doGetAmazonAdsCallback(params);
-      var expected = typeof adManager.amznads.lastGetAdsCallback === 'number';
-      expect(expected).to.be.true;
-    });
-
-    it('calls amazons getAdsCallback', function () {
-      adManager.doGetAmazonAdsCallback(params);
-      expect(adManager.amznads.getAdsCallback.calledOnce).to.be.true;
-    });
-  });
-
-  describe('#amazonAdRefreshThrottled', function () {
-    var params, clock;
-
-    beforeEach(function () {
-      adManager.amznads = { getAdsCallback: sinon.stub() };
-      params = { id: 1, callback: sinon.stub(), timeout: 1e4 };
-    });
-
-    context('calls doGetAmazonAdsCallback if lastGetAdsCallback', function () {
-      it('is undefined', function () {
-        adManager.amazonAdRefreshThrottled(params);
-        expect(adManager.amznads.getAdsCallback.calledOnce).to.be.true;
-      });
-
-      it('is more than 10 seconds old', function () {
-        clock = sinon.useFakeTimers(2e4);
-        adManager.amznads.lastGetAdsCallback = 0;
-        adManager.amazonAdRefreshThrottled(params);
-        expect(adManager.amznads.getAdsCallback.calledOnce).to.be.true;
-        clock.restore();
-      });
-    });
-
-    it('calls callback lastGetAdsCallback is < 10s old', function () {
-      clock = sinon.useFakeTimers();
-      adManager.amznads.lastGetAdsCallback = 0;
-      adManager.amazonAdRefreshThrottled(params);
-      expect(adManager.amznads.getAdsCallback.calledOnce).to.be.false;
-      expect(params.callback.calledOnce).to.be.true;
-      clock.restore();
-    });
-  });
-
-  describe('#refreshAds', function() {
     var baseContainer, container1, adSlot1, ads, stubSlot;
 
     beforeEach(function() {
       TestHelper.stub(adManager, 'refreshSlots');
-
       baseContainer = document.createElement('div');
       container1 = document.createElement('div');
       container1.className ='expected';
@@ -1269,9 +1193,10 @@ describe('AdManager', function() {
     });
 
     it('loads the DFP slot matching up with the DOM element id', function() {
-      adManager.refreshAds(adSlot1);
+      adManager.refreshSlot(adSlot1);
       expect(adManager.refreshSlots.calledWith([stubSlot], [adSlot1])).to.be.true;
     });
+
   });
 
   describe('#asyncRefreshSlot', function() {
