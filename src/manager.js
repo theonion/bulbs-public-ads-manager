@@ -532,8 +532,8 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
       gptSlotSizes,
       adUnitSizes;
 
-    // Makes shouldRun optional in the config. Only check for shouldRuns that are falsy
-	if (adUnitConfig.hasOwnProperty('shouldRun') && !adUnitConfig.shouldRun()) {
+    // Makes slotEnabled optional in the config. Only check for slotEnableds that are falsy
+	if (adUnitConfig.hasOwnProperty('slotEnabled') && !adUnitConfig.slotEnabled()) {
       return;
     }
 
