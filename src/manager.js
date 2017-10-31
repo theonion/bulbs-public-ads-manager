@@ -80,7 +80,7 @@ AdManager.prototype.initGoogleTag = function() {
   this.googletag.pubads().disableInitialLoad();
   this.googletag.pubads().enableAsyncRendering();
   this.googletag.pubads().updateCorrelator();
-  
+
   if (this.options.enableSRA) {
     this.googletag.pubads().enableSingleRequest();
   }
@@ -98,27 +98,56 @@ AdManager.prototype.initGoogleTag = function() {
   this.loadAds();
 };
 
+
+
 /**
  * Fetch Amazon A9/Matchbuy/APS bids
- *
+ * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters inside the ad config.
+ * This method is undocumented, and could be removed. When not available, fall back to all sizes specified in the ad unit itself.
+ * This is not optimal, as sizes which cannot be displayed due to the viewport dimensions will be requested from A9. It is thus used as a fallback.
+ * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
  * @returns undefined
 */
-AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes) {
-	
-	window.apstag.fetchBids({
-		slots: [{
-			slotID: elementId,
-			sizes: gptSizes
-		}],
-		timeout: 2e3
-	}, function (bids) {
-		// Your callback method, in this example it triggers the first DFP request for googletag's disableInitialLoad integration after bids have been set
-		window.headertag.cmd.push(function () {
-			window.apstag.setDisplayBids();
-		});
-	});
-};
+AdManager.prototype.fetchAmazonBids = function(element, slot, refreshCallback) {
 
+  var adUnitConfig = this.adUnits.units[element.dataset.adUnit],
+    adUnitSizes = this.adUnitSizes(adUnitConfig.sizes)[1];
+
+  if (slot && typeof slot.getSizes == 'function') {
+    activeSizes = this.adSlotSizes(slot.getSizes());
+  } else {
+    activeSizes = adUnitSizes;
+  }
+
+  if (adUnitConfig.amazonEnabled && activeSizes && activeSizes.length) {
+    window.apstag.fetchBids({
+      slots: [{
+        slotID: element.id,
+        sizes: activeSizes
+      }],
+      timeout: 2e3
+    }, function (bids) {
+      this.handleFetchedAmazonBids(bids);
+      if (refreshCallback) {
+        refreshCallback.call();
+      }
+    }.bind(this));
+  }
+
+}
+
+AdManager.prototype.handleFetchedAmazonBids = function(bids) {
+  // Your callback method, in this example it triggers the first DFP request for googletag's disableInitialLoad integration after bids have been set
+  if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
+    window.googletag.cmd.push(function() {
+      window.apstag.setDisplayBids();
+    });
+  } else {
+    window.headertag.cmd.push(function() {
+      window.apstag.setDisplayBids();
+    });
+  }
+}
 
 /**
  * Sets global targeting regardless of ad slot based on the `TARGETING` global on each site
@@ -594,7 +623,13 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
  * @returns undefined
 */
 AdManager.prototype.refreshSlot = function (domElement) {
+  if (this.googletag.apiReady) {
     this.refreshAds(domElement);
+  } else {
+    this.googletag.cmd.push(function () {
+      this.refreshAds(domElement);
+    });
+  }
 };
 
 /**
@@ -608,12 +643,12 @@ AdManager.prototype.refreshSlot = function (domElement) {
 AdManager.prototype.asyncRefreshSlot = function (domElement) {
   var adManager = this;
 
-  if (this.googletag.apiReady) {
-    this.refreshSlot(domElement);
+  // to get slot, var slot = this.slots[domElement.id];
+  if (this.options.amazonEnabled) { // check slot instead of globally
+    var sizes = // get me somewhere
+    this.fetchAmazonBids(domElement.id, sizes, this.refreshSlot);
   } else {
-    this.googletag.cmd.push(function () {
-      adManager.refreshSlot(domElement);
-    });
+    this.refreshSlot()
   }
 };
 
