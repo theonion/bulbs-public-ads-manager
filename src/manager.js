@@ -457,8 +457,6 @@ AdManager.prototype.configureAd = function (element) {
     return;
   }
 
-
-
   if (slot === null) {
     // This probably means that the slot has already been filled.
     return;
@@ -531,6 +529,11 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
       activeSizes,
       gptSlotSizes,
       adUnitSizes;
+
+    if (AdZone.forcedAdZone() === 'collapse') {
+      thisEl.classList.add('hide');
+      continue;
+    }
 
     // Makes slotEnabled optional in the config. Only check for slotEnableds that are falsy
 	if (adUnitConfig && adUnitConfig.hasOwnProperty('slotEnabled') && !adUnitConfig.slotEnabled()) {
