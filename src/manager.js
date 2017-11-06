@@ -435,17 +435,16 @@ AdManager.prototype.configureAd = function (element) {
     return;
   }
 
-
   element.id = this.generateId();
 
   if (adUnitConfig.outOfPage) {
+    slot.outOfPage = true;
     slot = this.googletag.defineOutOfPageSlot(adUnitPath, element.id);
   } else {
     size = adUnitConfig.sizes[0][1];
     slot = this.googletag.defineSlot(adUnitPath, size, element.id);
-	slot.defineSizeMapping(adUnitConfig.sizes);
+    slot.defineSizeMapping(adUnitConfig.sizes);
   }
-
 
   if (element.id && element.id in this.slots) {
     // Slot has already been configured
@@ -468,10 +467,6 @@ AdManager.prototype.configureAd = function (element) {
 
   if (adUnitConfig.eagerLoad) {
     slot.eagerLoad = true;
-  }
-  
-  if (adUnitConfig.outOfPage) {
-    slot.outOfPage = true;
   }
 
   this.slots[element.id] = slot;
@@ -537,7 +532,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
 
     // Makes slotEnabled optional in the config. Only check for slotEnableds that are falsy
 	if (adUnitConfig && adUnitConfig.hasOwnProperty('slotEnabled') && !adUnitConfig.slotEnabled()) {
-      return;
+      continue;
     }
 
 	if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
