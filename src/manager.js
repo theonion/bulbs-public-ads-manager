@@ -438,7 +438,6 @@ AdManager.prototype.configureAd = function (element) {
   element.id = this.generateId();
 
   if (adUnitConfig.outOfPage) {
-    slot.outOfPage = true;
     slot = this.googletag.defineOutOfPageSlot(adUnitPath, element.id);
   } else {
     size = adUnitConfig.sizes[0][1];
@@ -545,7 +544,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
       slotsToLoad.push(slot);
     }
 
-    if (this.options.amazonEnabled && !slot.outOfPage) {
+    if (this.options.amazonEnabled && !adUnitConfig.outOfPage) {
 
     /**
      * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters inside the ad config.
