@@ -35,8 +35,9 @@ describe('TargetingPairs', function() {
     	});
 
     	it('provides experiment info as targeting keys', function() {
-    		var targeting = TargetingPairs.buildTargetingPairs(window);
-    	  expect(targeting.pageOptions.exp_variation).to.equal('12345_A');
+      	  var positionTargeting = 'top',
+    		targeting = TargetingPairs.buildTargetingPairs(window, positionTargeting);
+    	  expect(targeting.pageOptions.exp_variation).to.equal('12345_A_top');
     	});
     });
 
