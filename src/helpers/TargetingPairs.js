@@ -14,7 +14,7 @@ var TargetingPairs = {
    * @param Window scope the window to use for the kinja meta info.
    *
    */
-  buildTargetingPairs: function(scope) {
+  buildTargetingPairs: function(scope, positionTargeting) {
     var kinjaMeta = scope.kinja.meta,
       post = scope.kinja.postMeta || {},
       content = scope.kinja.postContentRatings || [],
@@ -26,6 +26,7 @@ var TargetingPairs = {
     // Begin slot level params AKA 'scp'
     targeting.slotOptions = {
       // Standard targeting options
+      pos: positionTargeting || null,
       postId: post ? post.postId : null,
       socialReferrer: SocialReferrer.isSocialReferrer(),
       page: kinjaMeta.pageType,
@@ -41,8 +42,8 @@ var TargetingPairs = {
       kuid: (scope.Krux && scope.Krux.user) ? scope.Krux.user : undefined
     };
 
-    if (experimentVariation !== null && experimentId !== null) {
-      targeting.pageOptions.exp_variation = experimentId + '_' + experimentVariation;
+    if (experimentVariation !== null && experimentId !== null && positionTargeting) {
+      targeting.pageOptions.exp_variation = experimentId + '_' + experimentVariation + '_' + positionTargeting;
     }
 
     return targeting;
@@ -55,12 +56,12 @@ var TargetingPairs = {
    * @param Window scope the window to use for the kinja meta info.
    *
    */
-  getTargetingPairs: function(forcedAdZone) {
+  getTargetingPairs: function(forcedAdZone, positionTargeting) {
     if (!window.kinja) {
       return {};
     }
 
-    var targetingOptions = this.buildTargetingPairs(window);
+    var targetingOptions = this.buildTargetingPairs(window, positionTargeting);
 
     targetingOptions.pageOptions.forcedAdZone = forcedAdZone || false;
 

@@ -384,14 +384,10 @@ AdManager.prototype.slotInfo = function() {
 AdManager.prototype.setSlotTargeting = function(element, slot, adUnitConfig) {
   var slotTargeting = {};
   var positionTargeting = adUnitConfig.pos || adUnitConfig.slotName || element.dataset.adUnit;
-  var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone()).slotOptions;
+  var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone(), positionTargeting).slotOptions;
 
   if (element.dataset.targeting) {
     slotTargeting = JSON.parse(element.dataset.targeting);
-  }
-
-  if (positionTargeting) {
-    slotTargeting.pos = positionTargeting;
   }
 
   slotTargeting = utils.extend(slotTargeting, kinjaPairs);
