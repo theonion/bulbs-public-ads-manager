@@ -20,15 +20,6 @@ var PageDepth = {
       }
     });
 
-    if (pdCookieValue === -1) {
-      pdCookieValue = 1;
-    } else {
-      if (pdCookieValue < 5) {
-        pdCookieValue += 1;
-      }
-    }
-    window.document.cookie = 'pageDepth=' + pdCookieValue + '; expires=1; path=/';
-
     return window.parseInt(pdCookieValue, 10);
   }
 };
