@@ -517,8 +517,8 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
       adUnitConfig = this.adUnits.units[thisEl.dataset.adUnit],
       slot,
       activeSizes,
-      gptSlotSizes,
-      adUnitSizes;
+      adUnitSizes,
+      gptSlotSizes;
 
     if (AdZone.forcedAdZone() === 'collapse') {
       thisEl.classList.add('hide');
@@ -548,13 +548,12 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
      * This is not optimal, as sizes which cannot be displayed due to the viewport dimensions will be requested from A9. It is thus used as a fallback.
      * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
     */
-	
-      adUnitSizes = this.adUnitSizes(adUnitConfig.sizes)[1];
 
-      if (typeof gptSlotSizes == 'function') {
+      if (slot && typeof slot.getSizes == 'function') {
         gptSlotSizes = slot.getSizes();
         activeSizes = this.adSlotSizes(gptSlotSizes);
       } else {
+        adUnitSizes = this.adUnitSizes(adUnitConfig.sizes)[1];
         activeSizes = adUnitSizes;
       }
 
