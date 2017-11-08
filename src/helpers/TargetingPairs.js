@@ -43,7 +43,7 @@ var TargetingPairs = {
     };
 
     if (experimentVariation !== null && experimentId !== null && positionTargeting) {
-      targeting.pageOptions.exp_variation = experimentId + '_' + experimentVariation + '_' + positionTargeting;
+      targeting.slotOptions.exp_variation = experimentId + '_' + experimentVariation + '_' + positionTargeting;
     }
 
     return targeting;

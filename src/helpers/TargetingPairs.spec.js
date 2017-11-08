@@ -37,7 +37,7 @@ describe('TargetingPairs', function() {
     	it('provides experiment info as targeting keys', function() {
       	  var positionTargeting = 'top',
     		targeting = TargetingPairs.buildTargetingPairs(window, positionTargeting);
-    	  expect(targeting.pageOptions.exp_variation).to.equal('12345_A_top');
+    	  expect(targeting.slotOptions.exp_variation).to.equal('12345_A_top');
     	});
     });
 
