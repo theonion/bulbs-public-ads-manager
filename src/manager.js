@@ -106,12 +106,14 @@ AdManager.prototype.initGoogleTag = function() {
  *
  * @returns undefined
 */
-AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes) {
-	
+AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes, slotName) {
+	var adUnitPath = this.getAdUnitCode(),
+	slotUnit = adUnitPath + '_' + slotName;
 	window.apstag.fetchBids({
 		slots: [{
 			slotID: elementId,
-			sizes: gptSizes
+			sizes: gptSizes,
+			slotName: slotUnit
 		}],
 		timeout: 2e3
 	}, callback = function (bids) {
@@ -561,7 +563,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
       }
 
       if (adUnitConfig.amazonEnabled && activeSizes && activeSizes.length) {
-        this.fetchAmazonBids(thisEl.id, activeSizes);
+        this.fetchAmazonBids(thisEl.id, activeSizes, adUnitConfig.slotName);
       }
     }
 
