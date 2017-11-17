@@ -115,7 +115,7 @@ AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes, slotName) {
 			sizes: gptSizes,
 			slotName: slotUnit
 		}],
-		timeout: 2e3
+		timeout: 1e3
 	}, callback = function (bids) {
 		// Your callback method, in this example it triggers the first DFP request for googletag's disableInitialLoad integration after bids have been set
 		window.headertag.cmd.push(function () {
