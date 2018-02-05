@@ -103,27 +103,44 @@ AdManager.prototype.initGoogleTag = function() {
 
 /**
  * Fetch Amazon A9/Matchbuy/APS bids
- *
+ * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters inside the ad config.
+ * This method is undocumented, and could be removed. When not available, fall back to all sizes specified in the ad unit itself.
+ * This is not optimal, as sizes which cannot be displayed due to the viewport dimensions will be requested from A9. It is thus used as a fallback.
+ * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
  * @returns undefined
 */
-AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes, slotName) {
-	var adUnitPath = this.getAdUnitCode(),
-	slotUnit = adUnitPath + '_' + slotName;
-	window.apstag.fetchBids({
-		slots: [{
-			slotID: elementId,
-			sizes: gptSizes,
-			slotName: slotUnit
-		}],
-		timeout: 1e3
-	}, callback = function (bids) {
-		// Your callback method, in this example it triggers the first DFP request for googletag's disableInitialLoad integration after bids have been set
-		window.headertag.cmd.push(function () {
-			window.apstag.setDisplayBids();
-		});
-	});
-};
+AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes, slotName, refreshCallback) {
+  var adUnitPath = this.getAdUnitCode(),
+    slotUnit = adUnitPath + '_' + slotName;
 
+  window.apstag.fetchBids({
+    slots: [{
+      slotID: elementId,
+      sizes: gptSizes,
+      slotName: slotUnit
+    }],
+    timeout: 1e3
+  }, function(bids) {
+    this.handleFetchedAmazonBids(bids);
+    if (refreshCallback) {
+      refreshCallback.call();
+    }
+  }.bind(this));
+
+}
+
+AdManager.prototype.handleFetchedAmazonBids = function(bids) {
+  // Your callback method, in this example it triggers the first DFP request for googletag's disableInitialLoad integration after bids have been set
+  if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
+    window.googletag.cmd.push(function() {
+      window.apstag.setDisplayBids();
+    });
+  } else {
+    window.headertag.cmd.push(function() {
+      window.apstag.setDisplayBids();
+    });
+  }
+}
 
 /**
  * Sets global targeting regardless of ad slot based on the `TARGETING` global on each site
@@ -563,7 +580,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
       }
 
       if (adUnitConfig.amazonEnabled && activeSizes && activeSizes.length) {
-        this.fetchAmazonBids(thisEl.id, activeSizes, adUnitConfig.slotName);
+        this.fetchAmazonBids(thisEl.id, activeSizes, adUnitConfig.slotName, this.refreshSlot);
       }
     }
 
@@ -582,26 +599,6 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
     this.refreshSlots(slotsToLoad);
   }
 
-};
-
-/**
-  * Uses the `cmd` async GPT queue to enqueue ad manager function to run
-  * if the GPT API is not yet ready.  Assures slots have been configured,
-  * etc. prior to trying to make the ad request
-  *
-  * @param {domElement} DOM element containing the DFP ad slot
-  * @returns undefined
-*/
-AdManager.prototype.asyncRefreshSlot = function (domElement) {
-  var adManager = this;
-
-  if (this.googletag.apiReady) {
-    this.refreshSlot(domElement);
-  } else {
-    this.googletag.cmd.push(function () {
-      adManager.refreshSlot(domElement);
-    });
-  }
 };
 
 /**
