@@ -17,8 +17,6 @@ var TargetingPairs = {
     var categoryMeta = scope.kinja.categoryMeta || {},
       postMeta = scope.kinja.postMeta || {};
 
-    debugger
-
     return (postMeta.categories || categoryMeta.categories || '').split(',');
   },
 
