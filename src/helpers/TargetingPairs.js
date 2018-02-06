@@ -9,6 +9,20 @@ var PageDepth = require('./PageDepth');
 
 var TargetingPairs = {
   /**
+  * Constructs comma delimited targeting list of all the story types tied to a permalink or the story type landing page
+  *
+  * @param Window scope the window to use for the kinja meta info
+  */
+  getCategories: function(scope) {
+    var categoryMeta = scope.kinja.categoryMeta || {},
+      postMeta = scope.kinja.postMeta || {};
+
+    debugger
+
+    return (postMeta.categories || categoryMeta.categories || '').split(',');
+  },
+
+  /**
    * Constructs associative array of targeting pairs from post meta
    *
    * @param Window scope the window to use for the kinja meta info.
@@ -37,6 +51,7 @@ var TargetingPairs = {
     // Begin page level targeting pairs AKA cust_params
     targeting.pageOptions = {
       tags: (post.tags || '').split(','),
+      category: this.getCategories(scope),
       blogName: kinjaMeta.blog.name,
       ksg: (scope.Krux && scope.Krux.segments) ? scope.Krux.segments : undefined,
       kuid: (scope.Krux && scope.Krux.user) ? scope.Krux.user : undefined
