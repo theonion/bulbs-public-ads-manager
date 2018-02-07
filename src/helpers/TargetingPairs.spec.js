@@ -20,7 +20,8 @@ describe('TargetingPairs', function() {
   	  		blog: { name: 'Onion' },
   	  		pageType: 'permalink'
   	  	},
-  	  	postMeta: {}
+  	  	postMeta: {},
+        categoryMeta: {},
   	  };
   	  window.Krux = {
   	  	segments: ['123', '456'],
@@ -93,6 +94,34 @@ describe('TargetingPairs', function() {
 	    	var targeting = TargetingPairs.buildTargetingPairs(window);
 	      expect(targeting.pageOptions.blogName).to.equal('Onion');
 	    });
+    });
+
+    describe('category on post targeting', function() {
+      it('includes single category when on post meta', function() {
+        window.kinja.postMeta.categories = 'review';
+        var targeting = TargetingPairs.buildTargetingPairs(window);
+        expect(targeting.pageOptions.category).to.eql(['review']);
+      });
+
+      it('includes multiple categories when on post meta', function() {
+        window.kinja.postMeta.categories = 'review,cars';
+        var targeting = TargetingPairs.buildTargetingPairs(window);
+        expect(targeting.pageOptions.category).to.eql(['review', 'cars']);
+      });
+    });
+
+    describe('category on category page', function() {
+      it('includes single category when on story type page', function() {
+        window.kinja.categoryMeta.categories = 'review';
+        var targeting = TargetingPairs.buildTargetingPairs(window);
+        expect(targeting.pageOptions.category).to.eql(['review']);
+      });
+
+      it('includes multiple categories when on category page', function() {
+        window.kinja.categoryMeta.categories = 'review,cars';
+        var targeting = TargetingPairs.buildTargetingPairs(window);
+        expect(targeting.pageOptions.category).to.eql(['review', 'cars']);
+      });
     });
 
 
