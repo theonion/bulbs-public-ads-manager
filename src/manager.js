@@ -269,16 +269,6 @@ AdManager.prototype.onSlotOnload = function(event) {
 };
 
 /**
- * Generates a unique DOM id for each ad
- *.
- * @returns unique id for the ad
-*/
-AdManager.prototype.generateId = function() {
-  this.adId += 1;
-  return 'dfp-ad-' + this.adId.toString();
-};
-
-/**
  * Sorts through viewports slot sizes and returns all dimensions as an array.
  * Note, that this function does NOT filter out sizes that aren't able to display based on the viewport dimensions in the ad unit config.
 
@@ -435,8 +425,6 @@ AdManager.prototype.configureAd = function (element) {
     this.logMessage('Ad unit (' + element.dataset.adUnit + ') missing configuration', ERROR);
     return;
   }
-
-  element.id = this.generateId();
 
   if (adUnitConfig.outOfPage) {
     slot = this.googletag.defineOutOfPageSlot(adUnitPath, element.id);
