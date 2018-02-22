@@ -653,7 +653,7 @@ describe('AdManager', function() {
         expect(ads[1][0]).to.eql(adSlot3);
       });
     });
-	
+  
     context('passed in an element context containing ads', function() {
       beforeEach(function() {
         TestHelper.stub(adManager, 'isAd').returns(false);
@@ -867,12 +867,13 @@ describe('AdManager', function() {
   });
 
   describe('#loadAds', function() {
-	var baseContainer, container1, container2, container3, adSlot1, adSlot2, adSlot3, ads;
+  var baseContainer, container1, container2, container3, adSlot1, adSlot2, adSlot3, ads;
 
     beforeEach(function() {
       adManager.paused = false;
       adManager.initialized = true;
       adManager.options.amazonEnabled = false;
+      adManager.options.pbjsEnabled = false;
 
       TestHelper.stub(adManager.googletag, 'pubads').returns({
         collapseEmptyDivs: sinon.spy(),
@@ -1121,12 +1122,12 @@ describe('AdManager', function() {
   describe('#fetchAmazonBids', function () {
 
     beforeEach(function() {
-	   var headertag = window.headertag = {};
+     var headertag = window.headertag = {};
       sandbox = sinon.sandbox.create();
       window.apstag = {
         fetchBids: function () {
-			this.callArg(callback)
-		}
+      this.callArg(callback)
+    }
       };
 
       headertag.cmd = {

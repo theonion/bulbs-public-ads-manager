@@ -1,4 +1,5 @@
 require('./dfp');
+require('./prebid-load.js');
 var utils = require('./utils');
 var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
@@ -15,6 +16,7 @@ var AdManager = function(options) {
     debug: false,
     dfpId: 4246,
     amazonEnabled: true,
+    pbjsEnabled: true,
     enableSRA: false
   };
   var options = options || {};
@@ -24,7 +26,7 @@ var AdManager = function(options) {
   this.adId = 0;
   this.initialized = false;
   this.viewportWidth = 0;
-  this.oldViewportWidth = window.document.body.clientWidth;
+  this.oldViewportWidth = window.innerWidth;
   this.options = utils.extend(defaultOptions, options);
   this.bindContext();
 
@@ -35,6 +37,7 @@ var AdManager = function(options) {
   PageDepth.setPageDepth();
   
   this.googletag = window.googletag;
+  this.pbjs = window.pbjs;
   this.googletag.cmd.push(function () {
     adManager.initGoogleTag();
   });
@@ -106,23 +109,75 @@ AdManager.prototype.initGoogleTag = function() {
  *
  * @returns undefined
 */
+
+/** runs auctions on individual adunits
+ * might want to batch these like prebid
+*/
 AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes, slotName) {
-	var adUnitPath = this.getAdUnitCode(),
-	slotUnit = adUnitPath + '_' + slotName;
-	window.apstag.fetchBids({
-		slots: [{
-			slotID: elementId,
-			sizes: gptSizes,
-			slotName: slotUnit
-		}],
-		timeout: 1e3
-	}, callback = function (bids) {
-		// Your callback method, in this example it triggers the first DFP request for googletag's disableInitialLoad integration after bids have been set
-		window.headertag.cmd.push(function () {
-			window.apstag.setDisplayBids();
-		});
-	});
+  var adUnitPath = this.getAdUnitCode(),
+  slotUnit = adUnitPath + '_' + slotName;
+  window.apstag.fetchBids({
+    slots: [{
+      slotID: elementId,
+      sizes: gptSizes,
+      slotName: slotUnit
+    }],
+    timeout: 1e3
+  }, callback = (bids) => {
+    // Your callback method, in this example it triggers the first DFP request for googletag's disableInitialLoad integration after bids have been set
+    if (typeof window.headertag !== 'undefined') {
+      window.headertag.cmd.push(function() {
+          window.apstag.setDisplayBids();
+      });
+    } else {
+        window.apstag.setDisplayBids();
+    }
+  });
 };
+
+AdManager.prototype.addUnitToPrebid = function(adUnitConfig, activeSizes, slot) {
+  const adUnitPath = this.getAdUnitCode();
+  const { prebid } = adUnitConfig;
+
+  if(!prebid) return;
+
+  const code = slot.getSlotElementId();
+  clearTimeout(this.prebidAuctionCountdown);
+
+  const pbjsConfig = Object.assign({}, prebid);
+
+  Object.keys(pbjsConfig.mediaTypes).forEach(key => {
+    pbjsConfig.mediaTypes[key]['sizes'] = activeSizes;
+  });
+
+  this.prebidAuctionSlots = [...this.prebidAuctionSlots || [], slot];
+  this.pbjs.addAdUnits(Object.assign({code: code}, pbjsConfig));
+
+  this.prebidAuctionCountdown = setTimeout(() => {
+    const adUnitCodes = [];
+    const adUnitSlots = this.prebidAuctionSlots.map(slot => {
+      adUnitCodes.push(slot.getSlotElementId());
+      return slot;
+    });
+    this.prebidAuctionSlots = [];
+
+    this.pbjs.que.push(() => {
+      this.pbjs.requestBids({
+        adUnitCodes,
+        bidsBackHandler: () => {
+          googletag.cmd.push(() => {
+            pbjs.setTargetingForGPTAsync();
+            googletag.pubads().refresh(adUnitSlots);
+          });
+        }
+      });
+    });
+  }, 0);
+};
+
+AdManager.prototype.prebidBuildSizeConfig = function() {
+
+}
 
 
 /**
@@ -531,11 +586,11 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
     }
 
     // Makes slotEnabled optional in the config. Only check for slotEnableds that are falsy
-	if (adUnitConfig && adUnitConfig.hasOwnProperty('slotEnabled') && !adUnitConfig.slotEnabled()) {
+  if (adUnitConfig && adUnitConfig.hasOwnProperty('slotEnabled') && !adUnitConfig.slotEnabled()) {
       continue;
     }
 
-	if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
+  if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
       continue;
     }
 
@@ -567,7 +622,21 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
       }
     }
 
-    if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
+    if (this.options.pbjsEnabled && adUnitConfig.pbjsEnabled && !slot.eagerLoad && !adUnitConfig.outOfPage) {
+      if (slot && typeof slot.getSizes == 'function') {
+        gptSlotSizes = slot.getSizes();
+        activeSizes = this.adSlotSizes(gptSlotSizes);
+      } else {
+        adUnitSizes = this.adUnitSizes(adUnitConfig.sizes)[1];
+        activeSizes = adUnitSizes;
+      }
+
+      if (adUnitConfig.pbjsEnabled && adUnitConfig.prebid && activeSizes && activeSizes.length) {
+        this.addUnitToPrebid(adUnitConfig, activeSizes, slot);
+      }
+    }
+
+    if (this.options.pbjsEnabled || typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
       this.googletag.display(thisEl.id);
     } else {
       window.headertag.display(thisEl.id);
