@@ -216,6 +216,15 @@ AdManager.prototype.reloadAds = function(element) {
   this.loadAds(element);
 };
 
+/*
+*For waypoint-loaded ads, ad requests are made on-demand. 
+*/
+
+AdManager.prototype.loadDynamicAds = function (element) {
+  this.googletag.pubads().updateCorrelator();
+  this.loadAds(element, true, true, true);
+};
+
 /**
  * Custom callback to wrap ad slot with additional functionality
  *
@@ -501,7 +510,7 @@ AdManager.prototype.unpause = function() {
  * @param {updateCorrelator} optional flag to force an update of the correlator value
  * @returns undefined
 */
-AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelector) {
+AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelector, dynamicLoad) {
   if (this.paused || !this.initialized) {
     return;
   }
@@ -541,7 +550,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
 
     slot = this.configureAd(thisEl);
 
-    if (slot && slot.eagerLoad) {
+    if (slot && (slot.eagerLoad || (!slot.eagerLoad && dynamicLoad))) {
       slotsToLoad.push(slot);
     }
 
