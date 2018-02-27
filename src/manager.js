@@ -16,7 +16,7 @@ var AdManager = function(options) {
     debug: false,
     dfpId: 4246,
     amazonEnabled: true,
-    pbjsEnabled: true,
+    pbjsEnabled: false,
     enableSRA: false
   };
   var options = options || {};
@@ -177,11 +177,6 @@ AdManager.prototype.addUnitToPrebid = function(adUnitConfig, activeSizes, slot) 
 
   this.prebidAuctionCountdown = setTimeout(this.prebidAuctionCountdownFunction, 0);
 };
-
-AdManager.prototype.prebidBuildSizeConfig = function() {
-
-}
-
 
 /**
  * Sets global targeting regardless of ad slot based on the `TARGETING` global on each site
