@@ -136,46 +136,48 @@ AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes, slotName) {
 };
 
 AdManager.prototype.prebidAuctionCountdownFunction = function() {
-    const adUnitCodes = [];
-    const adUnitSlots = this.prebidAuctionSlots.map(function(slot) {
-      adUnitCodes.push(slot.getSlotElementId());
-      return slot;
-    });
-    this.prebidAuctionSlots = [];
+  const adUnitCodes = [];
+  const adUnitSlots = this.prebidAuctionSlots.map(function(slot) {
+    adUnitCodes.push(slot.getSlotElementId());
+    return slot;
+  });
+  this.prebidAuctionSlots = [];
 
-    var self = this;
-    this.pbjs.que.push(function() {
-      this.pbjs.requestBids({
-        adUnitCodes,
-        bidsBackHandler: function() {
-          googletag.cmd.push(function() {
-            pbjs.setTargetingForGPTAsync();
-            googletag.pubads().refresh(adUnitSlots);
-          });
-        }
-      });
+  pbjs.que.push(function() {
+    pbjs.requestBids({
+      adUnitCodes,
+      bidsBackHandler: function() {
+        googletag.cmd.push(function() {
+          pbjs.setTargetingForGPTAsync();
+          googletag.pubads().refresh(adUnitSlots);
+        });
+      }
     });
+  });
 }
 
 AdManager.prototype.addUnitToPrebid = function(adUnitConfig, activeSizes, slot) {
-  const adUnitPath = this.getAdUnitCode();
-  const { prebid } = adUnitConfig;
+  var adUnitPath = this.getAdUnitCode();
+  var prebid = adUnitConfig.prebid;
 
   if(!prebid) return;
 
-  const code = slot.getSlotElementId();
+  var code = slot.getSlotElementId();
   clearTimeout(this.prebidAuctionCountdown);
 
-  const pbjsConfig = Object.assign({}, prebid);
+
+  var pbjsConfig = utils.extend({}, prebid);
 
   Object.keys(pbjsConfig.mediaTypes).forEach(key => {
     pbjsConfig.mediaTypes[key]['sizes'] = activeSizes;
   });
 
-  this.prebidAuctionSlots = [...this.prebidAuctionSlots || [], slot];
-  this.pbjs.addAdUnits(Object.assign({code: code}, pbjsConfig));
+  this.prebidAuctionSlots = this.prebidAuctionSlots || [];
+  this.prebidAuctionSlots = this.prebidAuctionSlots.concat([slot]);
 
-  this.prebidAuctionCountdown = setTimeout(this.prebidAuctionCountdownFunction, 0);
+  this.pbjs.addAdUnits(utils.extend({code: code}, pbjsConfig));
+
+  this.prebidAuctionCountdown = setTimeout(this.prebidAuctionCountdownFunction.bind(this), 0);
 };
 
 /**
