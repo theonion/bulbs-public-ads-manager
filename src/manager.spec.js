@@ -1161,6 +1161,46 @@ describe('AdManager', function() {
     });
   });
 
+  describe('#addUnitToPrebid', function () {
+    var activeSizes, stubSlot;
+    
+    beforeEach(function() {
+      activeSizes = [300, 250];
+      stubSlot = {
+          getSlotElementId: function() {
+            return 'dfp-ad-1';
+          }
+      };
+    });
+
+    afterEach(function() {
+      sandbox.restore();
+    });
+
+    it('does not call prebid auction countdown when prebid is not configured', function () {
+      adUnitConfig = {};
+
+      adManager.prebidAuctionCountdownFunction = sinon.spy();
+      adManager.addUnitToPrebid(adUnitConfig, activeSizes, stubSlot);
+      expect(adManager.prebidAuctionCountdownFunction.called).to.be.false;
+    });
+
+    it('calls prebid auction countdown when prebid is configured', function () {
+      var adUnitConfig = {
+        prebid: {
+          mediaTypes: {}
+        }
+      };
+
+      var clock = sinon.useFakeTimers();
+      adManager.prebidAuctionCountdownFunction = sinon.spy();
+      adManager.addUnitToPrebid(adUnitConfig, activeSizes, stubSlot);
+      clock.tick(10);
+      expect(adManager.prebidAuctionCountdownFunction.called).to.be.true;
+      clock.restore();
+    });
+  });
+
   describe('#refreshSlot', function() {
     var baseContainer, container1, adSlot1, ads, stubSlot;
 

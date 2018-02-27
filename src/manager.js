@@ -135,6 +135,28 @@ AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes, slotName) {
   });
 };
 
+AdManager.prototype.prebidAuctionCountdownFunction = function() {
+    const adUnitCodes = [];
+    const adUnitSlots = this.prebidAuctionSlots.map(function(slot) {
+      adUnitCodes.push(slot.getSlotElementId());
+      return slot;
+    });
+    this.prebidAuctionSlots = [];
+
+    var self = this;
+    this.pbjs.que.push(function() {
+      this.pbjs.requestBids({
+        adUnitCodes,
+        bidsBackHandler: function() {
+          googletag.cmd.push(function() {
+            pbjs.setTargetingForGPTAsync();
+            googletag.pubads().refresh(adUnitSlots);
+          });
+        }
+      });
+    });
+}
+
 AdManager.prototype.addUnitToPrebid = function(adUnitConfig, activeSizes, slot) {
   const adUnitPath = this.getAdUnitCode();
   const { prebid } = adUnitConfig;
@@ -153,26 +175,7 @@ AdManager.prototype.addUnitToPrebid = function(adUnitConfig, activeSizes, slot) 
   this.prebidAuctionSlots = [...this.prebidAuctionSlots || [], slot];
   this.pbjs.addAdUnits(Object.assign({code: code}, pbjsConfig));
 
-  this.prebidAuctionCountdown = setTimeout(() => {
-    const adUnitCodes = [];
-    const adUnitSlots = this.prebidAuctionSlots.map(slot => {
-      adUnitCodes.push(slot.getSlotElementId());
-      return slot;
-    });
-    this.prebidAuctionSlots = [];
-
-    this.pbjs.que.push(() => {
-      this.pbjs.requestBids({
-        adUnitCodes,
-        bidsBackHandler: () => {
-          googletag.cmd.push(() => {
-            pbjs.setTargetingForGPTAsync();
-            googletag.pubads().refresh(adUnitSlots);
-          });
-        }
-      });
-    });
-  }, 0);
+  this.prebidAuctionCountdown = setTimeout(this.prebidAuctionCountdownFunction, 0);
 };
 
 AdManager.prototype.prebidBuildSizeConfig = function() {
