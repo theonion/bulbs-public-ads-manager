@@ -33,11 +33,11 @@ var AdManager = function(options) {
   window.addEventListener('resize', this.handleWindowResize);
 
   var adManager = this;
-
+  this.prebidInit();
   PageDepth.setPageDepth();
   
   this.googletag = window.googletag;
-  this.pbjs = window.pbjs;
+
   this.googletag.cmd.push(function () {
     adManager.initGoogleTag();
   });
@@ -57,6 +57,14 @@ AdManager.prototype.bindContext = function() {
   this.onSlotOnload = this.onSlotOnload.bind(this);
 };
 
+AdManager.prototype.prebidInit = function() {
+  this.pbjs = window.pbjs;
+  if (this.pbjs && this.options.pbjsEnabled && this.adUnits.pbjsSizeConfig) {
+    this.pbjs.cmd.push(() => {
+      pbjs.setConfig({sizeConfig: this.adUnits.pbjsSizeConfig});
+    });
+  }
+}
 /**
  * Reloads ads on the page if the window was resized and the functionality is enabled
  *
