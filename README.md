@@ -22,7 +22,7 @@ Ads manager for public side of sites. Fills in ad slots.
 
 
 
-###Dependencies
+### Dependencies
 
 `google gpt` - The main google library that provides access to the DFP ad server.
 
@@ -32,7 +32,7 @@ These price-based lines are auto generated ahead of time through index exchange 
 
 `amazon aps` - APS is amazon's header bidding wrapper. It is similar to index, but at the current time it is only capable of delivering amazon product ads. There are future plans to add addiotional bidders to this wrapper.
 
-###Features and Terminology
+### Features and Terminology
 
 `SRA` - Single request Architecture. Allows multiple ad request to be consolidated into the same http request. The benefits of this are both load time performance as elimination of async issues pertaining to the order in which ads are returned. According to google, SRA is the only way to guarantee roadblock delivery. Additional docs [here](https://support.google.com/dfp_premium/answer/177277?hl=en)
 
