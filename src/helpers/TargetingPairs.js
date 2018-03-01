@@ -21,6 +21,17 @@ var TargetingPairs = {
   },
 
   /**
+  * Constructs comma delimited targeting list of all tags tied to a permalink or the tag landing page
+  *
+  * @param Window scope the window to use for the kinja meta info
+  */
+  getTags: function(scope) {
+    var tagMeta = scope.kinja.tagMeta || scope.kinja.postMeta || {};
+
+    return (tagMeta.tags || '').split(',');
+  },
+
+  /**
    * Constructs associative array of targeting pairs from post meta
    *
    * @param Window scope the window to use for the kinja meta info.
@@ -48,7 +59,7 @@ var TargetingPairs = {
 
     // Begin page level targeting pairs AKA cust_params
     targeting.pageOptions = {
-      tags: (post.tags || '').split(','),
+      tags: this.getTags(scope),
       category: this.getCategories(scope),
       blogName: kinjaMeta.blog.name,
       ksg: (scope.Krux && scope.Krux.segments) ? scope.Krux.segments : undefined,
