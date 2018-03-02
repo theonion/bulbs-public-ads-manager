@@ -343,16 +343,24 @@ AdManager.prototype.generateId = function() {
 
 /**
  * Sorts through viewports slot sizes and returns all dimensions as an array.
- * Note, that this function does NOT filter out sizes that aren't able to display based on the viewport dimensions in the ad unit config.
+ * Note, that this function filters out sizes that aren't able to display based on the viewport dimensions in the ad unit config.
 
  * @param {Array} Viewport size specifications for the ad slot, and list of eligbile sizes for each.
  * @returns {Array} An array of ad sizes belonging to the slot
 */
 
-AdManager.prototype.adUnitSizes = function(adUnitSizes) {
-  return adUnitSizes.filter(function (sizes) {
-    return sizes[1];
-  })[0];
+AdManager.prototype.adUnitSizes = function(sizeMap) {
+  var validSizesIndex = 0;
+  var sizeMapWidths = sizeMap.map(function(sizing, mapIndex) {
+    return [sizing[0][0], mapIndex];
+  }).sort(function(a, b) {
+    return a[0] - b[0];
+  }).forEach(function(element) {
+    if (element[0] <= window.innerWidth) {
+      validSizesIndex = element[1];
+    }
+  });
+  return sizeMap[validSizesIndex][1];
 };
 
 /**
@@ -505,7 +513,7 @@ AdManager.prototype.configureAd = function (element) {
     slot = this.googletag.defineOutOfPageSlot(adUnitPath, element.id);
   } else {
     size = adUnitConfig.sizes[0][1];
-    slot = this.googletag.defineSlot(adUnitPath, size, element.id);
+    slot = this.googletag.defineSlot(adUnitPath, [], element.id);
     slot.defineSizeMapping(adUnitConfig.sizes);
   }
 
@@ -617,13 +625,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
      * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
     */
 
-      if (slot && typeof slot.getSizes == 'function') {
-        gptSlotSizes = slot.getSizes();
-        activeSizes = this.adSlotSizes(gptSlotSizes);
-      } else {
-        adUnitSizes = this.adUnitSizes(adUnitConfig.sizes)[1];
-        activeSizes = adUnitSizes;
-      }
+      activeSizes = this.adUnitSizes(adUnitConfig.sizes);
 
       if (adUnitConfig.amazonEnabled && activeSizes && activeSizes.length) {
         this.fetchAmazonBids(thisEl.id, activeSizes, adUnitConfig.slotName);
@@ -631,13 +633,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
     }
 
     if (this.options.pbjsEnabled && adUnitConfig.pbjsEnabled && !slot.eagerLoad && !adUnitConfig.outOfPage) {
-      if (slot && typeof slot.getSizes == 'function') {
-        gptSlotSizes = slot.getSizes();
-        activeSizes = this.adSlotSizes(gptSlotSizes);
-      } else {
-        adUnitSizes = this.adUnitSizes(adUnitConfig.sizes)[1];
-        activeSizes = adUnitSizes;
-      }
+      activeSizes = this.adUnitSizes(adUnitConfig.sizes);
 
       if (adUnitConfig.pbjsEnabled && adUnitConfig.prebid && activeSizes && activeSizes.length) {
         this.addUnitToPrebid(adUnitConfig, activeSizes, slot);
