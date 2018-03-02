@@ -363,6 +363,16 @@ AdManager.prototype.adUnitSizes = function(sizeMap) {
   return sizeMap[validSizesIndex][1];
 };
 
+AdManager.prototype.buildSizeMap = function(sizes) {
+  var sizeMap = googletag.sizeMapping();
+
+  sizes.forEach(function(sizeArr) {
+    sizeMap.addSize(sizeArr[0], sizeArr[1]);
+  });
+
+  return sizeMap.build();
+};
+
 /**
  * Returns the active sizes object from GPT as an array.
  *
@@ -500,7 +510,7 @@ AdManager.prototype.getAdUnitCode = function() {
 AdManager.prototype.configureAd = function (element) {
   var adUnitConfig = this.adUnits.units[element.dataset.adUnit];
   var adUnitPath = this.getAdUnitCode();
-  var size;
+  var sizeMap;
 
   if (!adUnitConfig) {
     this.logMessage('Ad unit (' + element.dataset.adUnit + ') missing configuration', ERROR);
@@ -512,9 +522,9 @@ AdManager.prototype.configureAd = function (element) {
   if (adUnitConfig.outOfPage) {
     slot = this.googletag.defineOutOfPageSlot(adUnitPath, element.id);
   } else {
-    size = adUnitConfig.sizes[0][1];
     slot = this.googletag.defineSlot(adUnitPath, [], element.id);
-    slot.defineSizeMapping(adUnitConfig.sizes);
+    sizeMap = this.buildSizeMap(adUnitConfig.sizes);
+    slot.defineSizeMapping(sizeMap);
   }
 
   if (element.id && element.id in this.slots) {
