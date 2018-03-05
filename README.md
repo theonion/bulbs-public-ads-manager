@@ -33,6 +33,16 @@ Tests will run on travis-ci as part of the pull request process.
 #### Dependencies
 This project should never have outside, frontend dependencies since it really should be one of, if not, _the_ first JS to run on the page. Otherwise, potential ad views could be lost.
 
+### Build Prebid
+```
+$ git clone https://github.com/prebid/Prebid.js.git
+$ cd Prebid.js
+$ npm install
+```
+```
+gulp build --modules=aolBidAdapter,openxBidAdapter,rubiconBidAdapter,appnexusBidAdapter,yieldmoBidAdapter
+```
+
 ## Creating a new release
 
 * inside of your ```bower.json``` and ```package.json``` files update the version in accordance with [semver](http://semver.org/)
