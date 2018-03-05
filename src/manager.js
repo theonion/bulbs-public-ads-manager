@@ -1,5 +1,4 @@
 require('./dfp');
-require('./prebid-load.js');
 var utils = require('./utils');
 var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
@@ -26,17 +25,20 @@ var AdManager = function(options) {
   this.adId = 0;
   this.initialized = false;
   this.viewportWidth = 0;
-  this.oldViewportWidth = window.innerWidth;
+  this.oldViewportWidth = window.document.body.clientWidth;
   this.options = utils.extend(defaultOptions, options);
   this.bindContext();
 
   window.addEventListener('resize', this.handleWindowResize);
 
   var adManager = this;
-  this.prebidInit();
   PageDepth.setPageDepth();
   
   this.googletag = window.googletag;
+  
+  if (this.options.pbjsEnabled) {
+    this.prebidInit();
+  };
 
   this.googletag.cmd.push(function () {
     adManager.initGoogleTag();
@@ -60,8 +62,9 @@ AdManager.prototype.bindContext = function() {
 AdManager.prototype.prebidInit = function() {
   this.pbjs = window.pbjs;
   if (this.pbjs && this.options.pbjsEnabled && this.adUnits.pbjsSizeConfig) {
-    this.pbjs.cmd.push(() => {
-      pbjs.setConfig({sizeConfig: this.adUnits.pbjsSizeConfig});
+    var sizeConfig = this.adUnits.pbjsSizeConfig;
+    this.pbjs.cmd.push(function() {
+      pbjs.setConfig({sizeConfig: sizeConfig});
     });
   }
 }
@@ -356,7 +359,7 @@ AdManager.prototype.adUnitSizes = function(sizeMap) {
   }).sort(function(a, b) {
     return a[0] - b[0];
   }).forEach(function(element) {
-    if (element[0] <= window.innerWidth) {
+    if (element[0] <= window.document.body.clientWidth) {
       validSizesIndex = element[1];
     }
   });
