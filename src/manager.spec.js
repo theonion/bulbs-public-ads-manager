@@ -77,6 +77,38 @@ describe('AdManager', function() {
       });
     });
   });
+  describe('#prebidInit', function() {
+    var pbjs;
+    beforeEach(function() {
+      pbjs = window.pbjs = {
+        cmd: {
+          push: function() {
+            pbjs.setConfig();
+          }
+        },
+        setConfig: sinon.spy(),
+      };
+    });
+
+    it('sets prebid sizeConfig if prebid is enabled and sizeConfig exists', function() {
+      adManager.options.pbjsEnabled = true;
+      adManager.adUnits.pbjsSizeConfig = {};
+      adManager.prebidInit();
+      expect(adManager.pbjs.setConfig.calledOnce).to.be.true;
+    });
+
+    it('does not set sizeConfig if prebid is disabled', function() {
+      adManager.prebidInit();
+      expect(adManager.pbjs.setConfig.calledOnce).to.be.false;
+    });
+
+    it('does not set sizeConfig if sizeConfig does not exist', function() {
+      adManager.options.pbjsEnabled = true;
+      adManager.adUnits.pbjsSizeConfig = undefined;
+      adManager.prebidInit();
+      expect(adManager.pbjs.setConfig.calledOnce).to.be.false;
+    });
+  });
 
   describe('#handleWindowResize', function() {
     beforeEach(function() {
@@ -1178,7 +1210,7 @@ describe('AdManager', function() {
   });
 
   describe('#addUnitToPrebid', function () {
-    var activeSizes, stubSlot;
+    var activeSizes, stubSlot, pbjs;
     
     beforeEach(function() {
       activeSizes = [300, 250];
@@ -1187,6 +1219,9 @@ describe('AdManager', function() {
             return 'dfp-ad-1';
           }
       };
+      adManager.pbjs = {
+        addAdUnits: sinon.spy(),
+      }
     });
 
     afterEach(function() {
