@@ -521,6 +521,21 @@ describe('AdManager', function() {
     });
   });
 
+  describe('#buildSizeMap', function () {
+    var sizeMappingStub;
+    beforeEach(function() {
+      sizeMappingStub = {
+        addSize: sinon.spy(),
+        build: sinon.spy(),
+      }
+      TestHelper.stub(window.googletag, 'sizeMapping').returns(sizeMappingStub)
+    });
+    it('builds valid gpt sizemap', function() {
+      adManager.buildSizeMap([]);
+      expect(window.googletag.sizeMapping().build.calledOnce).to.be.true;
+    });
+  });
+
   describe('#adSlotSizes', function() {
     beforeEach(function() {
     });
@@ -753,6 +768,7 @@ describe('AdManager', function() {
 
     beforeEach(function() {
       TestHelper.stub(adManager, 'getAdUnitCode').returns('/4246/fmg.onion');
+      TestHelper.stub(adManager, 'buildSizeMap').returns(adManager.adUnits.units.header.sizes);
       container1 = document.createElement('div');
       adSlot1 = document.createElement('div');
       adSlot1.className = 'dfp';
@@ -799,7 +815,7 @@ describe('AdManager', function() {
       });
 
       it('defines the slot on the google tag object', function() {
-        expect(window.googletag.defineSlot.calledWith('/4246/fmg.onion', adManager.adUnits.units.header.sizes[0][1], 'dfp-ad-1')).to.be.true;
+        expect(window.googletag.defineSlot.calledWith('/4246/fmg.onion', [], 'dfp-ad-1')).to.be.true;
       });
 
       it('defines the size mapping on the google tag object', function() {
@@ -834,7 +850,7 @@ describe('AdManager', function() {
       });
 
       it('defines the slot on the google tag object', function() {
-        expect(window.googletag.defineSlot.calledWith('/4246/fmg.onion/front', adManager.adUnits.units.header.sizes[0][1], 'dfp-ad-1')).to.be.true;
+        expect(window.googletag.defineSlot.calledWith('/4246/fmg.onion/front', [], 'dfp-ad-1')).to.be.true;
       });
 
       it('sets whether the ad should be eager loaded', function() {

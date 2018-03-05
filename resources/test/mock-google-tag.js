@@ -1,5 +1,6 @@
 var MockGoogleTag = function MockGoogleTag () {
   this.enableServices = function () {};
+  this.sizeMapping = function() {};
   this.cmd = [];
 };
 
