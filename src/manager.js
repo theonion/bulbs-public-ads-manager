@@ -8,7 +8,7 @@ var PageDepth = require('./helpers/PageDepth');
 var ERROR = 'error';
 var TABLE = 'table';
 
-var AdManager = function(options) {
+var AdManager = function (options) {
   var defaultOptions = {
     doReloadOnResize: true,
     resizeTimeout: null,
@@ -46,7 +46,7 @@ var AdManager = function(options) {
  *
  * @returns undefined;
 */
-AdManager.prototype.bindContext = function() {
+AdManager.prototype.bindContext = function () {
   this.handleWindowResize = this.handleWindowResize.bind(this);
   this.loadAds = this.loadAds.bind(this);
   this.onSlotRenderEnded = this.onSlotRenderEnded.bind(this);
@@ -59,7 +59,7 @@ AdManager.prototype.bindContext = function() {
  *
  * @returns undefined;
 */
-AdManager.prototype.handleWindowResize = function() {
+AdManager.prototype.handleWindowResize = function () {
   if (!this.options.doReloadOnResize) {
     return;
   }
@@ -78,7 +78,7 @@ AdManager.prototype.handleWindowResize = function() {
  *
  * @returns undefined
 */
-AdManager.prototype.initGoogleTag = function() {
+AdManager.prototype.initGoogleTag = function () {
   var adManager = this;
   this.googletag.pubads().disableInitialLoad();
   this.googletag.pubads().enableAsyncRendering();
@@ -106,22 +106,23 @@ AdManager.prototype.initGoogleTag = function() {
  *
  * @returns undefined
 */
-AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes, slotName) {
-	var adUnitPath = this.getAdUnitCode(),
-	slotUnit = adUnitPath + '_' + slotName;
-	window.apstag.fetchBids({
-		slots: [{
-			slotID: elementId,
-			sizes: gptSizes,
-			slotName: slotUnit
-		}],
-		timeout: 1e3
-	}, callback = function (bids) {
-		// Your callback method, in this example it triggers the first DFP request for googletag's disableInitialLoad integration after bids have been set
-		window.headertag.cmd.push(function () {
-			window.apstag.setDisplayBids();
-		});
-	});
+AdManager.prototype.fetchAmazonBids = function (elementId, gptSizes, slotName) {
+  var adUnitPath = this.getAdUnitCode(),
+    slotUnit = adUnitPath + '_' + slotName;
+  window.apstag.fetchBids({
+    slots: [{
+      slotID: elementId,
+      sizes: gptSizes,
+      slotName: slotUnit
+    }],
+    timeout: 1e3
+  }, callback = function (bids) {
+    /* Your callback method, in this example it triggers the first DFP request
+    for googletag's disableInitialLoad integration after bids have been set */
+    window.headertag.cmd.push(function () {
+      window.apstag.setDisplayBids();
+    });
+  });
 };
 
 
@@ -130,7 +131,7 @@ AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes, slotName) {
  *
  * @returns undefined
 */
-AdManager.prototype.setPageTargeting = function() {
+AdManager.prototype.setPageTargeting = function () {
   // Bulbs Targeting Pairs
   for (var customCriteriaKey in this.targeting) {
     var customCriteriaValue = this.targeting[customCriteriaKey];
@@ -151,7 +152,7 @@ AdManager.prototype.setPageTargeting = function() {
 */
 AdManager.prototype.searchString = function () {
   return window.location.search;
-}
+};
 
 _updateUtmCookie = function (utmSource, utmMedium, utmCampaign) {
   if (!window.Cookies) {
@@ -206,11 +207,11 @@ AdManager.prototype.setUtmTargeting = function () {
 /**
  * First unloads all ad slots on the page, then loads them all again.
  *
- * @param {Element} element - Optional parameter if the ad refresh should be scoped to a particular container on the page
- *
+ * @param {Element} element - Optional parameter if the ad refresh should be scoped
+ *                            to a particularcontainer on the page
  * @returns undefined
 */
-AdManager.prototype.reloadAds = function(element) {
+AdManager.prototype.reloadAds = function (element) {
   this.googletag.pubads().updateCorrelator();
   this.unloadAds(element);
   this.loadAds(element);
@@ -222,7 +223,7 @@ AdManager.prototype.reloadAds = function(element) {
  * @param {Event} event - Event passed through the GPT library
  * @returns undefined
 */
-AdManager.prototype.onSlotRenderEnded = function(event) {
+AdManager.prototype.onSlotRenderEnded = function (event) {
   this.rendered = true;
 
   var slotId = event.slot.getSlotId().getDomId();
@@ -250,7 +251,7 @@ AdManager.prototype.onSlotRenderEnded = function(event) {
  * @param {Event} event - Event passed through the GPT library
  * @returns undefined
 */
-AdManager.prototype.onImpressionViewable = function(event) {
+AdManager.prototype.onImpressionViewable = function (event) {
   var slotId = event.slot.getSlotId().getDomId();
   var element = document.getElementById(slotId);
   utils.dispatchEvent(element, 'dfpImpressionViewable');
@@ -262,7 +263,7 @@ AdManager.prototype.onImpressionViewable = function(event) {
  * @param {Event} event - Event passed through the GPT library
  * @returns undefined
 */
-AdManager.prototype.onSlotOnload = function(event) {
+AdManager.prototype.onSlotOnload = function (event) {
   var slotId = event.slot.getSlotId().getDomId();
   var element = document.getElementById(slotId);
   utils.dispatchEvent(element, 'dfpSlotOnload');
@@ -273,7 +274,7 @@ AdManager.prototype.onSlotOnload = function(event) {
  *.
  * @returns unique id for the ad
 */
-AdManager.prototype.generateId = function() {
+AdManager.prototype.generateId = function () {
   this.adId += 1;
   return 'dfp-ad-' + this.adId.toString();
 };
@@ -286,7 +287,7 @@ AdManager.prototype.generateId = function() {
  * @returns {Array} An array of ad sizes belonging to the slot
 */
 
-AdManager.prototype.adUnitSizes = function(adUnitSizes) {
+AdManager.prototype.adUnitSizes = function (adUnitSizes) {
   return adUnitSizes.filter(function (sizes) {
     return sizes[1];
   })[0];
@@ -295,14 +296,15 @@ AdManager.prototype.adUnitSizes = function(adUnitSizes) {
 /**
  * Returns the active sizes object from GPT as an array.
  *
- * @param {Array} A list of all sizes eligible to serve for an ad slot given the viewport size sent requirements to GPT in defineSlot.
+ * @param {Array} A list of all sizes eligible to serve for an ad slot given the viewport size sent
+ *                  requirements to GPT in defineSlot.
  * @returns {Array} An array of ad sizes belonging to the slot
 */
 
-AdManager.prototype.adSlotSizes = function(gptSizes) {
+AdManager.prototype.adSlotSizes = function (gptSizes) {
   return gptSizes.map(function (key) {
     return [key[Object.keys(key)[0]], key[Object.keys(key)[1]]];
-  })
+  });
 };
 
 /**
@@ -321,7 +323,7 @@ AdManager.prototype.isAd = function (element) {
  * @param {HTMLElement|String|HTMLCollection} element - element to scope the search to
  * @returns {Array} of {Element} objects representing all ad slots
 */
-AdManager.prototype.findAds = function(el, useScopedSelector) {
+AdManager.prototype.findAds = function (el, useScopedSelector) {
   var ads = [];
 
   if (typeof(el) === 'string') {
@@ -354,7 +356,7 @@ AdManager.prototype.findAds = function(el, useScopedSelector) {
   return ads;
 };
 
-AdManager.prototype.logMessage = function(message, logLevel) {
+AdManager.prototype.logMessage = function (message, logLevel) {
   if (!console) {
     return;
   }
@@ -369,7 +371,7 @@ AdManager.prototype.logMessage = function(message, logLevel) {
  * @param
  * @returns
 */
-AdManager.prototype.slotInfo = function() {
+AdManager.prototype.slotInfo = function () {
   for (var slotElementId in this.slots) {
     if (this.slots[slotElementId]) {
       var slot = this.slots[slotElementId];
@@ -386,7 +388,7 @@ AdManager.prototype.slotInfo = function() {
  * @param {Object} slot - Configured ad slot from the GPT
  * @returns undefined
 */
-AdManager.prototype.setSlotTargeting = function(element, slot, adUnitConfig) {
+AdManager.prototype.setSlotTargeting = function (element, slot, adUnitConfig) {
   var slotTargeting = {};
   var positionTargeting = adUnitConfig.pos || adUnitConfig.slotName || element.dataset.adUnit;
   var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone(), positionTargeting).slotOptions;
@@ -404,13 +406,13 @@ AdManager.prototype.setSlotTargeting = function(element, slot, adUnitConfig) {
   }
 };
 
-AdManager.prototype.getAdUnitCode = function() {
+AdManager.prototype.getAdUnitCode = function () {
   var adUnitCodes = [this.options.dfpId, this.options.dfpSiteCode];
 
   if (window.kinja) {
     var forcedAdZone = AdZone.forcedAdZone();
     var targetingPairs = TargetingPairs.getTargetingPairs(forcedAdZone);
-    var adUnitName = forcedAdZone === 'collapse' ? 'collapse' : (targetingPairs.slotOptions.page === 'frontpage' ? 'front' : targetingPairs.slotOptions.page)
+    var adUnitName = forcedAdZone === 'collapse' ? 'collapse' : (targetingPairs.slotOptions.page === 'frontpage' ? 'front' : targetingPairs.slotOptions.page);
 
     adUnitCodes.push(adUnitName);
   } else if (window.dfpSiteSection) {
@@ -480,7 +482,7 @@ AdManager.prototype.configureAd = function (element) {
  * @param None
  * @returns undefined
 */
-AdManager.prototype.pause = function() {
+AdManager.prototype.pause = function () {
   this.paused = true;
 };
 
@@ -490,7 +492,7 @@ AdManager.prototype.pause = function() {
  * @param None
  * @returns undefined
 */
-AdManager.prototype.unpause = function() {
+AdManager.prototype.unpause = function () {
   this.paused = false;
 };
 
@@ -501,7 +503,7 @@ AdManager.prototype.unpause = function() {
  * @param {updateCorrelator} optional flag to force an update of the correlator value
  * @returns undefined
 */
-AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelector) {
+AdManager.prototype.loadAds = function (element, updateCorrelator, useScopedSelector) {
   if (this.paused || !this.initialized) {
     return;
   }
@@ -531,11 +533,12 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
     }
 
     // Makes slotEnabled optional in the config. Only check for slotEnableds that are falsy
-	if (adUnitConfig && adUnitConfig.hasOwnProperty('slotEnabled') && !adUnitConfig.slotEnabled()) {
+    if (adUnitConfig && adUnitConfig.hasOwnProperty('slotEnabled') && !adUnitConfig.slotEnabled()) {
       continue;
     }
 
-	if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') || (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
+    if ((thisEl.getAttribute('data-ad-load-state') === 'loaded') ||
+        (thisEl.getAttribute('data-ad-load-state') === 'loading')) {
       continue;
     }
 
@@ -548,9 +551,12 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
     if (this.options.amazonEnabled && !adUnitConfig.outOfPage) {
 
     /**
-     * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters inside the ad config.
-     * This method is undocumented, and could be removed. When not available, fall back to all sizes specified in the ad unit itself.
-     * This is not optimal, as sizes which cannot be displayed due to the viewport dimensions will be requested from A9. It is thus used as a fallback.
+     * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters
+     * inside the ad config.
+     * This method is undocumented, and could be removed. When not available, fall back to all sizes
+     * specified in the ad unit itself.
+     * This is not optimal, as sizes which cannot be displayed due to the viewport dimensions will be
+     * requested from A9. It is thus used as a fallback.
      * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
     */
 
