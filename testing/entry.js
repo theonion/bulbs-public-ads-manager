@@ -1,5 +1,5 @@
 const Admanager = require('../src/manager.js');
-const adUnits = require('./reductress_ad_map');
+const adUnits = require('./ad_map');
 
 window.Admanager = Admanager.init({
     adUnits,
