@@ -141,7 +141,7 @@ AdManager.prototype.setPageTargeting = function () {
   }
 
   if (window.Krux && window.Krux.user) {
-    this.googletag.pubads().setTargeting('kuid', Krux.user);
+    this.googletag.pubads().setTargeting('kuid', window.Krux.user);
   }
 
   this.setUtmTargeting();
@@ -154,7 +154,7 @@ AdManager.prototype.searchString = function () {
   return window.location.search;
 };
 
-_updateUtmCookie = function (utmSource, utmMedium, utmCampaign) {
+var _updateUtmCookie = function (utmSource, utmMedium, utmCampaign) {
   if (!window.Cookies) {
     return;
   }
@@ -169,12 +169,12 @@ _updateUtmCookie = function (utmSource, utmMedium, utmCampaign) {
   });
 };
 
-_updateGptTargeting = function (key, value) {
+var _updateGptTargeting = function (key, value) {
   if (!value) {
     return;
   }
 
-  googletag.pubads().setTargeting(key, value);
+  window.googletag.pubads().setTargeting(key, value);
 };
 
 /**
@@ -281,8 +281,8 @@ AdManager.prototype.generateId = function () {
 
 /**
  * Sorts through viewports slot sizes and returns all dimensions as an array.
- * Note, that this function does NOT filter out sizes that aren't able to display based on the viewport dimensions in the ad unit config.
-
+ * Note, that this function does NOT filter out sizes that aren't able to display
+ * based on the viewport dimensions in the ad unit config.
  * @param {Array} Viewport size specifications for the ad slot, and list of eligbile sizes for each.
  * @returns {Array} An array of ad sizes belonging to the slot
 */
@@ -432,6 +432,7 @@ AdManager.prototype.configureAd = function (element) {
   var adUnitConfig = this.adUnits.units[element.dataset.adUnit];
   var adUnitPath = this.getAdUnitCode();
   var size;
+  var slot;
 
   if (!adUnitConfig) {
     this.logMessage('Ad unit (' + element.dataset.adUnit + ') missing configuration', ERROR);
