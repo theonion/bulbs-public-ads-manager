@@ -1,5 +1,4 @@
 const webpack = require('webpack');
-const Minify = require('babel-minify-webpack-plugin');
 const path = require('path');
 
 module.exports = {
@@ -16,14 +15,8 @@ module.exports = {
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
-          options: {
-            plugins: [],
-          }
         }
       }
     ]
-  },
-  plugins: [
-    // new Minify(),
-  ]
+  }
 }
