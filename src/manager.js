@@ -2,11 +2,9 @@ require('./dfp');
 var utils = require('./utils');
 var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
-var Experiments = require('./helpers/Experiments');
 var PageDepth = require('./helpers/PageDepth');
 
 var ERROR = 'error';
-var TABLE = 'table';
 
 var AdManager = function (options) {
   var defaultOptions = {
