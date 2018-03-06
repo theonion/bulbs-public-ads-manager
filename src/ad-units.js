@@ -72,14 +72,6 @@ AdUnits.units = {
     ]
   },
 
-  'slideshow': {
-    'slotName': 'slideshow',
-    'sizes': [
-      [[0, 0], [[300, 250]]]
-    ],
-    'pos': 'slideshow'
-  },
-
   'non-mobile-leaderboard': {
     'slotName': 'horizontal-secondary',
     'sizes': [
