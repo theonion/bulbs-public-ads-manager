@@ -33,7 +33,7 @@ var AdManager = function(options) {
   var adManager = this;
 
   PageDepth.setPageDepth();
-  
+
   this.googletag = window.googletag;
   this.googletag.cmd.push(function () {
     adManager.initGoogleTag();
@@ -83,7 +83,7 @@ AdManager.prototype.initGoogleTag = function() {
   this.googletag.pubads().disableInitialLoad();
   this.googletag.pubads().enableAsyncRendering();
   this.googletag.pubads().updateCorrelator();
-  
+
   if (this.options.enableSRA) {
     this.googletag.pubads().enableSingleRequest();
   }
@@ -153,7 +153,7 @@ AdManager.prototype.searchString = function () {
   return window.location.search;
 }
 
-_updateUtmCookie = function (utmSource, utmMedium, utmCampaign) {
+var _updateUtmCookie = function (utmSource, utmMedium, utmCampaign) {
   if (!window.Cookies) {
     return;
   }
@@ -168,7 +168,7 @@ _updateUtmCookie = function (utmSource, utmMedium, utmCampaign) {
   });
 };
 
-_updateGptTargeting = function (key, value) {
+var _updateGptTargeting = function (key, value) {
   if (!value) {
     return;
   }
