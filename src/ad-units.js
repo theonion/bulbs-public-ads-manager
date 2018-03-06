@@ -1,7 +1,7 @@
 'use strict';
 
 var AdUnits = {
-  headerSlotRenderEnded: function() {}
+  headerSlotRenderEnded: function () {}
 };
 
 AdUnits.units = {
@@ -70,6 +70,14 @@ AdUnits.units = {
       [[1240, 0], [300, 250]],
       [[0, 0], []]
     ]
+  },
+
+  'slideshow': {
+    'slotName': 'slideshow',
+    'sizes': [
+      [[0, 0], [[300, 250]]]
+    ],
+    'pos': 'slideshow'
   },
 
   'non-mobile-leaderboard': {
