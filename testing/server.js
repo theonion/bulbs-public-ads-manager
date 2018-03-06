@@ -60,16 +60,12 @@ const deleteHost = (host) => {
 
 modifyHost(HOST);
 
-app.get('/prebid-test', (req, res) => {
-  res.sendFile(`${__dirname}/static/prebid-test.html`);
-})
 app.get('/', (req, res) => {
   res.sendFile(`${__dirname}/static/index.html`);
 });
 
 app.use(express.static('static'));
 app.use(express.static('dist'));
-app.use(express.static(path.join(__dirname, 'bulbs-public-ads-manager', 'src')));
 
 app.listen(PORT, console.log(chalkOpts.yPrompt(' ----> SERVER UP: '), chalkOpts.iPrompt(`${HOST}`)));
 
