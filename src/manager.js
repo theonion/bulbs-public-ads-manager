@@ -219,7 +219,7 @@ AdManager.prototype.searchString = function () {
   return window.location.search;
 }
 
-_updateUtmCookie = function (utmSource, utmMedium, utmCampaign) {
+var _updateUtmCookie = function (utmSource, utmMedium, utmCampaign) {
   if (!window.Cookies) {
     return;
   }
@@ -234,7 +234,7 @@ _updateUtmCookie = function (utmSource, utmMedium, utmCampaign) {
   });
 };
 
-_updateGptTargeting = function (key, value) {
+var _updateGptTargeting = function (key, value) {
   if (!value) {
     return;
   }

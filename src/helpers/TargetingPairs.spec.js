@@ -78,7 +78,7 @@ describe('TargetingPairs', function() {
       });
     });
 
-    describe('tags are present', function() {
+    describe('post tags are present', function() {
     	beforeEach(function() {
     	  window.kinja.postMeta.tags = 'foo,bar,baz';
     	});
@@ -86,6 +86,20 @@ describe('TargetingPairs', function() {
       it('includes tags in the page option targeting', function() {
         var targeting = TargetingPairs.buildTargetingPairs(window);
         expect(targeting.pageOptions.tags).to.eql(['foo', 'bar', 'baz']);
+      });
+    });
+
+    describe('on the tag page', function() {
+      beforeEach(function() {
+        window.kinja.postMeta = {};
+        window.kinja.tagMeta = {
+          tags: 'racing'
+        };
+      });
+
+      it('includes tags in the page option targeting', function() {
+        var targeting = TargetingPairs.buildTargetingPairs(window);
+        expect(targeting.pageOptions.tags).to.eql(['racing']);
       });
     });
 
