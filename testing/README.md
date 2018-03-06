@@ -1,53 +1,18 @@
+# Testing bulbs-public-ads-manager
 
-Install HTL's repo
--------------
+Test Page for prebid debugging
 
-```
-git clone 
-cd
-npm install
-```
+## Setup
 
-Install Bulbs itself
--------------
+```cd testing/```
 
-This is pulled directly from Github because installing via `bower` doesn't install all the dependencies, so we can't run the tests.
-
-```
-git clone https://github.com/theonion/bulbs-public-ads-manager
-cd bulbs-public-ads-manager
-rm -rf .git
-npm install
-```
-
-Running FMG Tests
--------------
-
-FMG has defined a bunch of Karma-based unit tests. These are fairly important and we shouldn't PR anything that doesn't pass all tests.
-
-```
-cd bulbs-public-ads-manager
-npm test
-```
+```npm install```
 
 
-Building for local testing
---------------
+### Build AdManager
 
-```
-npm run-script build
-```
+```npm run build```
 
+### Start server with modified host file
 
-Testing in the browser
---------------
-
-Make sure you have built `dist/script.js` before running this
-
-```
-# start a server on http://localhost:3001
-sudo node server.js
-```
-
-You should see ads in Chrome. If not, check the Console for errors.
-
+```sudo npm run up <site>```
