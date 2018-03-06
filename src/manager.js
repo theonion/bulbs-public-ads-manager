@@ -620,7 +620,8 @@ AdManager.prototype.asyncRefreshSlot = function (domElement) {
   * @returns undefined
 */
 AdManager.prototype.refreshSlot = function (domElement) {
-  if ((domElement.getAttribute('data-ad-load-state') === 'loaded') || (domElement.getAttribute('data-ad-load-state') === 'loading')) {
+  if ((domElement.getAttribute('data-ad-load-state') === 'loaded') ||
+      (domElement.getAttribute('data-ad-load-state') === 'loading')) {
     return;
   }
 
@@ -640,7 +641,7 @@ AdManager.prototype.refreshSlot = function (domElement) {
  * @param {domElement} DOM element containing the DFP ad
  * @returns undefined
 */
-AdManager.prototype.refreshSlots = function(slotsToLoad) {
+AdManager.prototype.refreshSlots = function (slotsToLoad) {
 
   if (slotsToLoad.length === 0) {
     return;
@@ -664,7 +665,7 @@ AdManager.prototype.refreshSlots = function(slotsToLoad) {
  * @param {Element} optional element to scope where to unload ads in the document
  * @returns undefined
 */
-AdManager.prototype.unloadAds = function(element) {
+AdManager.prototype.unloadAds = function (element) {
   if (!this.initialized) {
     return;
   }
@@ -689,7 +690,7 @@ AdManager.prototype.unloadAds = function(element) {
 };
 
 var AdManagerWrapper = {
-  init: function(options) {
+  init: function (options) {
     return new AdManager(options);
   }
 };
