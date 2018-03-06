@@ -70,6 +70,13 @@ $ npm install
 gulp build --modules=aolBidAdapter,openxBidAdapter,rubiconBidAdapter,appnexusBidAdapter,yieldmoBidAdapter
 ```
 
+
+### Test Prebid
+
+There is a `testing` directory which contains a test page, an ad map, and a minimal webpack file needed to build a standalone test page running on the local server.
+
+
+
 ## Creating a new release
 
 * inside of your ```bower.json``` and ```package.json``` files update the version in accordance with [semver](http://semver.org/)
