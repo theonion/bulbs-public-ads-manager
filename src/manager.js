@@ -33,9 +33,9 @@ var AdManager = function(options) {
 
   var adManager = this;
   PageDepth.setPageDepth();
-  
+
   this.googletag = window.googletag;
-  
+
   if (this.options.pbjsEnabled) {
     this.prebidInit();
   };
@@ -97,7 +97,7 @@ AdManager.prototype.initGoogleTag = function() {
   this.googletag.pubads().disableInitialLoad();
   this.googletag.pubads().enableAsyncRendering();
   this.googletag.pubads().updateCorrelator();
-  
+
   if (this.options.enableSRA) {
     this.googletag.pubads().enableSingleRequest();
   }
@@ -345,6 +345,15 @@ AdManager.prototype.generateId = function() {
 };
 
 /**
+  * Returns the document body clientWidth, primarily used to make test stubbing easier
+  *
+  * @returns {Integer} client width in pixels
+*/
+AdManager.prototype.getClientWidth = function () {
+  return window.document.body.clientWidth;
+};
+
+/**
  * Sorts through viewports slot sizes and returns all dimensions as an array.
  * Note, that this function filters out sizes that aren't able to display based on the viewport dimensions in the ad unit config.
 
@@ -353,13 +362,14 @@ AdManager.prototype.generateId = function() {
 */
 
 AdManager.prototype.adUnitSizes = function(sizeMap) {
+  var that = this;
   var validSizesIndex = 0;
   var sizeMapWidths = sizeMap.map(function(sizing, mapIndex) {
     return [sizing[0][0], mapIndex];
   }).sort(function(a, b) {
     return a[0] - b[0];
   }).forEach(function(element) {
-    if (element[0] <= window.document.body.clientWidth) {
+    if (element[0] <= that.getClientWidth()) {
       validSizesIndex = element[1];
     }
   });

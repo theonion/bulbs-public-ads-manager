@@ -544,12 +544,34 @@ describe('AdManager', function() {
   });
 
   describe('#adUnitSizes', function() {
-    beforeEach(function() {
+    context('no ads allowed with current viewport width', function() {
+      var sizeMap = [
+        [[900, 0], []],
+        [[0, 0], [300, 250]]
+      ];
+
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'getClientWidth').returns(1000);
+      });
+
+      it('returns an empty []', function() {
+        expect(adManager.adUnitSizes(sizeMap)).to.eql([]);
+      });
     });
 
-    it('filters ad unit sizes into an array', function() {
-      expect(adManager.generateId()).to.equal('dfp-ad-1');
-      expect(adManager.adId).to.equal(1);
+    context('multiple ads allowed with current viewport width', function () {
+      var sizeMap = [
+        [[900, 0], [[300, 250], [728, 90]]],
+        [[0, 0], [[300, 250], [320, 50]]]
+      ];
+
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'getClientWidth').returns(1000);
+      });
+
+      it('returns all the valid sizes', function() {
+        expect(adManager.adUnitSizes(sizeMap)).to.eql([[300,250], [728,90]]);
+      });
     });
   });
 
@@ -700,7 +722,7 @@ describe('AdManager', function() {
         expect(ads[1][0]).to.eql(adSlot3);
       });
     });
-  
+
     context('passed in an element context containing ads', function() {
       beforeEach(function() {
         TestHelper.stub(adManager, 'isAd').returns(false);
@@ -1211,7 +1233,7 @@ describe('AdManager', function() {
 
   describe('#addUnitToPrebid', function () {
     var activeSizes, stubSlot, pbjs;
-    
+
     beforeEach(function() {
       activeSizes = [300, 250];
       stubSlot = {
