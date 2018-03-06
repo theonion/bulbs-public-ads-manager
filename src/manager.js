@@ -17,6 +17,7 @@ var AdManager = function (options) {
   };
   var options = options || {};
 
+  /* adUnits comes from ad-units.js */
   this.adUnits = options.adUnits;
   this.slots = {};
   this.adId = 0;
