@@ -4,7 +4,6 @@ var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
 var Experiments = require('./helpers/Experiments');
 var PageDepth = require('./helpers/PageDepth');
-require('./prebid-load');
 
 var ERROR = 'error';
 var TABLE = 'table';

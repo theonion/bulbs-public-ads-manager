@@ -1,3 +1,4 @@
+var pbjs = require('../src/prebid-load.js');
 var Admanager = require('../src/manager.js');
 
 var AdUnits = {};
