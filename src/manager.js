@@ -438,6 +438,11 @@ AdManager.prototype.configureAd = function (element) {
     return;
   }
 
+  if (element.id && element.id in this.slots) {
+    // Slot has already been configured
+    return this.slots[element.id];
+  }
+
   element.id = this.generateId();
 
   if (adUnitConfig.outOfPage) {
@@ -446,11 +451,6 @@ AdManager.prototype.configureAd = function (element) {
     size = adUnitConfig.sizes[0][1];
     slot = this.googletag.defineSlot(adUnitPath, size, element.id);
     slot.defineSizeMapping(adUnitConfig.sizes);
-  }
-
-  if (element.id && element.id in this.slots) {
-    // Slot has already been configured
-    return this.slots[element.id];
   }
 
   if (!element.dataset) {
