@@ -16,7 +16,7 @@ var AdManager = function(options) {
     debug: false,
     dfpId: 4246,
     amazonEnabled: true,
-    pbjsEnabled: false,
+    prebidEnabled: false,
     enableSRA: false
   };
   var options = options || {};
@@ -37,7 +37,7 @@ var AdManager = function(options) {
 
   this.googletag = window.googletag;
 
-  if (this.options.pbjsEnabled) {
+  if (this.options.prebidEnabled) {
     this.prebidInit();
   };
 
@@ -62,7 +62,7 @@ AdManager.prototype.bindContext = function() {
 
 AdManager.prototype.prebidInit = function() {
   this.pbjs = window.pbjs;
-  if (this.pbjs && this.options.pbjsEnabled && this.adUnits.pbjsSizeConfig) {
+  if (this.pbjs && this.options.prebidEnabled && this.adUnits.pbjsSizeConfig) {
     var sizeConfig = this.adUnits.pbjsSizeConfig;
     this.pbjs.cmd.push(function() {
       pbjs.setConfig({sizeConfig: sizeConfig});
@@ -145,51 +145,6 @@ AdManager.prototype.fetchAmazonBids = function(elementId, gptSizes, slotName) {
         window.apstag.setDisplayBids();
     }
   });
-};
-
-AdManager.prototype.prebidAuctionCountdownFunction = function() {
-  const adUnitCodes = [];
-  const adUnitSlots = this.prebidAuctionSlots.map(function(slot) {
-    adUnitCodes.push(slot.getSlotElementId());
-    return slot;
-  });
-  this.prebidAuctionSlots = [];
-
-  pbjs.que.push(function() {
-    pbjs.requestBids({
-      adUnitCodes,
-      bidsBackHandler: function() {
-        googletag.cmd.push(function() {
-          pbjs.setTargetingForGPTAsync();
-          googletag.pubads().refresh(adUnitSlots);
-        });
-      }
-    });
-  });
-}
-
-AdManager.prototype.addUnitToPrebid = function(adUnitConfig, activeSizes, slot) {
-  var adUnitPath = this.getAdUnitCode();
-  var prebid = adUnitConfig.prebid;
-
-  if(!prebid) return;
-
-  var code = slot.getSlotElementId();
-  clearTimeout(this.prebidAuctionCountdown);
-
-
-  var pbjsConfig = utils.extend({}, prebid);
-
-  Object.keys(pbjsConfig.mediaTypes).forEach(key => {
-    pbjsConfig.mediaTypes[key]['sizes'] = activeSizes;
-  });
-
-  this.prebidAuctionSlots = this.prebidAuctionSlots || [];
-  this.prebidAuctionSlots = this.prebidAuctionSlots.concat([slot]);
-
-  this.pbjs.addAdUnits(utils.extend({code: code}, pbjsConfig));
-
-  this.prebidAuctionCountdown = setTimeout(this.prebidAuctionCountdownFunction.bind(this), 0);
 };
 
 /**
@@ -564,6 +519,12 @@ AdManager.prototype.configureAd = function (element) {
     slot.eagerLoad = true;
   }
 
+  if (adUnitConfig.hasOwnProperty('prebid')) {
+    // set prebid properties, if any, so they're available inside refreshSlots()
+    slot.prebid = adUnitConfig.prebid;
+    slot.activeSizes = this.adUnitSizes(adUnitConfig.sizes);
+  }
+
   this.slots[element.id] = slot;
 
   return slot;
@@ -656,15 +617,7 @@ AdManager.prototype.loadAds = function(element, updateCorrelator, useScopedSelec
       }
     }
 
-    if (this.options.pbjsEnabled && adUnitConfig.pbjsEnabled && !slot.eagerLoad && !adUnitConfig.outOfPage) {
-      activeSizes = this.adUnitSizes(adUnitConfig.sizes);
-
-      if (adUnitConfig.pbjsEnabled && adUnitConfig.prebid && activeSizes && activeSizes.length) {
-        this.addUnitToPrebid(adUnitConfig, activeSizes, slot);
-      }
-    }
-
-    if (this.options.pbjsEnabled || typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
+    if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
       this.googletag.display(thisEl.id);
     } else {
       window.headertag.display(thisEl.id);
@@ -731,19 +684,74 @@ AdManager.prototype.refreshSlot = function (domElement) {
  * @param {domElement} DOM element containing the DFP ad
  * @returns undefined
 */
-AdManager.prototype.refreshSlots = function(slotsToLoad) {
-
+AdManager.prototype.refreshSlots = function (slotsToLoad) {
   if (slotsToLoad.length === 0) {
     return;
   }
 
-  if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
+  var useIndex = typeof window.headertag !== 'undefined' && window.headertag.apiReady === true;
+  var usePrebid = typeof window.pbjs !== 'undefined' && this.options.prebidEnabled;
+
+  if (useIndex) {
+    window.headertag.pubads().refresh(slotsToLoad, {
+      changeCorrelator: false
+    });
+  } else if (usePrebid) {
+    this.prebidRefresh(slotsToLoad);
+  } else {
     this.googletag.pubads().refresh(slotsToLoad, {
       changeCorrelator: false
     });
+  }
+};
+
+/**
+ * Run the Prebid auction
+ *
+ * @param {slotsToLoad} One or many slots to fetch new ad for
+ * @returns undefined
+*/
+AdManager.prototype.prebidRefresh = function (slots) {
+  var i,
+      hasPrebid,
+      pbjsConfig,
+      prebidSlots = [];
+
+  // only configure Prebid on the slots that use it
+  for(i=0; i<slots.length; i++) {
+      hasPrebid = slots[i].prebid && slots[i].activeSizes;
+      if (! hasPrebid) {
+        continue;
+      }
+      var pbjsConfig = utils.extend({
+        code: slots[i].getSlotElementId(),
+        mediaTypes: {
+          banner: {
+            sizes: slots[i].activeSizes
+          }
+        }
+      }, slots[i].prebid);
+      this.pbjs.addAdUnits(pbjsConfig);
+      prebidSlots.push(slots[i].getSlotElementId());
+  }
+
+  if (prebidSlots.length == 0) {
+    // no prebid slots, call google immediately
+    googletag.cmd.push(function() {
+      googletag.pubads().refresh(slots);
+    });
   } else {
-    window.headertag.pubads().refresh(slotsToLoad, {
-      changeCorrelator: false
+    // prebid slots present, call prebid and let prebid call google
+    pbjs.que.push(function() {
+      pbjs.requestBids({
+        adUnitCodes: prebidSlots,
+        bidsBackHandler: function() {
+          googletag.cmd.push(function() {
+            pbjs.setTargetingForGPTAsync();
+            googletag.pubads().refresh(slots);
+          });
+        }
+      });
     });
   }
 };

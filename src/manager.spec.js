@@ -1231,49 +1231,6 @@ describe('AdManager', function() {
     });
   });
 
-  describe('#addUnitToPrebid', function () {
-    var activeSizes, stubSlot, pbjs;
-
-    beforeEach(function() {
-      activeSizes = [300, 250];
-      stubSlot = {
-          getSlotElementId: function() {
-            return 'dfp-ad-1';
-          }
-      };
-      adManager.pbjs = {
-        addAdUnits: sinon.spy(),
-      }
-    });
-
-    afterEach(function() {
-      sandbox.restore();
-    });
-
-    it('does not call prebid auction countdown when prebid is not configured', function () {
-      adUnitConfig = {};
-
-      adManager.prebidAuctionCountdownFunction = sinon.spy();
-      adManager.addUnitToPrebid(adUnitConfig, activeSizes, stubSlot);
-      expect(adManager.prebidAuctionCountdownFunction.called).to.be.false;
-    });
-
-    it('calls prebid auction countdown when prebid is configured', function () {
-      var adUnitConfig = {
-        prebid: {
-          mediaTypes: {}
-        }
-      };
-
-      var clock = sinon.useFakeTimers();
-      adManager.prebidAuctionCountdownFunction = sinon.spy();
-      adManager.addUnitToPrebid(adUnitConfig, activeSizes, stubSlot);
-      clock.tick(10);
-      expect(adManager.prebidAuctionCountdownFunction.called).to.be.true;
-      clock.restore();
-    });
-  });
-
   describe('#refreshSlot', function() {
     var baseContainer, container1, adSlot1, ads, stubSlot;
 
@@ -1312,6 +1269,112 @@ describe('AdManager', function() {
     });
 
   });
+
+  describe('#refreshSlots', function() {
+      var baseContainer, container1, adSlot1, stubSlot;
+
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'prebidRefresh');
+        baseContainer = document.createElement('div');
+        container1 = document.createElement('div');
+        container1.className ='expected';
+        container1.id = 'ad-container-1';
+        adSlot1 = document.createElement('div');
+        adSlot1.id = 'dfp-ad-1';
+        adSlot1.className = 'dfp';
+        container1.appendChild(adSlot1);
+        baseContainer.appendChild(container1);
+        adManager.options.amazonEnabled = false;
+        adManager.options.prebidEnabled = true;
+
+        document.body.appendChild(baseContainer);
+
+        stubSlot = {
+          element: adSlot1,
+        };
+
+        adManager.slots = {
+          'dfp-ad-1': stubSlot
+        };
+      });
+
+      afterEach(function() {
+        $(baseContainer).remove();
+      });
+
+      it('calls refreshPrebid when prebid is enabled', function() {
+        adManager.options.prebidEnabled = true;
+        adManager.refreshSlots([adSlot1]);
+        expect(adManager.prebidRefresh.called).to.be.true;
+      });
+
+      it('does not call refreshPrebid when prebid is disabled', function() {
+        adManager.options.prebidEnabled = false;
+        adManager.refreshSlots([adSlot1]);
+        expect(adManager.prebidRefresh.called).to.be.false;
+      });
+  });
+
+  describe('#refreshPrebid', function() {
+    var baseContainer, container1, adSlot1, stubSlot, pbjs;
+
+    beforeEach(function() {
+        adManager.pbjs = pbjs = window.pbjs = {
+          que: [],
+          requestBids: sinon.spy(),
+          addAdUnits: sinon.spy(),
+        };
+        baseContainer = document.createElement('div');
+        container1 = document.createElement('div');
+        container1.className ='expected';
+        container1.id = 'ad-container-1';
+        adSlot1 = document.createElement('div');
+        adSlot1.id = 'dfp-ad-1';
+        adSlot1.className = 'dfp';
+        container1.appendChild(adSlot1);
+        baseContainer.appendChild(container1);
+        adManager.options.amazonEnabled = false;
+        adManager.options.prebidEnabled = true;
+
+        document.body.appendChild(baseContainer);
+
+        stubSlot = {
+          element: adSlot1,
+          prebid: 1,
+          activeSizes: [[300, 250]],
+          getSlotElementId: function() {
+            return adSlot1.id;
+          }
+        };
+
+        adManager.slots = {
+          'dfp-ad-1': stubSlot
+        };
+
+    });
+
+    afterEach(function() {
+      $(baseContainer).remove();
+    });
+
+    it('calls pbjs.requestBids when adunit-level prebid config is present', function() {
+      adManager.prebidRefresh([stubSlot]);
+      pbjs.que[0](); // let the pbjs queue run one step
+      expect(pbjs.requestBids.called).to.be.true;
+    });
+
+    it('calls googletag.pubads().refresh directly when no units are configured for prebid', function() {
+      TestHelper.stub(adManager.googletag, 'pubads').returns({
+        refresh: sinon.spy()
+      });
+
+      adManager.refreshSlots([adSlot1]);
+      googletag.cmd[0](); // let the googletag queue run one step
+      expect(googletag.pubads.called).to.be.true;
+      expect(pbjs.requestBids.called).to.be.false;
+    });
+  });
+
 
   describe('#asyncRefreshSlot', function() {
     var baseContainer, container1, adSlot1, ads, stubSlot;

@@ -23,11 +23,6 @@ AdUnits.units = {
     ],
     onSlotRenderEnded: AdUnits.headerSlotRenderEnded,
     'prebid': {
-      'mediaTypes': {
-        'banner': {
-          'sizes': [],
-        }
-      },
       'bids': [
         {
           'bidder': 'appnexusAst',
