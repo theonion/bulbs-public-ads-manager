@@ -91,7 +91,7 @@ describe('AdManager', function() {
     });
 
     it('sets prebid sizeConfig if prebid is enabled and sizeConfig exists', function() {
-      adManager.options.pbjsEnabled = true;
+      adManager.options.prebidEnabled = true;
       adManager.adUnits.pbjsSizeConfig = {};
       adManager.prebidInit();
       expect(adManager.pbjs.setConfig.calledOnce).to.be.true;
@@ -103,7 +103,7 @@ describe('AdManager', function() {
     });
 
     it('does not set sizeConfig if sizeConfig does not exist', function() {
-      adManager.options.pbjsEnabled = true;
+      adManager.options.prebidEnabled = true;
       adManager.adUnits.pbjsSizeConfig = undefined;
       adManager.prebidInit();
       expect(adManager.pbjs.setConfig.calledOnce).to.be.false;
