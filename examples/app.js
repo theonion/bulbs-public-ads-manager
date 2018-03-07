@@ -59,5 +59,6 @@ window.Admanager = Admanager.init({
   doReloadOnResize: false,
   amazonEnabled: true,
   prebidEnabled: true,
+  prebidTimeout: 1500,
   enableSRA: true,
 });

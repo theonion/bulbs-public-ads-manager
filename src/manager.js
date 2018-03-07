@@ -16,6 +16,7 @@ var AdManager = function(options) {
     dfpId: 4246,
     amazonEnabled: true,
     prebidEnabled: false,
+    prebidTimeout: 1000,
     enableSRA: false
   };
   var options = options || {};
@@ -714,7 +715,8 @@ AdManager.prototype.prebidRefresh = function (slots) {
   var i,
       hasPrebid,
       pbjsConfig,
-      prebidSlots = [];
+      prebidSlots = [],
+      timeout = this.options.prebidTimeout;
 
   // only configure Prebid on the slots that use it
   for(i=0; i<slots.length; i++) {
@@ -743,6 +745,7 @@ AdManager.prototype.prebidRefresh = function (slots) {
     // prebid slots present, call prebid and let prebid call google
     pbjs.que.push(function() {
       pbjs.requestBids({
+        timeout: timeout,
         adUnitCodes: prebidSlots,
         bidsBackHandler: function() {
           googletag.cmd.push(function() {
