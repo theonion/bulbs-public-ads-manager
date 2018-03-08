@@ -85,7 +85,7 @@ AdManager.prototype.initGoogleTag = function() {
   this.googletag.pubads().disableInitialLoad();
   this.googletag.pubads().enableAsyncRendering();
   this.googletag.pubads().updateCorrelator();
-  
+
   if (this.options.enableSRA) {
     this.googletag.pubads().enableSingleRequest();
   }
@@ -402,16 +402,16 @@ AdManager.prototype.configureAd = function (element) {
     return;
   }
 
+  if (element.id && element.id in this.slots) {
+    // Slot has already been configured
+    return this.slots[element.id];
+  }
+
   size = adUnitConfig.sizes[0][1];
 
   element.id = this.generateId();
 
   slot = this.googletag.defineSlot(adUnitPath, size, element.id);
-
-  if (element.id && element.id in this.slots) {
-    // Slot has already been configured
-    return this.slots[element.id];
-  }
 
   if (!element.dataset) {
     this.logMessage('Browser does not support dataset', ERROR);

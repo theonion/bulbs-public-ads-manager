@@ -248,7 +248,7 @@ describe('AdManager', function() {
     context('UTM parameters are present', function() {
       beforeEach(function() {
         TestHelper.stub(adManager, 'setUtmTargeting');
-        adManager.initBaseTargeting();
+        adManager.setPageTargeting();
       });
 
       it('sets UTM targeting', function() {
@@ -776,6 +776,16 @@ describe('AdManager', function() {
       it('returns the ad', function() {
         expect(adManager.configureAd(adSlot1)).to.eql(adSlot1);
       });
+
+       it('does not overwrite the id', function() {
+          adManager.adId = 1;
+          adManager.configureAd(adSlot1);
+          expect(adSlot1.id).to.eql('dfp-ad-1');
+        });
+
+        it('does not add a duplicate slot to the slots array', function() {
+          expect(Object.keys(adManager.slots).length).to.equal(1);
+        });
     });
 
     context('not already loaded', function() {
