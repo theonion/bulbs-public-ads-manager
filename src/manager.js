@@ -13,6 +13,8 @@ var AdManager = function (options) {
     debug: false,
     dfpId: 4246,
     amazonEnabled: true,
+    prebidEnabled: false,
+    prebidTimeout: 1000,
     enableSRA: false
   };
   var options = options || {};
@@ -30,10 +32,14 @@ var AdManager = function (options) {
   window.addEventListener('resize', this.handleWindowResize);
 
   var adManager = this;
-
   PageDepth.setPageDepth();
 
   this.googletag = window.googletag;
+
+  if (this.options.prebidEnabled) {
+    this.prebidInit();
+  };
+
   this.googletag.cmd.push(function () {
     adManager.initGoogleTag();
   });
@@ -53,6 +59,15 @@ AdManager.prototype.bindContext = function () {
   this.onSlotOnload = this.onSlotOnload.bind(this);
 };
 
+AdManager.prototype.prebidInit = function() {
+  this.pbjs = window.pbjs;
+  if (this.pbjs && this.options.prebidEnabled && this.adUnits.pbjsSizeConfig) {
+    var sizeConfig = this.adUnits.pbjsSizeConfig;
+    this.pbjs.cmd.push(function() {
+      pbjs.setConfig({sizeConfig: sizeConfig});
+    });
+  }
+}
 /**
  * Reloads ads on the page if the window was resized and the functionality is enabled
  *
@@ -108,6 +123,7 @@ AdManager.prototype.initGoogleTag = function () {
 AdManager.prototype.fetchAmazonBids = function (elementId, gptSizes, slotName) {
   var adUnitPath = this.getAdUnitCode(),
     slotUnit = adUnitPath + '_' + slotName;
+
   window.apstag.fetchBids({
     slots: [{
       slotID: elementId,
@@ -123,7 +139,6 @@ AdManager.prototype.fetchAmazonBids = function (elementId, gptSizes, slotName) {
     });
   });
 };
-
 
 /**
  * Sets global targeting regardless of ad slot based on the `TARGETING` global on each site
@@ -279,17 +294,44 @@ AdManager.prototype.generateId = function () {
 };
 
 /**
+  * Returns the document body clientWidth, primarily used to make test stubbing easier
+  *
+  * @returns {Integer} client width in pixels
+*/
+AdManager.prototype.getClientWidth = function () {
+  return window.document.body.clientWidth;
+};
+
+/**
  * Sorts through viewports slot sizes and returns all dimensions as an array.
- * Note, that this function does NOT filter out sizes that aren't able to display
- * based on the viewport dimensions in the ad unit config.
+ * Note, that this function filters out sizes that aren't able to display based on the viewport dimensions in the ad unit config.
+
  * @param {Array} Viewport size specifications for the ad slot, and list of eligbile sizes for each.
  * @returns {Array} An array of ad sizes belonging to the slot
 */
+AdManager.prototype.adUnitSizes = function(sizeMap) {
+  var that = this;
+  var validSizesIndex = 0;
+  var sizeMapWidths = sizeMap.map(function(sizing, mapIndex) {
+    return [sizing[0][0], mapIndex];
+  }).sort(function(a, b) {
+    return a[0] - b[0];
+  }).forEach(function(element) {
+    if (element[0] <= that.getClientWidth()) {
+      validSizesIndex = element[1];
+    }
+  });
+  return sizeMap[validSizesIndex][1];
+};
 
-AdManager.prototype.adUnitSizes = function (adUnitSizes) {
-  return adUnitSizes.filter(function (sizes) {
-    return sizes[1];
-  })[0];
+AdManager.prototype.buildSizeMap = function(sizes) {
+  var sizeMap = googletag.sizeMapping();
+
+  sizes.forEach(function(sizeArr) {
+    sizeMap.addSize(sizeArr[0], sizeArr[1]);
+  });
+
+  return sizeMap.build();
 };
 
 /**
@@ -430,8 +472,7 @@ AdManager.prototype.getAdUnitCode = function () {
 AdManager.prototype.configureAd = function (element) {
   var adUnitConfig = this.adUnits.units[element.dataset.adUnit];
   var adUnitPath = this.getAdUnitCode();
-  var size;
-  var slot;
+  var sizeMap, slot;
 
   if (!adUnitConfig) {
     this.logMessage('Ad unit (' + element.dataset.adUnit + ') missing configuration', ERROR);
@@ -448,9 +489,9 @@ AdManager.prototype.configureAd = function (element) {
   if (adUnitConfig.outOfPage) {
     slot = this.googletag.defineOutOfPageSlot(adUnitPath, element.id);
   } else {
-    size = adUnitConfig.sizes[0][1];
-    slot = this.googletag.defineSlot(adUnitPath, size, element.id);
-    slot.defineSizeMapping(adUnitConfig.sizes);
+    slot = this.googletag.defineSlot(adUnitPath, [], element.id);
+    sizeMap = this.buildSizeMap(adUnitConfig.sizes);
+    slot.defineSizeMapping(sizeMap);
   }
 
   if (!element.dataset) {
@@ -469,6 +510,12 @@ AdManager.prototype.configureAd = function (element) {
 
   if (adUnitConfig.eagerLoad) {
     slot.eagerLoad = true;
+  }
+
+  if (adUnitConfig.hasOwnProperty('prebid')) {
+    // set prebid properties, if any, so they're available inside refreshSlots()
+    slot.prebid = adUnitConfig.prebid;
+    slot.activeSizes = this.adUnitSizes(adUnitConfig.sizes);
   }
 
   this.slots[element.id] = slot;
@@ -532,7 +579,6 @@ AdManager.prototype.loadAds = function (element, updateCorrelator, useScopedSele
       continue;
     }
 
-    // Makes slotEnabled optional in the config. Only check for slotEnableds that are falsy
     if (adUnitConfig && adUnitConfig.hasOwnProperty('slotEnabled') && !adUnitConfig.slotEnabled()) {
       continue;
     }
@@ -549,24 +595,16 @@ AdManager.prototype.loadAds = function (element, updateCorrelator, useScopedSele
     }
 
     if (this.options.amazonEnabled && !adUnitConfig.outOfPage) {
-
-    /**
-     * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters
-     * inside the ad config.
-     * This method is undocumented, and could be removed. When not available, fall back to all sizes
-     * specified in the ad unit itself.
-     * This is not optimal, as sizes which cannot be displayed due to the viewport dimensions will be
-     * requested from A9. It is thus used as a fallback.
-     * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
-    */
-
-      if (slot && typeof slot.getSizes == 'function') {
-        gptSlotSizes = slot.getSizes();
-        activeSizes = this.adSlotSizes(gptSlotSizes);
-      } else {
-        adUnitSizes = this.adUnitSizes(adUnitConfig.sizes)[1];
-        activeSizes = adUnitSizes;
-      }
+      /**
+       * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters
+       * inside the ad config.
+       * This method is undocumented, and could be removed. When not available, fall back to all sizes
+       * specified in the ad unit itself.
+       * This is not optimal, as sizes which cannot be displayed due to the viewport dimensions will be
+       * requested from A9. It is thus used as a fallback.
+       * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
+      */
+      activeSizes = this.adUnitSizes(adUnitConfig.sizes);
 
       if (adUnitConfig.amazonEnabled && activeSizes && activeSizes.length) {
         this.fetchAmazonBids(thisEl.id, activeSizes, adUnitConfig.slotName);
@@ -642,18 +680,75 @@ AdManager.prototype.refreshSlot = function (domElement) {
  * @returns undefined
 */
 AdManager.prototype.refreshSlots = function (slotsToLoad) {
-
   if (slotsToLoad.length === 0) {
     return;
   }
 
-  if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
+  var useIndex = typeof window.headertag !== 'undefined' && window.headertag.apiReady === true;
+  var usePrebid = typeof window.pbjs !== 'undefined' && this.options.prebidEnabled;
+
+  if (useIndex) {
+    window.headertag.pubads().refresh(slotsToLoad, {
+      changeCorrelator: false
+    });
+  } else if (usePrebid) {
+    this.prebidRefresh(slotsToLoad);
+  } else {
     this.googletag.pubads().refresh(slotsToLoad, {
       changeCorrelator: false
     });
+  }
+};
+
+/**
+ * Run the Prebid auction
+ *
+ * @param {slotsToLoad} One or many slots to fetch new ad for
+ * @returns undefined
+*/
+AdManager.prototype.prebidRefresh = function (slots) {
+  var i,
+      hasPrebid,
+      pbjsConfig,
+      prebidSlots = [],
+      timeout = this.options.prebidTimeout;
+
+  // only configure Prebid on the slots that use it
+  for(i=0; i<slots.length; i++) {
+      hasPrebid = slots[i].prebid && slots[i].activeSizes;
+      if (! hasPrebid) {
+        continue;
+      }
+      var pbjsConfig = utils.extend({
+        code: slots[i].getSlotElementId(),
+        mediaTypes: {
+          banner: {
+            sizes: slots[i].activeSizes
+          }
+        }
+      }, slots[i].prebid);
+      this.pbjs.addAdUnits(pbjsConfig);
+      prebidSlots.push(slots[i].getSlotElementId());
+  }
+
+  if (prebidSlots.length == 0) {
+    // no prebid slots, call google immediately
+    googletag.cmd.push(function() {
+      googletag.pubads().refresh(slots);
+    });
   } else {
-    window.headertag.pubads().refresh(slotsToLoad, {
-      changeCorrelator: false
+    // prebid slots present, call prebid and let prebid call google
+    pbjs.que.push(function() {
+      pbjs.requestBids({
+        timeout: timeout,
+        adUnitCodes: prebidSlots,
+        bidsBackHandler: function() {
+          googletag.cmd.push(function() {
+            pbjs.setTargetingForGPTAsync();
+            googletag.pubads().refresh(slots);
+          });
+        }
+      });
     });
   }
 };
