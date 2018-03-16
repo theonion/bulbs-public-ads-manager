@@ -3,6 +3,7 @@ var utils = require('./utils');
 var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
 var PageDepth = require('./helpers/PageDepth');
+var Feature = require('./helpers/Feature');
 
 var ERROR = 'error';
 
@@ -122,15 +123,18 @@ AdManager.prototype.initGoogleTag = function () {
 */
 AdManager.prototype.fetchAmazonBids = function (elementId, gptSizes, slotName) {
   var adUnitPath = this.getAdUnitCode(),
-    slotUnit = adUnitPath + '_' + slotName;
-
+    slotUnit = adUnitPath + '_' + slotName,
+    timeoutAmount = 1000;
+  if (Feature.isOn('ads_a9_timeout')) {
+    timeoutAmount = 300;
+  }
   window.apstag.fetchBids({
     slots: [{
       slotID: elementId,
       sizes: gptSizes,
       slotName: slotUnit
     }],
-    timeout: 1e3
+    timeout: timeoutAmount
   }, callback = function (bids) {
     /* Your callback method, in this example it triggers the first DFP request
     for googletag's disableInitialLoad integration after bids have been set */

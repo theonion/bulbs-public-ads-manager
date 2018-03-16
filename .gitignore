@@ -7,3 +7,6 @@ node_modules
 .DS_Store
 npm-debug.log
 karma_html
+
+yarn.lock
+yarn-error.log
