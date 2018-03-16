@@ -60,6 +60,29 @@ The tests are primarily comprised of Sinon Mocks And Stubs. We try to maintain c
 #### Dependencies
 This project should never have outside, frontend dependencies since it really should be one of, if not, _the_ first JS to run on the page. Otherwise, potential ad views could be lost.
 
+### Build Prebid
+
+Download the latest version of PrebidJS
+
+```
+$ git clone https://github.com/prebid/Prebid.js.git
+$ cd Prebid.js
+$ npm install
+```
+
+Build the prebid.js binary, including only the specified adapters
+
+```
+gulp build --modules=aolBidAdapter,openxBidAdapter,rubiconBidAdapter,appnexusBidAdapter,yieldmoBidAdapter
+```
+
+
+### Testing Prebid Examples
+
+There is an `examples` directory which contains a test page, ad map, minimal webpack file needed to build a standalone test page running on a local server.
+
+
+
 ## Creating a new release
 
 * inside of your ```bower.json``` and ```package.json``` files update the version in accordance with [semver](http://semver.org/)

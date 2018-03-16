@@ -77,6 +77,38 @@ describe('AdManager', function() {
       });
     });
   });
+  describe('#prebidInit', function() {
+    var pbjs;
+    beforeEach(function() {
+      pbjs = window.pbjs = {
+        cmd: {
+          push: function() {
+            pbjs.setConfig();
+          }
+        },
+        setConfig: sinon.spy(),
+      };
+    });
+
+    it('sets prebid sizeConfig if prebid is enabled and sizeConfig exists', function() {
+      adManager.options.prebidEnabled = true;
+      adManager.adUnits.pbjsSizeConfig = {};
+      adManager.prebidInit();
+      expect(adManager.pbjs.setConfig.calledOnce).to.be.true;
+    });
+
+    it('does not set sizeConfig if prebid is disabled', function() {
+      adManager.prebidInit();
+      expect(adManager.pbjs.setConfig.calledOnce).to.be.false;
+    });
+
+    it('does not set sizeConfig if sizeConfig does not exist', function() {
+      adManager.options.prebidEnabled = true;
+      adManager.adUnits.pbjsSizeConfig = undefined;
+      adManager.prebidInit();
+      expect(adManager.pbjs.setConfig.calledOnce).to.be.false;
+    });
+  });
 
   describe('#handleWindowResize', function() {
     beforeEach(function() {
@@ -512,12 +544,49 @@ describe('AdManager', function() {
   });
 
   describe('#adUnitSizes', function() {
-    beforeEach(function() {
+    context('no ads allowed with current viewport width', function() {
+      var sizeMap = [
+        [[900, 0], []],
+        [[0, 0], [300, 250]]
+      ];
+
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'getClientWidth').returns(1000);
+      });
+
+      it('returns an empty []', function() {
+        expect(adManager.adUnitSizes(sizeMap)).to.eql([]);
+      });
     });
 
-    it('filters ad unit sizes into an array', function() {
-      expect(adManager.generateId()).to.equal('dfp-ad-1');
-      expect(adManager.adId).to.equal(1);
+    context('multiple ads allowed with current viewport width', function () {
+      var sizeMap = [
+        [[900, 0], [[300, 250], [728, 90]]],
+        [[0, 0], [[300, 250], [320, 50]]]
+      ];
+
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'getClientWidth').returns(1000);
+      });
+
+      it('returns all the valid sizes', function() {
+        expect(adManager.adUnitSizes(sizeMap)).to.eql([[300,250], [728,90]]);
+      });
+    });
+  });
+
+  describe('#buildSizeMap', function () {
+    var sizeMappingStub;
+    beforeEach(function() {
+      sizeMappingStub = {
+        addSize: sinon.spy(),
+        build: sinon.spy(),
+      }
+      TestHelper.stub(window.googletag, 'sizeMapping').returns(sizeMappingStub)
+    });
+    it('builds valid gpt sizemap', function() {
+      adManager.buildSizeMap([]);
+      expect(window.googletag.sizeMapping().build.calledOnce).to.be.true;
     });
   });
 
@@ -753,6 +822,7 @@ describe('AdManager', function() {
 
     beforeEach(function() {
       TestHelper.stub(adManager, 'getAdUnitCode').returns('/4246/fmg.onion');
+      TestHelper.stub(adManager, 'buildSizeMap').returns(adManager.adUnits.units.header.sizes);
       container1 = document.createElement('div');
       adSlot1 = document.createElement('div');
       adSlot1.className = 'dfp';
@@ -809,7 +879,7 @@ describe('AdManager', function() {
       });
 
       it('defines the slot on the google tag object', function() {
-        expect(window.googletag.defineSlot.calledWith('/4246/fmg.onion', adManager.adUnits.units.header.sizes[0][1], 'dfp-ad-1')).to.be.true;
+        expect(window.googletag.defineSlot.calledWith('/4246/fmg.onion', [], 'dfp-ad-1')).to.be.true;
       });
 
       it('defines the size mapping on the google tag object', function() {
@@ -844,7 +914,7 @@ describe('AdManager', function() {
       });
 
       it('defines the slot on the google tag object', function() {
-        expect(window.googletag.defineSlot.calledWith('/4246/fmg.onion/front', adManager.adUnits.units.header.sizes[0][1], 'dfp-ad-1')).to.be.true;
+        expect(window.googletag.defineSlot.calledWith('/4246/fmg.onion/front', [], 'dfp-ad-1')).to.be.true;
       });
 
       it('sets whether the ad should be eager loaded', function() {
@@ -877,12 +947,13 @@ describe('AdManager', function() {
   });
 
   describe('#loadAds', function() {
-	var baseContainer, container1, container2, container3, adSlot1, adSlot2, adSlot3, ads;
+  var baseContainer, container1, container2, container3, adSlot1, adSlot2, adSlot3, ads;
 
     beforeEach(function() {
       adManager.paused = false;
       adManager.initialized = true;
       adManager.options.amazonEnabled = false;
+      adManager.options.pbjsEnabled = false;
 
       TestHelper.stub(adManager.googletag, 'pubads').returns({
         collapseEmptyDivs: sinon.spy(),
@@ -1131,12 +1202,12 @@ describe('AdManager', function() {
   describe('#fetchAmazonBids', function () {
 
     beforeEach(function() {
-	   var headertag = window.headertag = {};
+     var headertag = window.headertag = {};
       sandbox = sinon.sandbox.create();
       window.apstag = {
         fetchBids: function () {
-			this.callArg(callback)
-		}
+      this.callArg(callback)
+    }
       };
 
       headertag.cmd = {
@@ -1208,6 +1279,112 @@ describe('AdManager', function() {
     });
 
   });
+
+  describe('#refreshSlots', function() {
+      var baseContainer, container1, adSlot1, stubSlot;
+
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'prebidRefresh');
+        baseContainer = document.createElement('div');
+        container1 = document.createElement('div');
+        container1.className ='expected';
+        container1.id = 'ad-container-1';
+        adSlot1 = document.createElement('div');
+        adSlot1.id = 'dfp-ad-1';
+        adSlot1.className = 'dfp';
+        container1.appendChild(adSlot1);
+        baseContainer.appendChild(container1);
+        adManager.options.amazonEnabled = false;
+        adManager.options.prebidEnabled = true;
+
+        document.body.appendChild(baseContainer);
+
+        stubSlot = {
+          element: adSlot1,
+        };
+
+        adManager.slots = {
+          'dfp-ad-1': stubSlot
+        };
+      });
+
+      afterEach(function() {
+        $(baseContainer).remove();
+      });
+
+      it('calls refreshPrebid when prebid is enabled', function() {
+        adManager.options.prebidEnabled = true;
+        adManager.refreshSlots([adSlot1]);
+        expect(adManager.prebidRefresh.called).to.be.true;
+      });
+
+      it('does not call refreshPrebid when prebid is disabled', function() {
+        adManager.options.prebidEnabled = false;
+        adManager.refreshSlots([adSlot1]);
+        expect(adManager.prebidRefresh.called).to.be.false;
+      });
+  });
+
+  describe('#refreshPrebid', function() {
+    var baseContainer, container1, adSlot1, stubSlot, pbjs;
+
+    beforeEach(function() {
+        adManager.pbjs = pbjs = window.pbjs = {
+          que: [],
+          requestBids: sinon.spy(),
+          addAdUnits: sinon.spy(),
+        };
+        baseContainer = document.createElement('div');
+        container1 = document.createElement('div');
+        container1.className ='expected';
+        container1.id = 'ad-container-1';
+        adSlot1 = document.createElement('div');
+        adSlot1.id = 'dfp-ad-1';
+        adSlot1.className = 'dfp';
+        container1.appendChild(adSlot1);
+        baseContainer.appendChild(container1);
+        adManager.options.amazonEnabled = false;
+        adManager.options.prebidEnabled = true;
+
+        document.body.appendChild(baseContainer);
+
+        stubSlot = {
+          element: adSlot1,
+          prebid: 1,
+          activeSizes: [[300, 250]],
+          getSlotElementId: function() {
+            return adSlot1.id;
+          }
+        };
+
+        adManager.slots = {
+          'dfp-ad-1': stubSlot
+        };
+
+    });
+
+    afterEach(function() {
+      $(baseContainer).remove();
+    });
+
+    it('calls pbjs.requestBids when adunit-level prebid config is present', function() {
+      adManager.prebidRefresh([stubSlot]);
+      pbjs.que[0](); // let the pbjs queue run one step
+      expect(pbjs.requestBids.called).to.be.true;
+    });
+
+    it('calls googletag.pubads().refresh directly when no units are configured for prebid', function() {
+      TestHelper.stub(adManager.googletag, 'pubads').returns({
+        refresh: sinon.spy()
+      });
+
+      adManager.refreshSlots([adSlot1]);
+      googletag.cmd[0](); // let the googletag queue run one step
+      expect(googletag.pubads.called).to.be.true;
+      expect(pbjs.requestBids.called).to.be.false;
+    });
+  });
+
 
   describe('#asyncRefreshSlot', function() {
     var baseContainer, container1, adSlot1, ads, stubSlot;

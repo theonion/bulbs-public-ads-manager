@@ -21,7 +21,17 @@ AdUnits.units = {
       [[728, 0], [[1,1], [728, 90], [1280, 720]]],
       [[0, 0], [[1,1], [320, 50], [300, 250], [1280, 720]]]
     ],
-    onSlotRenderEnded: AdUnits.headerSlotRenderEnded
+    onSlotRenderEnded: AdUnits.headerSlotRenderEnded,
+    'prebid': {
+      'bids': [
+        {
+          'bidder': 'appnexusAst',
+          'params': {
+            'placementId': '10433394', // magic ID that always returns an (unpaid) $0.50 bid
+          }
+        }
+      ]
+    }
   },
 
   'inbetween': {
