@@ -1,7 +1,7 @@
 'use strict';
 
 var AdUnits = {
-  headerSlotRenderEnded: function() {}
+  headerSlotRenderEnded: function () {}
 };
 
 AdUnits.units = {
