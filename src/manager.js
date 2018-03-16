@@ -3,7 +3,7 @@ var utils = require('./utils');
 var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
 var PageDepth = require('./helpers/PageDepth');
-var Feature = require('.helper/Feature');
+var Feature = require('./helpers/Feature');
 
 var ERROR = 'error';
 
