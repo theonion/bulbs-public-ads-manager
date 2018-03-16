@@ -124,7 +124,7 @@ AdManager.prototype.initGoogleTag = function () {
 AdManager.prototype.fetchAmazonBids = function (elementId, gptSizes, slotName) {
   var adUnitPath = this.getAdUnitCode(),
     slotUnit = adUnitPath + '_' + slotName,
-    timeoutAmount = 1e3;
+    timeoutAmount = 1000;
   if (Feature.isOn('ads_a9_timeout')) {
     timeoutAmount = 300;
   }
