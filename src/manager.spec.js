@@ -573,6 +573,26 @@ describe('AdManager', function() {
         expect(adManager.adUnitSizes(sizeMap)).to.eql([[300,250], [728,90]]);
       });
     });
+
+    context('sizes are a 1d array', function () {
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'getClientWidth').returns(1000);
+      });
+
+      it('returns the size', function() {
+        expect(adManager.adUnitSizes([300, 250])).to.eql([300,250]);
+      });
+    });
+
+    context('size is the "fluid" keyword', function () {
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'getClientWidth').returns(1000);
+      });
+
+      it('returns the size', function() {
+        expect(adManager.adUnitSizes('fluid')).to.eql('fluid');
+      });
+    });
   });
 
   describe('#buildSizeMap', function () {

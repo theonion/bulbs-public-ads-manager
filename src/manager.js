@@ -314,6 +314,12 @@ AdManager.prototype.getClientWidth = function () {
  * @returns {Array} An array of ad sizes belonging to the slot
 */
 AdManager.prototype.adUnitSizes = function(sizeMap) {
+  if (sizeMap == 'fluid') {
+    return 'fluid';
+  }
+  if (sizeMap.length == 2 && typeof sizeMap[0] === 'number' && typeof sizeMap[1] === 'number') {
+    return sizeMap;
+  }
   var that = this;
   var validSizesIndex = 0;
   var sizeMapWidths = sizeMap.map(function(sizing, mapIndex) {
