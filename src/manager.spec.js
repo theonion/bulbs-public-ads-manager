@@ -1040,6 +1040,30 @@ describe('AdManager', function() {
       $(baseContainer).remove();
     });
 
+
+
+
+    context('outOfPage', function() {
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'adUnitSizes');
+
+        // create an OOP slot
+        $(adSlot1).attr('data-ad-unit', 'dfp-ad-1');
+        adManager.adUnits.units = {
+          'dfp-ad-1': {
+            'slotName': 'dfp-ad-1',
+            'outOfPage': true
+          }
+        };
+      });
+
+      it('does not called adUnitSizes on outOfPage units', function() {
+        adManager.options.amazonEnabled = true;
+        adManager.loadAds('#dfp-ad-1');
+        expect(adManager.adUnitSizes.called).to.be.false;
+      });
+    });
+
     context('with wrapper tag', function() {
       beforeEach(function() {
 
