@@ -560,17 +560,62 @@ describe('AdManager', function() {
     });
 
     context('multiple ads allowed with current viewport width', function () {
-      var sizeMap = [
-        [[900, 0], [[300, 250], [728, 90]]],
-        [[0, 0], [[300, 250], [320, 50]]]
-      ];
-
       beforeEach(function() {
         TestHelper.stub(adManager, 'getClientWidth').returns(1000);
       });
 
-      it('returns all the valid sizes', function() {
+      it('returns an empty array', function() {
+        var sizeMap = [
+          [[900, 0], []],
+          [[0, 0], [[300, 250], [320, 50]]]
+        ];
+
+        expect(adManager.adUnitSizes(sizeMap)).to.eql([]);
+      });
+
+      it('returns a single size', function() {
+        var sizeMap = [
+          [[900, 0], [728, 90]],
+          [[0, 0], [[300, 250], [320, 50]]]
+        ];
+
+        expect(adManager.adUnitSizes(sizeMap)).to.eql([728, 90]);
+      });
+
+      it('returns a size array', function() {
+        var sizeMap = [
+          [[900, 0], [[300, 250], [728, 90]]],
+          [[0, 0], [[300, 250], [320, 50]]]
+        ];
+
         expect(adManager.adUnitSizes(sizeMap)).to.eql([[300,250], [728,90]]);
+      });
+
+      it('returns the fluid size string', function() {
+        var sizeMap = [
+          [[900, 0], 'fluid'],
+          [[0, 0], [[300, 250], [320, 50]]]
+        ];
+        
+        expect(adManager.adUnitSizes(sizeMap)).to.eql('fluid');
+      });
+
+      it('returns the fluid size string array', function() {
+        var sizeMap = [
+          [[900, 0], ['fluid', [728, 90]]],
+          [[0, 0], [[300, 250], [320, 50]]]
+        ];
+        
+        expect(adManager.adUnitSizes(sizeMap)).to.eql(['fluid', [728,90]]);
+      });
+
+      it('returns the fluid size string array', function() {
+        var sizeMap = [
+          [[900, 0], [['fluid'], [728, 90]]],
+          [[0, 0], [[300, 250], [320, 50]]]
+        ];
+        
+        expect(adManager.adUnitSizes(sizeMap)).to.eql([['fluid'], [728,90]]);
       });
     });
   });
