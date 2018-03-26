@@ -607,7 +607,7 @@ describe('AdManager', function() {
         [[0, 0], [[320, 50], 'fluid']]
       ];
 
-      it('desktop returns []', function() {
+      it('desktop returns the sizes', function() {
         TestHelper.stub(adManager, 'getClientWidth').returns(1000);
         expect(adManager.adUnitSizes(sizeMap)).to.eql([['fluid'], [300, 250]]);
       });
@@ -650,8 +650,8 @@ describe('AdManager', function() {
     });
 
     it("converts [['fluid']] doubly-nested array into ['fluid'] array", function() {
-      // GPT doesn't allow [['fluid']], although the documentation is ambiguous on whether
-      // this ought to work: https://developers.google.com/doubleclick-gpt/reference#googletag.GeneralSize
+      // in practice, GPT doesn't allow [['fluid']], although the documentation is ambiguous on whether
+      // this is supposed to work: https://developers.google.com/doubleclick-gpt/reference#googletag.GeneralSize
       var sizeMap = [
         [[0, 0], [['fluid']]],
       ];
