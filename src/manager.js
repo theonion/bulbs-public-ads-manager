@@ -328,11 +328,24 @@ AdManager.prototype.adUnitSizes = function(sizeMap) {
   return sizeMap[validSizesIndex][1];
 };
 
+/**
+ * Converts the input array into a GPT SizeMapping object
+ *
+ * @param {Array} Viewport size specifications for the ad slot, and list of eligbile sizes for each.
+ * @returns {SizeMapping} A GPT SizeMapping object
+*/
 AdManager.prototype.buildSizeMap = function(sizes) {
   var sizeMap = googletag.sizeMapping();
+  var viewportSize;
+  var adSizes;
 
-  sizes.forEach(function(sizeArr) {
-    sizeMap.addSize(sizeArr[0], sizeArr[1]);
+  sizes.forEach(function(row) {
+    viewportSize = row[0];
+    adSizes = row[1] == 'fluid' ? ['fluid'] : row[1];
+    adSizes = adSizes.map(function(size) {
+      return size.length == 1 && size[0] == 'fluid' ? 'fluid' : size;
+    });
+    sizeMap.addSize(viewportSize, adSizes);
   });
 
   return sizeMap.build();
