@@ -573,6 +573,26 @@ describe('AdManager', function() {
         expect(adManager.adUnitSizes(sizeMap)).to.eql([[300,250], [728,90]]);
       });
     });
+
+    context('sizes are a 1d array', function () {
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'getClientWidth').returns(1000);
+      });
+
+      it('returns the size', function() {
+        expect(adManager.adUnitSizes([300, 250])).to.eql([300,250]);
+      });
+    });
+
+    context('size is the "fluid" keyword', function () {
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'getClientWidth').returns(1000);
+      });
+
+      it('returns the size', function() {
+        expect(adManager.adUnitSizes('fluid')).to.eql('fluid');
+      });
+    });
   });
 
   describe('#buildSizeMap', function () {
@@ -1018,6 +1038,30 @@ describe('AdManager', function() {
 
     afterEach(function() {
       $(baseContainer).remove();
+    });
+
+
+
+
+    context('outOfPage', function() {
+      beforeEach(function() {
+        TestHelper.stub(adManager, 'adUnitSizes');
+
+        // create an OOP slot
+        $(adSlot1).attr('data-ad-unit', 'dfp-ad-1');
+        adManager.adUnits.units = {
+          'dfp-ad-1': {
+            'slotName': 'dfp-ad-1',
+            'outOfPage': true
+          }
+        };
+      });
+
+      it('does not called adUnitSizes on outOfPage units', function() {
+        adManager.options.amazonEnabled = true;
+        adManager.loadAds('#dfp-ad-1');
+        expect(adManager.adUnitSizes.called).to.be.false;
+      });
     });
 
     context('with wrapper tag', function() {
