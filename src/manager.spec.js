@@ -544,33 +544,77 @@ describe('AdManager', function() {
   });
 
   describe('#adUnitSizes', function() {
-    context('no ads allowed with current viewport width', function() {
+    context('no sizes configured on desktop', function() {
+      var sizeMap = [
+        [[900, 0], []],
+        [[0, 0], []]
+      ];
+
+      it('returns an empty []', function() {
+        TestHelper.stub(adManager, 'getClientWidth').returns(1000);
+        expect(adManager.adUnitSizes(sizeMap)).to.eql([]);
+      });
+    });
+
+    context('a single size, configured for mobile', function() {
+      var sizeMap = [
+        [[0, 0], [728, 90]]
+      ];
+
+      it('returns the sizes', function() {
+        TestHelper.stub(adManager, 'getClientWidth').returns(375); //iPhone
+        expect(adManager.adUnitSizes(sizeMap)).to.eql([728, 90]);
+      });
+    });
+
+    context('desktop sizes only', function() {
+      var sizeMap = [
+        [[900, 0], [728, 90]],
+        [[0, 0], []]
+      ];
+
+      it('returns valid sizes on desktop', function() {
+        TestHelper.stub(adManager, 'getClientWidth').returns(1000);
+        expect(adManager.adUnitSizes(sizeMap)).to.eql([728, 90]);
+      });
+
+      it('returns no valid sizes on mobile', function() {
+        TestHelper.stub(adManager, 'getClientWidth').returns(320);
+        expect(adManager.adUnitSizes(sizeMap)).to.eql([]);
+      });
+    });
+
+    context('mobile sizes only', function() {
       var sizeMap = [
         [[900, 0], []],
         [[0, 0], [300, 250]]
       ];
 
-      beforeEach(function() {
+      it('desktop returns []', function() {
         TestHelper.stub(adManager, 'getClientWidth').returns(1000);
+        expect(adManager.adUnitSizes(sizeMap)).to.eql([]);
       });
 
-      it('returns an empty []', function() {
-        expect(adManager.adUnitSizes(sizeMap)).to.eql([]);
+      it('mobile returns the sizes', function() {
+        TestHelper.stub(adManager, 'getClientWidth').returns(320);
+        expect(adManager.adUnitSizes(sizeMap)).to.eql([300, 250]);
       });
     });
 
-    context('multiple ads allowed with current viewport width', function () {
+    context('desktop and mobile sizes', function() {
       var sizeMap = [
-        [[900, 0], [[300, 250], [728, 90]]],
-        [[0, 0], [[300, 250], [320, 50]]]
+        [[900, 0], [['fluid'], [300, 250]]],
+        [[0, 0], [[320, 50], 'fluid']]
       ];
 
-      beforeEach(function() {
+      it('desktop returns the sizes', function() {
         TestHelper.stub(adManager, 'getClientWidth').returns(1000);
+        expect(adManager.adUnitSizes(sizeMap)).to.eql([['fluid'], [300, 250]]);
       });
 
-      it('returns all the valid sizes', function() {
-        expect(adManager.adUnitSizes(sizeMap)).to.eql([[300,250], [728,90]]);
+      it('mobile returns the sizes', function() {
+        TestHelper.stub(adManager, 'getClientWidth').returns(320);
+        expect(adManager.adUnitSizes(sizeMap)).to.eql([[320, 50], 'fluid']);
       });
     });
   });
@@ -584,9 +628,46 @@ describe('AdManager', function() {
       }
       TestHelper.stub(window.googletag, 'sizeMapping').returns(sizeMappingStub)
     });
+
     it('builds valid gpt sizemap', function() {
       adManager.buildSizeMap([]);
       expect(window.googletag.sizeMapping().build.calledOnce).to.be.true;
+    });
+
+    it("allows ['fluid'] size", function() {
+      var sizeMap = [
+        [[0, 0], ['fluid']],
+      ];
+      adManager.buildSizeMap(sizeMap);
+      expect(window.googletag.sizeMapping().addSize.calledWith([0, 0], ['fluid'])).to.be.true;
+    });
+
+    it("converts 'fluid' string into ['fluid'] array", function() {
+      var sizeMap = [
+        [[0, 0], 'fluid'],
+      ];
+      adManager.buildSizeMap(sizeMap);
+      expect(window.googletag.sizeMapping().addSize.calledWith([0, 0], ['fluid'])).to.be.true;
+    });
+
+    it("converts [['fluid']] doubly-nested array into ['fluid'] array", function() {
+      // in practice, GPT doesn't allow [['fluid']], although the documentation is ambiguous on whether
+      // this is supposed to work: https://developers.google.com/doubleclick-gpt/reference#googletag.GeneralSize
+      var sizeMap = [
+        [[0, 0], [['fluid']]],
+      ];
+      adManager.buildSizeMap(sizeMap);
+      expect(window.googletag.sizeMapping().addSize.calledWith([0, 0], ['fluid'])).to.be.true;
+    });
+
+    it("allows fluid to be mixed with other sizes", function() {
+      var sizeMap = [
+        [[0, 0], [['fluid'], [300, 250]]],
+        [[900, 0], ['fluid', [728, 90]]],
+      ];
+      adManager.buildSizeMap(sizeMap);
+      expect(window.googletag.sizeMapping().addSize.calledWith([0, 0], ['fluid', [300, 250]])).to.be.true;
+      expect(window.googletag.sizeMapping().addSize.calledWith([900, 0], ['fluid', [728, 90]])).to.be.true;
     });
   });
 
