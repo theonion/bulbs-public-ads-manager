@@ -544,7 +544,7 @@ describe('AdManager', function() {
   });
 
   describe('#adUnitSizes', function() {
-    context('no sizes configured', function() {
+    context('no sizes configured on desktop', function() {
       var sizeMap = [
         [[900, 0], []],
         [[0, 0], []]
@@ -556,13 +556,13 @@ describe('AdManager', function() {
       });
     });
 
-    context('a single size', function() {
+    context('a single size, configured for mobile', function() {
       var sizeMap = [
         [[0, 0], [728, 90]]
       ];
 
       it('returns the sizes', function() {
-        TestHelper.stub(adManager, 'getClientWidth').returns(0);
+        TestHelper.stub(adManager, 'getClientWidth').returns(375); //iPhone
         expect(adManager.adUnitSizes(sizeMap)).to.eql([728, 90]);
       });
     });
@@ -573,12 +573,12 @@ describe('AdManager', function() {
         [[0, 0], []]
       ];
 
-      it('desktop returns the sizes', function() {
+      it('returns valid sizes on desktop', function() {
         TestHelper.stub(adManager, 'getClientWidth').returns(1000);
         expect(adManager.adUnitSizes(sizeMap)).to.eql([728, 90]);
       });
 
-      it('mobile returns []', function() {
+      it('returns no valid sizes on mobile', function() {
         TestHelper.stub(adManager, 'getClientWidth').returns(320);
         expect(adManager.adUnitSizes(sizeMap)).to.eql([]);
       });
@@ -628,6 +628,7 @@ describe('AdManager', function() {
       }
       TestHelper.stub(window.googletag, 'sizeMapping').returns(sizeMappingStub)
     });
+
     it('builds valid gpt sizemap', function() {
       adManager.buildSizeMap([]);
       expect(window.googletag.sizeMapping().build.calledOnce).to.be.true;
