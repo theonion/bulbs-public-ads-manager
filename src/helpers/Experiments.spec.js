@@ -6,6 +6,23 @@ describe('Experiments', function() {
   });
 
   describe('#getExperimentVariation', function() {
+    describe('uses window gaVariation if available', function() {
+      beforeEach(function() {
+        window.gaExperimentId = '456';
+        window.gaVariation = 0;
+        window.cxApi = undefined;
+      });
+
+      afterEach(() => {
+        window.gaExperimentId = undefined;
+        window.gaVariation = undefined;
+      });
+
+      it('returns letter A', function () {
+        expect(Experiments.getExperimentVariation()).to.equal('A');
+      });
+    });
+
     describe('chosen variation', function() {
       beforeEach(function() {
         window.gaExperimentId = '1234';
