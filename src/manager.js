@@ -252,6 +252,7 @@ AdManager.prototype.onSlotRenderEnded = function (event) {
 
   if (event.isEmpty) {
     element.setAttribute('data-ad-load-state', 'empty');
+    element.style.display = 'none';
   } else {
 
     if (this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
