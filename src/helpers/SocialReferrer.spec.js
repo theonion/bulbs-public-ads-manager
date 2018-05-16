@@ -12,7 +12,7 @@ describe('SocialReferrer', function() {
       });
 
       it('this referrer should be a social one', function() {
-        expect(SocialReferrer.isSocialReferrer()).to.be.true;
+        expect(SocialReferrer.isSocialReferrer()).to.equal('facebook');
       });
     });
 
@@ -23,7 +23,7 @@ describe('SocialReferrer', function() {
       });
 
       it('this referrer should be a social one', function() {
-        expect(SocialReferrer.isSocialReferrer()).to.be.true;
+        expect(SocialReferrer.isSocialReferrer()).to.equal('instagram');
       });
     });
 
