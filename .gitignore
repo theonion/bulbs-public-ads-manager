@@ -10,3 +10,5 @@ karma_html
 
 yarn.lock
 yarn-error.log
+
+.vscode/settings.json

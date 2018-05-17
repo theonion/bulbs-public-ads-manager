@@ -13,7 +13,7 @@ describe('TargetingPairs', function() {
   	beforeEach(function() {
   	  TestHelper.stub(Experiments, 'getExperimentVariation').returns('null');
   	  TestHelper.stub(Experiments, 'getExperimentId').returns('null');
-  	  TestHelper.stub(SocialReferrer, 'isSocialReferrer').returns(false);
+  	  TestHelper.stub(SocialReferrer, 'getSocialReferrer').returns('');
   	  TestHelper.stub(PageDepth, 'getPageDepth').returns(1);
   	  window.kinja = {
   	  	meta: {
@@ -44,12 +44,12 @@ describe('TargetingPairs', function() {
 
     describe('social referrer is present', function() {
   	  beforeEach(function() {
-  	    SocialReferrer.isSocialReferrer.returns(true);
+  	    SocialReferrer.getSocialReferrer.returns('facebook');
   	  });
 
   	  it('provides the social referrer as slot option targeting', function() {
   	    var targeting = TargetingPairs.buildTargetingPairs(window);
-  	    expect(targeting.slotOptions.socialReferrer).to.be.true;
+  	    expect(targeting.slotOptions.socialReferrer).to.equal('facebook');
   	  });
     });
 
