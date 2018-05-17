@@ -51,7 +51,7 @@ var TargetingPairs = {
       // Standard targeting options
       pos: positionTargeting || null,
       postId: post ? post.postId : null,
-      socialReferrer: SocialReferrer.isSocialReferrer(),
+      socialReferrer: SocialReferrer.getSocialReferrer(),
       page: kinjaMeta.pageType,
       pd: PageDepth.getPageDepth(),
       mtfIFPath: '\/assets\/vendor\/doubleclick\/'
