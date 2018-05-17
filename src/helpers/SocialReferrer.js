@@ -8,12 +8,13 @@ var SocialReferrer = {
     return window.document.referrer || '';
   },
  /**
-  * Determines if the referrer is social media.
+  * Checks if the referrer is social media.
   * If true, we want to return the type of social media
+  * else return false
   *
-  * @returns {Boolean};
+  * @returns {String};
   */
-  isSocialReferrer: function () {
+  getSocialReferrer: function () {
     // brandMap is used to match when it is a twitter short url
     var socialReferrer = this.getReferrer().match(/\b(?:facebook|instagram|pinterest|reddit|twitter|tumblr|t\.co)\b/i),
       brandMap = {
@@ -24,7 +25,7 @@ var SocialReferrer = {
       socialReferrer = socialReferrer[0].toLowerCase();
       return brandMap[socialReferrer] || socialReferrer;
     }
-    return false;
+    return '';
   }
 };
 module.exports = SocialReferrer;
