@@ -16,7 +16,7 @@ var AdManager = function (options) {
     debug: false,
     dfpId: 4246,
     iasPubId: 927245,
-    iasEnabled: true,
+    iasEnabled: Feature.isOn('ads_a9_timeout'),
     amazonEnabled: true,
     prebidEnabled: false,
     prebidTimeout: 1000,
