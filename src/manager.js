@@ -9,6 +9,7 @@ var requestIASdata = require('./request-ias-data');
 var ERROR = 'error';
 
 var AdManager = function (options) {
+  console.log('bulbs - initing var AdManager');
   var defaultOptions = {
     doReloadOnResize: true,
     resizeTimeout: null,
@@ -22,6 +23,7 @@ var AdManager = function (options) {
     enableSRA: false
   };
   var options = options || {};
+
 
   /* adUnits comes from ad-units.js */
   this.adUnits = options.adUnits;
@@ -705,6 +707,7 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
     return;
   }
 
+  console.log('bulbs AdManager.refreshSlots');
   var useIAS = typeof window.__iasPET !== 'undefined' && this.options.iasEnabled;
   var useIndex = typeof window.headertag !== 'undefined' && window.headertag.apiReady === true;
   var usePrebid = typeof window.pbjs !== 'undefined' && this.options.prebidEnabled;
