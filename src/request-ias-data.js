@@ -36,6 +36,8 @@ module.exports = function(slots, iasPubId) {
             adUnitPath: slots[i].getAdUnitPath()
         });
     }
+    console.log('request-ias-data.js -> iasPETSlots:');
+    console.log(iasPETSlots);
     // make the request to PET. if your page makes multiple ad requests to DFP
     // (e.g., lazily loaded ads, infinite scrolling pages, etc.), you should make
     // a request to PET before every request to DFP

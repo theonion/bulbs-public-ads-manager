@@ -16,7 +16,7 @@ var AdManager = function (options) {
     debug: false,
     dfpId: 4246,
     iasPubId: 927245,
-    iasEnabled: Feature.isOn('ads_a9_timeout'),
+    iasEnabled: Feature.isOn('bulbs_ias'),
     amazonEnabled: true,
     prebidEnabled: false,
     prebidTimeout: 1000,
@@ -713,6 +713,8 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
   var usePrebid = typeof window.pbjs !== 'undefined' && this.options.prebidEnabled;
 
   if(useIAS){
+    console.log('bulbs AdManager.refreshSlots -> if(useIAS)');
+    
     requestIASdata(slotsToLoad, this.options.iasPubId);
   }
 
