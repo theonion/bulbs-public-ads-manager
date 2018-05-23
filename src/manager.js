@@ -4,6 +4,7 @@ var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
 var PageDepth = require('./helpers/PageDepth');
 var Feature = require('./helpers/Feature');
+var requestIASdata = require('./request-ias-data');
 
 var ERROR = 'error';
 
@@ -13,6 +14,8 @@ var AdManager = function (options) {
     resizeTimeout: null,
     debug: false,
     dfpId: 4246,
+    iasPubId: 927245,
+    iasEnabled: true,
     amazonEnabled: true,
     prebidEnabled: false,
     prebidTimeout: 1000,
@@ -36,7 +39,7 @@ var AdManager = function (options) {
   PageDepth.setPageDepth();
 
   this.googletag = window.googletag;
-
+  
   if (this.options.prebidEnabled) {
     this.prebidInit();
   };
@@ -69,6 +72,7 @@ AdManager.prototype.prebidInit = function() {
     });
   }
 }
+
 /**
  * Reloads ads on the page if the window was resized and the functionality is enabled
  *
@@ -701,8 +705,13 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
     return;
   }
 
+  var useIAS = typeof window.__iasPET !== 'undefined' && this.options.iasEnabled;
   var useIndex = typeof window.headertag !== 'undefined' && window.headertag.apiReady === true;
   var usePrebid = typeof window.pbjs !== 'undefined' && this.options.prebidEnabled;
+
+  if(useIAS){
+    requestIASdata(slotsToLoad, this.options.iasPubId);
+  }
 
   if (useIndex) {
     window.headertag.pubads().refresh(slotsToLoad, {
