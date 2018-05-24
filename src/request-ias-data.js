@@ -9,12 +9,9 @@
  * @returns undefined
  */
 
-module.exports = function(slots, iasPubId) {
-    window.__iasPET = window.__iasPET || {};
-    window.__iasPET.queue = window.__iasPET.queue || [];
-    window.__iasPET.pubId = iasPubId;
-    
+module.exports = function(slots) {
     var iasPETSlots = [];
+    console.log('2:50');
     // iasDataHandler = function(adSlotData) {
     //   clearTimeout(__iasPETTimeoutRequestAds);
     //   __iasPET.setTargetingForGPT();
@@ -43,6 +40,6 @@ module.exports = function(slots, iasPubId) {
     // a request to PET before every request to DFP
     __iasPET.queue.push({
         adSlots: iasPETSlots,
-        dataHandler: window.__iasPET.setTargetingForGPT()
+        dataHandler: function(){window.__iasPET.setTargetingForGPT()}
     });
 }

@@ -4,7 +4,7 @@ var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
 var PageDepth = require('./helpers/PageDepth');
 var Feature = require('./helpers/Feature');
-var requestIASdata = require('./request-ias-data');
+//var requestIASdata = require('./request-ias-data');
 
 var ERROR = 'error';
 
@@ -41,7 +41,11 @@ var AdManager = function (options) {
   PageDepth.setPageDepth();
 
   this.googletag = window.googletag;
-  
+  if (this.options.iasEnabled) {
+    window.__iasPET = window.__iasPET || {};
+    window.__iasPET.queue = window.__iasPET.queue || [];
+    window.__iasPET.pubId = this.options.iasPubId;
+  }
   if (this.options.prebidEnabled) {
     this.prebidInit();
   };
@@ -714,8 +718,38 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
 
   if(useIAS){
     console.log('bulbs AdManager.refreshSlots -> if(useIAS)');
-    
-    requestIASdata(slotsToLoad, this.options.iasPubId);
+    var iasPETSlots = [];
+    var gtSlots = this.googletag.pubads().getSlots();
+    console.log(gtSlots);
+    console.log('3:00');
+
+
+    for (var i = 0; i < gtSlots.length; i++) {
+      var sizes = gtSlots[i].getSizes().map(function(size) {
+        if (size.getWidth && size.getHeight){
+          return [size.getWidth(), size.getHeight()];
+        } else {
+          return [1, 1];
+        }
+      });
+      iasPETSlots.push({
+        adSlotId: gtSlots[i].getSlotElementId(),
+        //size: can either be a single size (e.g., [728, 90])
+        // or an array of sizes (e.g., [[728, 90], [970, 90]])
+        size: sizes,
+        adUnitPath: gtSlots[i].getAdUnitPath()
+      });
+    } // end forLoop
+    function iasDataHandler(){
+      console.log('firing iasDataHandler');
+      window.__iasPET.setTargetingForGPT();
+    }
+    window.__iasPET.queue.push({
+      adSlots: iasPETSlots,
+      dataHandler: iasDataHandler()
+    });
+    //⋀--this was this--⋁
+    //requestIASdata(slotsToLoad);
   }
 
   if (useIndex) {
