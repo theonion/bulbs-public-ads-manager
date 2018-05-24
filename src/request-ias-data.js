@@ -13,7 +13,7 @@ module.exports = function(slots, iasPubId) {
     window.__iasPET = window.__iasPET || {};
     window.__iasPET.queue = window.__iasPET.queue || [];
     window.__iasPET.pubId = iasPubId;
-    alert('fired');
+    
     var iasPETSlots = [];
     // iasDataHandler = function(adSlotData) {
     //   clearTimeout(__iasPETTimeoutRequestAds);
