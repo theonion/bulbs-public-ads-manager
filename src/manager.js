@@ -23,7 +23,6 @@ var AdManager = function (options) {
   };
   var options = options || {};
 
-
   /* adUnits comes from ad-units.js */
   this.adUnits = options.adUnits;
   this.slots = {};
@@ -535,7 +534,8 @@ AdManager.prototype.configureAd = function (element) {
   slot.addService(this.googletag.pubads());
 
   slot.activeSizes = this.adUnitSizes(adUnitConfig.sizes);
-  // ^originally inside the prebid if. Is there a reason why this shouldn't be set universally?
+  // ^ originally inside the prebid if()
+  //  It is needed for IAS, but is there a reason why this shouldn't be set universally?
 
   if (adUnitConfig.eagerLoad) {
     slot.eagerLoad = true;
