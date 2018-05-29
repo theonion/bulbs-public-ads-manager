@@ -2,14 +2,13 @@ require('./dfp');
 var utils = require('./utils');
 var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
-var PageDepth = require('./helpers/PageDepth');
 var Feature = require('./helpers/Feature');
-//var requestIASdata = require('./request-ias-data');
 
 var ERROR = 'error';
 
 var AdManager = function (options) {
-  console.log('bulbs - initing var AdManager');
+  var PageDepth = require('./helpers/PageDepth');
+  
   var defaultOptions = {
     doReloadOnResize: true,
     resizeTimeout: null,
@@ -535,6 +534,9 @@ AdManager.prototype.configureAd = function (element) {
 
   slot.addService(this.googletag.pubads());
 
+  slot.activeSizes = this.adUnitSizes(adUnitConfig.sizes);
+  // ^originally inside the prebid if. Is there a reason why this shouldn't be set universally?
+
   if (adUnitConfig.eagerLoad) {
     slot.eagerLoad = true;
   }
@@ -542,7 +544,6 @@ AdManager.prototype.configureAd = function (element) {
   if (adUnitConfig.hasOwnProperty('prebid')) {
     // set prebid properties, if any, so they're available inside refreshSlots()
     slot.prebid = adUnitConfig.prebid;
-    slot.activeSizes = this.adUnitSizes(adUnitConfig.sizes);
   }
 
   this.slots[element.id] = slot;
@@ -710,46 +711,21 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
   if (slotsToLoad.length === 0) {
     return;
   }
-
-  console.log('bulbs AdManager.refreshSlots');
+  
   var useIAS = typeof window.__iasPET !== 'undefined' && this.options.iasEnabled;
   var useIndex = typeof window.headertag !== 'undefined' && window.headertag.apiReady === true;
   var usePrebid = typeof window.pbjs !== 'undefined' && this.options.prebidEnabled;
 
-  if(useIAS){
-    console.log('bulbs AdManager.refreshSlots -> if(useIAS)');
-    var iasPETSlots = [];
+  if (useIAS){
+    var iasSlotSetup = require('./ias-slot-setup');
+    
     var gtSlots = this.googletag.pubads().getSlots();
-    console.log(gtSlots);
-    console.log('3:00');
+    var iasPETSlots = iasSlotSetup(gtSlots);
 
-
-    for (var i = 0; i < gtSlots.length; i++) {
-      var sizes = gtSlots[i].getSizes().map(function(size) {
-        if (size.getWidth && size.getHeight){
-          return [size.getWidth(), size.getHeight()];
-        } else {
-          return [1, 1];
-        }
-      });
-      iasPETSlots.push({
-        adSlotId: gtSlots[i].getSlotElementId(),
-        //size: can either be a single size (e.g., [728, 90])
-        // or an array of sizes (e.g., [[728, 90], [970, 90]])
-        size: sizes,
-        adUnitPath: gtSlots[i].getAdUnitPath()
-      });
-    } // end forLoop
-    function iasDataHandler(){
-      console.log('firing iasDataHandler');
-      window.__iasPET.setTargetingForGPT();
-    }
     window.__iasPET.queue.push({
       adSlots: iasPETSlots,
-      dataHandler: iasDataHandler()
+      dataHandler: window.__iasPET.setTargetingForGPT()
     });
-    //⋀--this was this--⋁
-    //requestIASdata(slotsToLoad);
   }
 
   if (useIndex) {
