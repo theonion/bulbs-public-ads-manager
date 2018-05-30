@@ -1,14 +1,14 @@
 require('./dfp');
+require('./iasPET');
 var utils = require('./utils');
 var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
 var Feature = require('./helpers/Feature');
+var PageDepth = require('./helpers/PageDepth');
 
 var ERROR = 'error';
 
 var AdManager = function (options) {
-  var PageDepth = require('./helpers/PageDepth');
-  
   var defaultOptions = {
     doReloadOnResize: true,
     resizeTimeout: null,
@@ -41,8 +41,7 @@ var AdManager = function (options) {
 
   this.googletag = window.googletag;
 
-  if (this.options.iasEnabled) {
-    require('./iasPET'); // sets window.__iasPET
+  if (this.options.iasEnabled) {    
     window.__iasPET.pubId = this.options.iasPubId;
     this.__iasPET = window.__iasPET;
   }
@@ -537,8 +536,6 @@ AdManager.prototype.configureAd = function (element) {
   slot.addService(this.googletag.pubads());
 
   slot.activeSizes = this.adUnitSizes(adUnitConfig.sizes);
-  // ^ originally inside the prebid if()
-  //  It is needed for IAS, but is there a reason why this shouldn't be set universally?
 
   if (adUnitConfig.eagerLoad) {
     slot.eagerLoad = true;
@@ -730,10 +727,18 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
 
 
   if (useIAS){
-    var iasSlotSetup = require('./ias-slot-setup');
-
     var gtSlots = this.googletag.pubads().getSlots();
-    var iasPETSlots = iasSlotSetup(gtSlots);
+    var iasPETSlots = [];
+    
+    for (var i = 0; i < gtSlots.length; i++) {
+      var sizes = gtSlots[i].activeSizes || [[0, 0], [1, 1]];
+      iasPETSlots.push({
+        adSlotId: gtSlots[i].getSlotElementId(),
+        size: sizes,
+        adUnitPath: gtSlots[i].getAdUnitPath()
+      });
+    }
+    
     var iasRequestTimeout = setTimeout(refreshMethod(), this.options.iasTimeout);
     this.__iasPET.queue.push({
       adSlots: iasPETSlots,
