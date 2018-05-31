@@ -1,5 +1,4 @@
 require('./dfp');
-require('./iasPET');
 var utils = require('./utils');
 var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
@@ -41,7 +40,9 @@ var AdManager = function (options) {
 
   this.googletag = window.googletag;
 
-  if (this.options.iasEnabled) {    
+  if (this.options.iasEnabled) {
+    window.__iasPET = window.__iasPET || {};
+    window.__iasPET.queue = window.__iasPET.queue || [];
     window.__iasPET.pubId = this.options.iasPubId;
     this.__iasPET = window.__iasPET;
   }

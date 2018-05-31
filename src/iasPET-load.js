@@ -1,5 +1,5 @@
 /**
- * Loading the IAS Publisher Optimization tag if needed
+ * Method of loading the IAS Publisher Optimization tag if needed
  */
 
 if (!window.__iasPET){
@@ -14,9 +14,5 @@ if (!window.__iasPET){
 // Inserting prior to second script because gpt needs to exist prior to any of the iasPET functionality being executed
     node.parentNode.insertBefore(iasPET, node);
 }
-
-window.__iasPET = window.__iasPET || {};
-window.__iasPET.queue = window.__iasPET.queue || [];
-
 
 module.exports = window.__iasPET;
