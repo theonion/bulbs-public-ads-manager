@@ -1,5 +1,6 @@
 /**
- * Method of loading the IAS Publisher Optimization tag if needed
+ * Method of loading the IAS Publisher Optimization tag if needed 
+ * see: gawkermedia/kinja-mantle/packages/standalone-ad-manager
  */
 
 if (!window.__iasPET){
