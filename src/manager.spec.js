@@ -44,8 +44,31 @@ describe('AdManager', function() {
     });
 
     context('base defaults', function() {
+      it('no IAS support by default', function() {
+        expect(adManager.options.iasEnabled).to.be.false;
+      });
       it('reloads on resize', function() {
         expect(adManager.options.doReloadOnResize).to.be.true;
+      });
+    });
+    context('> required constructs created when IAS is enabled', function () {
+      var adManagerTestOptions = {
+        iasEnabled: true,
+        iasPubId: 123456,
+        dfpSiteCode: 'fmg.onion',
+        adUnits: adUnits
+      }
+      it('constructs the adManager correctly', function () {
+        adManager = AdManagerWrapper.init(adManagerTestOptions);
+        expect(adManager.options.iasEnabled).to.be.true;
+        expect(adManager.options.iasPubId).to.equal(adManagerTestOptions.iasPubId);
+        expect(adManager.__iasPET).to.deep.equal(window.__iasPET);
+      });
+      it('PET tag initialization', function () {
+        adManager = AdManagerWrapper.init(adManagerTestOptions);
+        expect(window.__iasPET).to.be.a('object');
+        expect(window.__iasPET.queue).to.be.a('array');
+        expect(window.__iasPET.pubId).to.equal(adManagerTestOptions.iasPubId);
       });
     });
 
