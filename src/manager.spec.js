@@ -101,6 +101,7 @@ describe('AdManager', function() {
       });
     });
   });
+
   describe('#prebidInit', function() {
     var pbjs;
     beforeEach(function() {
@@ -392,7 +393,6 @@ describe('AdManager', function() {
       expect(googletag.pubads().updateCorrelator.called).to.be.true;
     });
   });
-
 
   describe('#onSlotRenderEnded', function() {
     var adElement, event, eventSpy;
@@ -842,6 +842,7 @@ describe('AdManager', function() {
       });
     });
   });
+
   describe('#logMessage', function() {
     beforeEach(function() {
       TestHelper.spyOn(console, 'warn');
@@ -1489,7 +1490,6 @@ describe('AdManager', function() {
       expect(pbjs.requestBids.called).to.be.false;
     });
   });
-
 
   describe('#asyncRefreshSlot', function() {
     var baseContainer, container1, adSlot1, ads, stubSlot;
