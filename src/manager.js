@@ -701,6 +701,28 @@ AdManager.prototype.refreshSlot = function (domElement) {
   }
 };
 
+AdManager.prototype.fetchIasTargeting = function () {
+  var gtSlots = this.googletag.pubads().getSlots();
+  var iasPETSlots = [];
+
+  for (var i = 0; i < gtSlots.length; i++) {
+    var sizes = gtSlots[i].activeSizes || [[0, 0], [1, 1]];
+    iasPETSlots.push({
+      adSlotId: gtSlots[i].getSlotElementId(),
+      size: sizes,
+      adUnitPath: gtSlots[i].getAdUnitPath()
+    });
+  }
+
+  this.__iasPET.queue.push({
+    adSlots: iasPETSlots,
+    timeout: this.options.iasTimeout,
+    dataHandler: function () {
+      this.__iasPET.setTargetingForGPT();
+    }.bind(this)
+  });
+};
+
 /**
  * Fetches a new ad for each slot passed in
  *
@@ -716,42 +738,17 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
   var useIAS = typeof this.__iasPET !== 'undefined' && this.options.iasEnabled;
   var useIndex = typeof window.headertag !== 'undefined' && window.headertag.apiReady === true;
   var usePrebid = typeof window.pbjs !== 'undefined' && this.options.prebidEnabled;
-  var refreshMethod = function(context){
-    if (useIndex) {
-      return window.headertag.pubads().refresh(slotsToLoad, {changeCorrelator: false});
-    } else if (usePrebid) {
-      return context.prebidRefresh(slotsToLoad);
-    } else {
-      return context.googletag.pubads().refresh(slotsToLoad, {changeCorrelator: false});
-    }
+
+  if (useIAS) {
+    this.fetchIasTargeting();
   }
 
-
-  if (useIAS){
-    var gtSlots = this.googletag.pubads().getSlots();
-    var iasPETSlots = [];
-    
-    for (var i = 0; i < gtSlots.length; i++) {
-      var sizes = gtSlots[i].activeSizes || [[0, 0], [1, 1]];
-      iasPETSlots.push({
-        adSlotId: gtSlots[i].getSlotElementId(),
-        size: sizes,
-        adUnitPath: gtSlots[i].getAdUnitPath()
-      });
-    }
-    
-    var iasRequestTimeout = setTimeout(refreshMethod(this), this.options.iasTimeout);
-    this.__iasPET.queue.push({
-      adSlots: iasPETSlots,
-      timeout: this.options.iasTimeout,
-      dataHandler: function () {
-        clearTimeout(iasRequestTimeout);
-        this.__iasPET.setTargetingForGPT();
-        refreshMethod(this);
-      }
-    });
+  if (useIndex) {
+    return window.headertag.pubads().refresh(slotsToLoad, {changeCorrelator: false});
+  } else if (usePrebid) {
+    return this.prebidRefresh(slotsToLoad);
   } else {
-    refreshMethod(this);
+    return this.googletag.pubads().refresh(slotsToLoad, {changeCorrelator: false});
   }
 };
 
