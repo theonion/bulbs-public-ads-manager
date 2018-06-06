@@ -56,7 +56,13 @@ $ npm test
 ```
 
 Tests will run on travis-ci as part of the pull request process.
-The tests are primarily comprised of Sinon Mocks And Stubs. We try to maintain code coverage as new functions are added.
+The tests are primarily comprised of:  
+- [Sinon Mocks And Stubs](http://sinonjs.org/releases/v5.1.0/)
+- [Chai's BDD style of assertions](http://www.chaijs.com/api/bdd/)  
+- inside of a [Mocha framework](https://mochajs.org/#interfaces)
+- run with [Karma v0.13](https://karma-runner.github.io/0.13/index.html)  
+
+We try to maintain code coverage as new functions are added.
 
 #### Dependencies
 This project should never have outside, frontend dependencies since it really should be one of, if not, _the_ first JS to run on the page. Otherwise, potential ad views could be lost.
