@@ -701,6 +701,12 @@ AdManager.prototype.refreshSlot = function (domElement) {
   }
 };
 
+/**
+ * Fetches IAS brand safety targeting data  
+ *
+ * @param None
+ * @returns undefined
+ */
 AdManager.prototype.fetchIasTargeting = function () {
   var gtSlots = this.googletag.pubads().getSlots();
   var iasPETSlots = [];

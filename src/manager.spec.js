@@ -1347,6 +1347,7 @@ describe('AdManager', function() {
     });
   });
 
+  // Setup method utilized by #refreshSlot & #refreshSlots tests
   function adSlotSetup(){
     var baseContainer, container1, adSlot1, stubSlot, variableReferences;
     baseContainer = document.createElement('div');
@@ -1380,6 +1381,23 @@ describe('AdManager', function() {
     };
     return variableReferences;
   }
+
+  describe('#fetchIasTargeting', function(){
+    afterEach(function(){
+      adManager.__iasPET.queue = [];
+    });
+
+    it('- pushes ad slots to PET tag queue', function(){
+      adManager = AdManagerWrapper.init({
+        iasEnabled: true
+      });
+      adSlotSetup();
+
+      adManager.fetchIasTargeting();
+
+      expect(adManager.__iasPET.queue).to.be.a('array').to.have.lengthOf(1);
+    });
+  });
 
   describe('#refreshSlot', function() {
     var adSlot, stubSlot;
@@ -1434,103 +1452,28 @@ describe('AdManager', function() {
     });
 
     context('> iasEnabled', function(){
-      var mockSlot, baseMGT, baseMethods, adManager, setupRefs, slotsToRefresh;
-
-      mockSlot = {
-        getSlotElementId: function () {return "abc1234"},
-        getAdUnitPath: function () {return "http://url.path.com"}
-      };
-
+      var adSlot;
       beforeEach(function(){
-        //add getSlots() to MockGoogleTag.pubads() Prototype
-        baseMGT = new MockGoogleTag;
-        baseMethods = baseMGT.pubads();
-        MockGoogleTag.prototype.pubads = function(){
-          var updatedPubadsMethod = {};
-          for (method in baseMethods) {
-            updatedPubadsMethod[method] = baseMethods[method];
-          }
-          updatedPubadsMethod.getSlots = function() {
-            return [mockSlot];
-          };
-          return updatedPubadsMethod
-        };
-        window.googletag = new MockGoogleTag;
-
-        slotsToRefresh = [];
-
-      });
-      afterEach(function(){
-        delete window.googletag;
-        delete window.headertag;
-      });
-
-      it('- pushes ad slots to PET tag queue', function() {
-        adManager = AdManagerWrapper.init({
-          iasEnabled: true
-        });
-        setupRefs = adSlotSetup();
+        var setupRefs = adSlotSetup();
         adSlot = setupRefs.adSlot1;
+      });
+      
+      it('- calls fetchIasTargeting when enabled', function() {
+        adManager = AdManagerWrapper.init({ iasEnabled: true });
+        TestHelper.stub(adManager, 'fetchIasTargeting');
+
         adManager.refreshSlots([adSlot]);
 
-        expect(adManager.__iasPET.queue).to.be.a('array').to.have.lengthOf(1)
+        expect(adManager.fetchIasTargeting.called).to.be.true;
       });
 
-      it('- refreshMethod => useIndex', function() {
-        var spy;
-        spy = sinon.spy();
-        window.headertag = {
-          apiReady: true,
-          pubads: function(){
-            return {
-              refresh: function(arg) { spy(arg) }
-            }
-          }
-        };
+      it('- does not calls fetchIasTargeting when enabled', function() {
+        adManager = AdManagerWrapper.init({ iasEnabled: false });
+        TestHelper.stub(adManager, 'fetchIasTargeting');
 
-        adManager = AdManagerWrapper.init({
-          iasEnabled: true,
-          prebidEnabled: false
-        });
+        adManager.refreshSlots([adSlot]);
 
-        setupRefs = adSlotSetup();
-        slotsToRefresh.push(setupRefs.adSlot1);
-        adManager.refreshSlots(slotsToRefresh);
-
-        expect(spy.calledWith(slotsToRefresh)).to.be.true;
-      });
-
-      it('- refreshMethod => usePrebid', function() {
-
-        adManager = AdManagerWrapper.init({
-          iasEnabled: true,
-          prebidEnabled: true,
-          adUnits: []
-        });
-        TestHelper.stub(adManager, 'prebidRefresh');
-
-        setupRefs = adSlotSetup();
-        slotsToRefresh.push(setupRefs.adSlot1);
-        adManager.refreshSlots(slotsToRefresh);
-
-        expect(adManager.prebidRefresh.called).to.be.true;
-      });
-
-      it('- refreshMethod googletag.pubads().refresh', function() {
-        var spy;
-        spy = sinon.spy();
-
-        adManager = AdManagerWrapper.init({
-          iasEnabled: true,
-          prebidEnabled: false
-        });
-
-        TestHelper.stub(adManager.googletag.pubads(), 'refresh').returns(spy())
-        setupRefs = adSlotSetup();
-        slotsToRefresh.push(setupRefs.adSlot1);
-        adManager.refreshSlots(slotsToRefresh);
-
-        expect(spy.called).to.be.true;
+        expect(adManager.fetchIasTargeting.called).to.be.false;
       });
     });
   });

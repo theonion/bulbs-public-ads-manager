@@ -18,7 +18,13 @@ MockGoogleTag.prototype.pubads = function () {
     disableInitialLoad: function () {},
     addEventListener: function () {},
     refresh: function () {},
-    clear: function () {}
+    clear: function () {},
+    getSlots: function() {
+      return [{
+          getSlotElementId: function () {},
+          getAdUnitPath: function () {}
+      }];
+    }
   };
 };
 
