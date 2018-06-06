@@ -744,11 +744,11 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
   }
 
   if (useIndex) {
-    return window.headertag.pubads().refresh(slotsToLoad, {changeCorrelator: false});
+    window.headertag.pubads().refresh(slotsToLoad, {changeCorrelator: false});
   } else if (usePrebid) {
-    return this.prebidRefresh(slotsToLoad);
+    this.prebidRefresh(slotsToLoad);
   } else {
-    return this.googletag.pubads().refresh(slotsToLoad, {changeCorrelator: false});
+    this.googletag.pubads().refresh(slotsToLoad, {changeCorrelator: false});
   }
 };
 
