@@ -1347,88 +1347,223 @@ describe('AdManager', function() {
     });
   });
 
+  function adSlotSetup(){
+    var baseContainer, container1, adSlot1, stubSlot, variableReferences;
+    baseContainer = document.createElement('div');
+    container1 = document.createElement('div');
+    container1.className ='expected';
+    container1.id = 'ad-container-1';
+    adSlot1 = document.createElement('div');
+    adSlot1.id = 'dfp-ad-1';
+    adSlot1.className = 'dfp';
+    container1.appendChild(adSlot1);
+    baseContainer.appendChild(container1);
+    document.body.appendChild(baseContainer);
+
+    stubSlot = {
+      element: adSlot1,
+      prebid: 1,
+      activeSizes: [[300, 250]],
+      getSlotElementId: function() {
+        return adSlot1.id;
+      }
+    };
+    variableReferences = {
+      baseContainer: baseContainer,
+      container1: container1,
+      adSlot1: adSlot1,
+      stubSlot: stubSlot
+    }
+
+    adManager.slots = {
+      'dfp-ad-1': stubSlot
+    };
+    return variableReferences;
+  }
+
   describe('#refreshSlot', function() {
-    var baseContainer, container1, adSlot1, ads, stubSlot;
+    var adSlot, stubSlot;
 
     beforeEach(function() {
+      var setupRefs = adSlotSetup();
+      adSlot = setupRefs.adSlot1;
+      stubSlot = setupRefs.stubSlot;
       TestHelper.stub(adManager, 'refreshSlots');
-      baseContainer = document.createElement('div');
-      container1 = document.createElement('div');
-      container1.className ='expected';
-      container1.id = 'ad-container-1';
-      adSlot1 = document.createElement('div');
-      adSlot1.id = 'dfp-ad-1';
-      adSlot1.className = 'dfp';
-      container1.appendChild(adSlot1);
-      baseContainer.appendChild(container1);
       adManager.options.amazonEnabled = false;
-
-      document.body.appendChild(baseContainer);
-
-      stubSlot = {
-        element: adSlot1
-      };
-
-      adManager.slots = {
-        'dfp-ad-1': stubSlot
-      };
-
     });
 
     afterEach(function() {
-      $(baseContainer).remove();
+      document.body.innerHTML = "";
     });
 
     it('- loads the DFP slot matching up with the DOM element id', function() {
-      adManager.refreshSlot(adSlot1);
-      expect(adManager.refreshSlots.calledWith([stubSlot], [adSlot1])).to.be.true;
+
+      adManager.refreshSlot(adSlot);
+      expect(adManager.refreshSlots.calledWith([stubSlot], [adSlot])).to.be.true;
     });
 
   });
 
   describe('#refreshSlots', function() {
-      var baseContainer, container1, adSlot1, stubSlot;
-
-      beforeEach(function() {
-        TestHelper.stub(adManager, 'prebidRefresh');
-        baseContainer = document.createElement('div');
-        container1 = document.createElement('div');
-        container1.className ='expected';
-        container1.id = 'ad-container-1';
-        adSlot1 = document.createElement('div');
-        adSlot1.id = 'dfp-ad-1';
-        adSlot1.className = 'dfp';
-        container1.appendChild(adSlot1);
-        baseContainer.appendChild(container1);
-        adManager.options.amazonEnabled = false;
-        adManager.options.prebidEnabled = true;
-
-        document.body.appendChild(baseContainer);
-
-        stubSlot = {
-          element: adSlot1,
-        };
-
-        adManager.slots = {
-          'dfp-ad-1': stubSlot
-        };
-      });
-
       afterEach(function() {
-        $(baseContainer).remove();
+        document.body.innerHTML = "";
+      });
+    context('> empty argument', function() {
+      // var gt_pubads = adManager.googletag.pubads();
+      // TestHelper.stub(gt_pubads,"refresh");
+      // adManager.refreshSlots([]);
+      // expect(gt_pubads.refresh.called).to.be.true;
+
+    });
+    context('> prebidEnabled', function(){
+      var adSlot;
+      beforeEach(function(){
+        var setupRefs = adSlotSetup();
+        adSlot = setupRefs.adSlot1;
+        adManager.options.amazonEnabled = false;
+
+        TestHelper.stub(adManager, 'prebidRefresh');
       });
 
       it('- calls refreshPrebid when prebid is enabled', function() {
         adManager.options.prebidEnabled = true;
-        adManager.refreshSlots([adSlot1]);
+        adManager.refreshSlots([adSlot]);
+        expect(adManager.prebidRefresh.called).to.be.true;
+      });
+      it('- does not call refreshPrebid when prebid is disabled', function() {
+        adManager.options.prebidEnabled = false;
+        adManager.refreshSlots([adSlot]);
+        expect(adManager.prebidRefresh.called).to.be.false;
+      });
+
+    });
+
+    context('> iasEnabled', function(){
+      var slotsToRefresh, adManager, mockSlot, setupRefs, baseMGT, baseMethods;
+
+      mockSlot = {
+        getSlotElementId: function () {return "abc1234"},
+        getAdUnitPath: function () {return "http://url.path.com"}
+      }
+
+      beforeEach(function(){
+        //add getSlots() to MockGoogleTag.pubads() Prototype
+        baseMGT = new MockGoogleTag;
+        baseMethods = baseMGT.pubads();
+        MockGoogleTag.prototype.pubads = function(){
+          var updatedPubadsMethod = {};
+          for (method in baseMethods) {
+            updatedPubadsMethod[method] = baseMethods[method];
+          }
+          updatedPubadsMethod.getSlots = function() {
+            return [mockSlot]
+          }
+          return updatedPubadsMethod
+        };
+        window.googletag = new MockGoogleTag;
+
+        slotsToRefresh = [];
+
+      });
+      afterEach(function(){
+        delete window.googletag;
+        delete window.headertag;
+      });
+
+      it('- pushes ad slots to PET tag queue', function() {
+        adManager = AdManagerWrapper.init({
+          iasEnabled: true
+        });
+        setupRefs = adSlotSetup();
+        adSlot = setupRefs.adSlot1;
+        adManager.refreshSlots([adSlot]);
+
+        expect(adManager.__iasPET.queue).to.be.a('array').to.have.lengthOf(1)
+      });
+
+      it('- refreshMethod => useIndex', function() {
+        var spy;
+        spy = sinon.spy();
+        window.headertag = {
+          apiReady: true,
+          pubads: function(){
+            return {
+              refresh: function(arg) { spy(arg) }
+            }
+          }
+        };
+
+        adManager = AdManagerWrapper.init({
+          iasEnabled: true,
+          prebidEnabled: false
+        });
+
+        setupRefs = adSlotSetup();
+        slotsToRefresh.push(setupRefs.adSlot1);
+        adManager.refreshSlots(slotsToRefresh);
+
+        expect(spy.calledWith(slotsToRefresh)).to.be.true;
+
+
+        //expect(window.headertag.pubads().refresh()).to.be.true;
+        //expect(window.headertag.pubads().refresh().calledWith(adSlot)).to.be.true;
+
+        //expect(adManager.refreshSlot.calledWith(adSlot1)).to.be.true;
+        //adManager.googletag.pubads()
+        //expect(adManager.__iasPET.queue).to.be.a('array').to.have.lengthOf(1)
+      });
+      it('- refreshMethod => usePrebid', function() {
+
+        adManager = AdManagerWrapper.init({
+          iasEnabled: true,
+          prebidEnabled: true,
+          adUnits: []
+        });
+        TestHelper.stub(adManager, 'prebidRefresh');
+
+        setupRefs = adSlotSetup();
+        slotsToRefresh.push(setupRefs.adSlot1);
+        adManager.refreshSlots(slotsToRefresh);
+
         expect(adManager.prebidRefresh.called).to.be.true;
       });
 
-      it('- does not call refreshPrebid when prebid is disabled', function() {
-        adManager.options.prebidEnabled = false;
-        adManager.refreshSlots([adSlot1]);
-        expect(adManager.prebidRefresh.called).to.be.false;
+
+      it('- refreshMethod googletag.pubads().refresh', function() {
+/*
+        adManager = AdManagerWrapper.init({
+          iasEnabled: true,
+          prebidEnabled: false
+        });
+
+        TestHelper.stub(adManager.googletag, 'pubads').returns({
+          refresh: sinon.spy()
+        });
+        // var gtp = adManager.googletag.pubads();
+        // TestHelper.stub(gtp,'refresh');
+
+
+
+
+
+
+//        TestHelper.stub(adManager.googletag.pubads(), 'refresh');
+//        TestHelper.spyOn()
+
+        setupRefs = adSlotSetup();
+        slotsToRefresh.push(setupRefs.adSlot1);
+        adManager.refreshSlots(slotsToRefresh);
+
+        expect(googletag.pubads.called).to.be.true;
+        //expect(gtp.refresh.called).to.be.true;
+        //expect(adManager.googletag.pubads().refresh.called).to.be.true;
+
+        //expect(adManager.__iasPET.queue).to.be.a('array').to.have.lengthOf(1)
+*/
       });
+
+
+    });
   });
 
   describe('#refreshPrebid', function() {
