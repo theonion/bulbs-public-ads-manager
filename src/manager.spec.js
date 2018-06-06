@@ -2,7 +2,7 @@ var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
 
 describe('AdManager', function() {
-  var AdManager, AdManagerWrapper, adManager, adUnits;
+  var AdManagerWrapper, adManager, adUnits;
   var MockGoogleTag = require('mock_google_tag');
   var utils = require('./utils');
 
@@ -1408,13 +1408,7 @@ describe('AdManager', function() {
       afterEach(function() {
         document.body.innerHTML = "";
       });
-    context('> empty argument', function() {
-      // var gt_pubads = adManager.googletag.pubads();
-      // TestHelper.stub(gt_pubads,"refresh");
-      // adManager.refreshSlots([]);
-      // expect(gt_pubads.refresh.called).to.be.true;
 
-    });
     context('> prebidEnabled', function(){
       var adSlot;
       beforeEach(function(){
@@ -1430,6 +1424,7 @@ describe('AdManager', function() {
         adManager.refreshSlots([adSlot]);
         expect(adManager.prebidRefresh.called).to.be.true;
       });
+
       it('- does not call refreshPrebid when prebid is disabled', function() {
         adManager.options.prebidEnabled = false;
         adManager.refreshSlots([adSlot]);
@@ -1439,12 +1434,12 @@ describe('AdManager', function() {
     });
 
     context('> iasEnabled', function(){
-      var slotsToRefresh, adManager, mockSlot, setupRefs, baseMGT, baseMethods;
+      var mockSlot, baseMGT, baseMethods, adManager, setupRefs, slotsToRefresh;
 
       mockSlot = {
         getSlotElementId: function () {return "abc1234"},
         getAdUnitPath: function () {return "http://url.path.com"}
-      }
+      };
 
       beforeEach(function(){
         //add getSlots() to MockGoogleTag.pubads() Prototype
@@ -1456,8 +1451,8 @@ describe('AdManager', function() {
             updatedPubadsMethod[method] = baseMethods[method];
           }
           updatedPubadsMethod.getSlots = function() {
-            return [mockSlot]
-          }
+            return [mockSlot];
+          };
           return updatedPubadsMethod
         };
         window.googletag = new MockGoogleTag;
@@ -1503,15 +1498,8 @@ describe('AdManager', function() {
         adManager.refreshSlots(slotsToRefresh);
 
         expect(spy.calledWith(slotsToRefresh)).to.be.true;
-
-
-        //expect(window.headertag.pubads().refresh()).to.be.true;
-        //expect(window.headertag.pubads().refresh().calledWith(adSlot)).to.be.true;
-
-        //expect(adManager.refreshSlot.calledWith(adSlot1)).to.be.true;
-        //adManager.googletag.pubads()
-        //expect(adManager.__iasPET.queue).to.be.a('array').to.have.lengthOf(1)
       });
+
       it('- refreshMethod => usePrebid', function() {
 
         adManager = AdManagerWrapper.init({
@@ -1528,41 +1516,22 @@ describe('AdManager', function() {
         expect(adManager.prebidRefresh.called).to.be.true;
       });
 
-
       it('- refreshMethod googletag.pubads().refresh', function() {
-/*
+        var spy;
+        spy = sinon.spy();
+
         adManager = AdManagerWrapper.init({
           iasEnabled: true,
           prebidEnabled: false
         });
 
-        TestHelper.stub(adManager.googletag, 'pubads').returns({
-          refresh: sinon.spy()
-        });
-        // var gtp = adManager.googletag.pubads();
-        // TestHelper.stub(gtp,'refresh');
-
-
-
-
-
-
-//        TestHelper.stub(adManager.googletag.pubads(), 'refresh');
-//        TestHelper.spyOn()
-
+        TestHelper.stub(adManager.googletag.pubads(), 'refresh').returns(spy())
         setupRefs = adSlotSetup();
         slotsToRefresh.push(setupRefs.adSlot1);
         adManager.refreshSlots(slotsToRefresh);
 
-        expect(googletag.pubads.called).to.be.true;
-        //expect(gtp.refresh.called).to.be.true;
-        //expect(adManager.googletag.pubads().refresh.called).to.be.true;
-
-        //expect(adManager.__iasPET.queue).to.be.a('array').to.have.lengthOf(1)
-*/
+        expect(spy.called).to.be.true;
       });
-
-
     });
   });
 
