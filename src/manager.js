@@ -2,8 +2,8 @@ require('./dfp');
 var utils = require('./utils');
 var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
-var PageDepth = require('./helpers/PageDepth');
 var Feature = require('./helpers/Feature');
+var PageDepth = require('./helpers/PageDepth');
 
 var ERROR = 'error';
 
@@ -13,6 +13,9 @@ var AdManager = function (options) {
     resizeTimeout: null,
     debug: false,
     dfpId: 4246,
+    iasPubId: 927245,
+    iasEnabled: Feature.isOn('bulbs_ias'),
+    iasTimeout: 200,
     amazonEnabled: true,
     prebidEnabled: false,
     prebidTimeout: 1000,
@@ -37,9 +40,16 @@ var AdManager = function (options) {
 
   this.googletag = window.googletag;
 
+  if (this.options.iasEnabled) {
+    window.__iasPET = window.__iasPET || {};
+    window.__iasPET.queue = window.__iasPET.queue || [];
+    window.__iasPET.pubId = this.options.iasPubId;
+    this.__iasPET = window.__iasPET;
+  }
+
   if (this.options.prebidEnabled) {
     this.prebidInit();
-  };
+  }
 
   this.googletag.cmd.push(function () {
     adManager.initGoogleTag();
@@ -69,6 +79,7 @@ AdManager.prototype.prebidInit = function() {
     });
   }
 }
+
 /**
  * Reloads ads on the page if the window was resized and the functionality is enabled
  *
@@ -525,6 +536,8 @@ AdManager.prototype.configureAd = function (element) {
 
   slot.addService(this.googletag.pubads());
 
+  slot.activeSizes = this.adUnitSizes(adUnitConfig.sizes);
+
   if (adUnitConfig.eagerLoad) {
     slot.eagerLoad = true;
   }
@@ -532,7 +545,6 @@ AdManager.prototype.configureAd = function (element) {
   if (adUnitConfig.hasOwnProperty('prebid')) {
     // set prebid properties, if any, so they're available inside refreshSlots()
     slot.prebid = adUnitConfig.prebid;
-    slot.activeSizes = this.adUnitSizes(adUnitConfig.sizes);
   }
 
   this.slots[element.id] = slot;
@@ -690,6 +702,34 @@ AdManager.prototype.refreshSlot = function (domElement) {
 };
 
 /**
+ * Fetches IAS brand safety targeting data  
+ *
+ * @param None
+ * @returns undefined
+ */
+AdManager.prototype.fetchIasTargeting = function () {
+  var gtSlots = this.googletag.pubads().getSlots();
+  var iasPETSlots = [];
+
+  for (var i = 0; i < gtSlots.length; i++) {
+    var sizes = gtSlots[i].activeSizes || [[0, 0], [1, 1]];
+    iasPETSlots.push({
+      adSlotId: gtSlots[i].getSlotElementId(),
+      size: sizes,
+      adUnitPath: gtSlots[i].getAdUnitPath()
+    });
+  }
+
+  this.__iasPET.queue.push({
+    adSlots: iasPETSlots,
+    timeout: this.options.iasTimeout,
+    dataHandler: function () {
+      this.__iasPET.setTargetingForGPT();
+    }.bind(this)
+  });
+};
+
+/**
  * Fetches a new ad for each slot passed in
  *
  * @param {slotsToLoad} One or many slots to fetch new ad for
@@ -701,19 +741,20 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
     return;
   }
 
+  var useIAS = typeof this.__iasPET !== 'undefined' && this.options.iasEnabled;
   var useIndex = typeof window.headertag !== 'undefined' && window.headertag.apiReady === true;
   var usePrebid = typeof window.pbjs !== 'undefined' && this.options.prebidEnabled;
 
+  if (useIAS) {
+    this.fetchIasTargeting();
+  }
+
   if (useIndex) {
-    window.headertag.pubads().refresh(slotsToLoad, {
-      changeCorrelator: false
-    });
+    window.headertag.pubads().refresh(slotsToLoad, {changeCorrelator: false});
   } else if (usePrebid) {
     this.prebidRefresh(slotsToLoad);
   } else {
-    this.googletag.pubads().refresh(slotsToLoad, {
-      changeCorrelator: false
-    });
+    this.googletag.pubads().refresh(slotsToLoad, {changeCorrelator: false});
   }
 };
 

@@ -1,5 +1,6 @@
 # bulbs-public-ads-manager
-Ads manager for public side of sites. Fills in ad slots.
+Ads manager for public side of sites. Fills in ad slots. 
+See a [simple visual overview](https://docs.google.com/drawings/d/1zwLspXOvd5nVZUH3F_UpoDxqp5ou72XzfyA2QVMlAg0) of the programmatic ad process.
 
 ## Setup
 
@@ -20,8 +21,6 @@ Ads manager for public side of sites. Fills in ad slots.
 1. Ensure ad code is referenced as high as possible on the page, preferably as one of the first things that loads, so that no ad impressions are lost.
 
 
-
-
 ### Dependencies
 
 `google gpt` - The main google library that provides access to the DFP ad server.
@@ -30,7 +29,9 @@ Ads manager for public side of sites. Fills in ad slots.
 
 These price-based lines are auto generated ahead of time through index exchange via the google DFP API. These lines are created at the time of integration and aren't generally modified unless there's a major change to index's internal API.
 
-`amazon aps` - APS is amazon's header bidding wrapper. It is similar to index, but at the current time it is only capable of delivering amazon product ads. There are future plans to add addiotional bidders to this wrapper.
+`amazon aps` - APS is amazon's header bidding wrapper. It is similar to index, but at the current time it is only capable of delivering amazon product ads. There are future plans to add additional bidders to this wrapper.
+
+`IAS Publisher Optimization tag` - Conceptually similar to a header bidder, but rather than returning bids it returns key/value targeting information for each unit regarding: the predicted viewability, brand safety risks, and the validity of the traffic.
 
 ### Features and Terminology
 
@@ -55,7 +56,13 @@ $ npm test
 ```
 
 Tests will run on travis-ci as part of the pull request process.
-The tests are primarily comprised of Sinon Mocks And Stubs. We try to maintain code coverage as new functions are added.
+The tests are primarily comprised of:  
+- [Sinon Mocks And Stubs](http://sinonjs.org/releases/v5.1.0/)
+- [Chai's BDD style of assertions](http://www.chaijs.com/api/bdd/)  
+- inside of a [Mocha framework](https://mochajs.org/#interfaces)
+- run with [Karma v0.13](https://karma-runner.github.io/0.13/index.html)  
+
+We try to maintain code coverage as new functions are added.
 
 #### Dependencies
 This project should never have outside, frontend dependencies since it really should be one of, if not, _the_ first JS to run on the page. Otherwise, potential ad views could be lost.
