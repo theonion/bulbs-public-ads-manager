@@ -11,8 +11,7 @@ if (!window.__iasPET){
     iasPET.type = 'text/javascript';
     iasPET.src = (useSSL ? 'https:' : 'http:') + '//cdn.adsafeprotected.com/iasPET.1.js';
 
-    var node = document.getElementsByTagName('script')[1];
-// Inserting prior to second script because gpt needs to exist prior to any of the iasPET functionality being executed
+    var node = document.getElementsByTagName('script')[0];
     node.parentNode.insertBefore(iasPET, node);
 }
 
