@@ -31,7 +31,7 @@ These price-based lines are auto generated ahead of time through index exchange 
 
 `amazon aps` - APS is amazon's header bidding wrapper. It is similar to index, but at the current time it is only capable of delivering amazon product ads. There are future plans to add additional bidders to this wrapper.
 
-`IAS Publisher Optimization tag` - Conceptually similar to a header bidder, but rather than returning bids it returns key/value targeting information for each unit regarding: the predicted viewability, brand safety risks, and the validity of the traffic.
+`IAS Publisher Optimization tag` - Conceptually similar to a header bidder, but rather than returning bids it returns key/value targeting information for each unit regarding: the predicted viewability, brand safety risks, and the validity of the traffic. [Vendor provided documentation](https://drive.google.com/file/d/1OxzXtjIBTuEMZptfDGKsDgRqkQWa_U7A/view?usp=sharing).
 
 ### Features and Terminology
 
