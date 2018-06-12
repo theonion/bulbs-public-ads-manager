@@ -520,6 +520,7 @@ AdManager.prototype.configureAd = function (element) {
     slot = this.googletag.defineSlot(adUnitPath, [], element.id);
     sizeMap = this.buildSizeMap(adUnitConfig.sizes);
     slot.defineSizeMapping(sizeMap);
+    slot.activeSizes = this.adUnitSizes(adUnitConfig.sizes);
   }
 
   if (!element.dataset) {
@@ -536,7 +537,6 @@ AdManager.prototype.configureAd = function (element) {
 
   slot.addService(this.googletag.pubads());
 
-  slot.activeSizes = this.adUnitSizes(adUnitConfig.sizes);
 
   if (adUnitConfig.eagerLoad) {
     slot.eagerLoad = true;
@@ -633,7 +633,7 @@ AdManager.prototype.loadAds = function (element, updateCorrelator, useScopedSele
        * requested from A9. It is thus used as a fallback.
        * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
       */
-      activeSizes = this.adUnitSizes(adUnitConfig.sizes);
+      activeSizes = slot.activeSizes
 
       if (adUnitConfig.amazonEnabled && activeSizes && activeSizes.length) {
         this.fetchAmazonBids(thisEl.id, activeSizes, adUnitConfig.slotName);
@@ -702,7 +702,7 @@ AdManager.prototype.refreshSlot = function (domElement) {
 };
 
 /**
- * Fetches IAS brand safety targeting data  
+ * Fetches IAS brand safety targeting data
  *
  * @param None
  * @returns undefined
