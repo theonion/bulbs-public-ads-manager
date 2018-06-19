@@ -29,7 +29,7 @@ var AdManager = function (options) {
   this.adId = 0;
   this.initialized = false;
   this.viewportWidth = 0;
-  this.oldViewportWidth = window.document.body.clientWidth;
+  this.oldViewportWidth = window.innerWidth;
   this.options = utils.extend(defaultOptions, options);
   this.bindContext();
 
@@ -90,7 +90,7 @@ AdManager.prototype.handleWindowResize = function () {
     return;
   }
 
-  this.viewportWidth = window.document.body.clientWidth;
+  this.viewportWidth = window.innerWidth;
 
   if (!this.oldViewportWidth || this.oldViewportWidth !== this.viewportWidth) {
     // viewport size has actually changed, reload ads
@@ -314,7 +314,7 @@ AdManager.prototype.generateId = function () {
   * @returns {Integer} client width in pixels
 */
 AdManager.prototype.getClientWidth = function () {
-  return window.document.body.clientWidth;
+  return window.innerWidth;
 };
 
 /**
