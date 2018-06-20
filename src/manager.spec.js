@@ -924,11 +924,12 @@ describe('AdManager', function() {
   });
 
   describe('#configureAd', function() {
-    var adSlot1, container1;
+    var adSlot1, container1, sizes;
 
     beforeEach(function() {
+      sizes = adManager.adUnits.units.header.sizes;
       TestHelper.stub(adManager, 'getAdUnitCode').returns('/4246/fmg.onion');
-      TestHelper.stub(adManager, 'buildSizeMap').returns(adManager.adUnits.units.header.sizes);
+      TestHelper.stub(adManager, 'adUnitSizes').returns(sizes);
       container1 = document.createElement('div');
       adSlot1 = document.createElement('div');
       adSlot1.className = 'dfp';
@@ -970,7 +971,6 @@ describe('AdManager', function() {
         TestHelper.stub(adManager, 'generateId').returns('dfp-ad-1');
         TestHelper.stub(window.googletag, 'pubads').returns('Stub pub ads');
         slotStub = {
-          defineSizeMapping: sinon.spy(),
           addService: sinon.spy(),
           setTargeting: function () {}
         };
@@ -985,11 +985,11 @@ describe('AdManager', function() {
       });
 
       it('- defines the slot on the google tag object', function() {
-        expect(window.googletag.defineSlot.calledWith('/4246/fmg.onion', [], 'dfp-ad-1')).to.be.true;
+        expect(window.googletag.defineSlot.calledWith('/4246/fmg.onion', sizes, 'dfp-ad-1')).to.be.true;
       });
 
-      it('- defines the size mapping on the google tag object', function() {
-        expect(slotStub.defineSizeMapping.calledWith(adManager.adUnits.units.header.sizes)).to.be.true;
+      it('- defines activeSizes mapped to the google tag object', function() {
+        expect(slotStub.activeSizes).to.deep.equal(sizes);
       });
 
       it('- returns the configured slot and adds it to the slots object', function() {
@@ -1007,7 +1007,6 @@ describe('AdManager', function() {
         TestHelper.stub(adManager, 'generateId').returns('dfp-ad-1');
         TestHelper.stub(window.googletag, 'pubads').returns('Stub pub ads');
         slotStub = {
-          defineSizeMapping: sinon.spy(),
           addService: sinon.spy(),
           setTargeting: function () {}
         };
@@ -1020,7 +1019,7 @@ describe('AdManager', function() {
       });
 
       it('- defines the slot on the google tag object', function() {
-        expect(window.googletag.defineSlot.calledWith('/4246/fmg.onion/front', [], 'dfp-ad-1')).to.be.true;
+        expect(window.googletag.defineSlot.calledWith('/4246/fmg.onion/front', sizes, 'dfp-ad-1')).to.be.true;
       });
 
       it('- sets whether the ad should be eager loaded', function() {
@@ -1457,7 +1456,7 @@ describe('AdManager', function() {
         var setupRefs = adSlotSetup();
         adSlot = setupRefs.adSlot1;
       });
-      
+
       it('- calls fetchIasTargeting when enabled', function() {
         adManager = AdManagerWrapper.init({ iasEnabled: true });
         TestHelper.stub(adManager, 'fetchIasTargeting');
