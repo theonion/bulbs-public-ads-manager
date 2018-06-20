@@ -517,8 +517,9 @@ AdManager.prototype.configureAd = function (element) {
   if (adUnitConfig.outOfPage) {
     slot = this.googletag.defineOutOfPageSlot(adUnitPath, element.id);
   } else {
-    slot.activeSizes = this.adUnitSizes(adUnitConfig.sizes);
-    slot = this.googletag.defineSlot(adUnitPath, slot.activeSizes, element.id);
+    var activeSizes = this.adUnitSizes(adUnitConfig.sizes);
+    slot = this.googletag.defineSlot(adUnitPath, activeSizes, element.id);
+    slot.activeSizes = activeSizes;
   }
 
   if (!element.dataset) {
