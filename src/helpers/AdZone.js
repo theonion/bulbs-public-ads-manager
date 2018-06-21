@@ -28,12 +28,15 @@ var AdZone = {
   *
   * @returns String;
  */
-  forcedAdZone: function() {
+  forcedAdZone: function () {
+    var paramZone = this.getQueryParameter('adzone');
+    if (paramZone) {
+      return paramZone;
+    }
     if (!window.kinja) {
       return null;
     }
 
-    var paramZone = this.getQueryParameter('adzone');
     var postMeta = window.kinja.postMeta || {};
     var tags = postMeta.tags;
     var forceNonCollapse = /why your team sucks|wyts/.test(tags);
@@ -41,7 +44,7 @@ var AdZone = {
     var forceCollapseZone = !forceNonCollapse && forceCollapse ? 'collapse' : null;
     var post = postMeta.post;
     var postZone = post ? post.adZone : null;
-    return paramZone || forceCollapseZone || postZone;
+    return forceCollapseZone || postZone;
   }
-}
+};
 module.exports = AdZone;
