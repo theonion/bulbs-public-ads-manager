@@ -30,7 +30,18 @@ describe('AdZone', function() {
   	});
   });
 
-  describe('#forcedAdZone', function() {
+  describe('#forcedAdZone', function () {
+    describe('forced ad zone query param is null', function () {
+      beforeEach(function () {
+        TestHelper.stub(AdZone, 'locationSearch', '?adzone=');
+        window.kinja = {};
+      });
+
+      it('returns the forced ad zone param', function () {
+        expect(AdZone.forcedAdZone()).to.be.null;
+      });
+    });
+
     describe('kinja is not on window', function() {
       beforeEach(function() {
         delete window.kinja;
