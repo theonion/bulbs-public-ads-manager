@@ -31,14 +31,14 @@ describe('AdZone', function() {
   });
 
   describe('#forcedAdZone', function () {
-    describe('forced ad zone query param is null', function () {
+    describe('forced ad zone query param is present, but kinja is not on window', function () {
       beforeEach(function () {
-        TestHelper.stub(AdZone, 'locationSearch', '?adzone=');
-        window.kinja = {};
+        delete window.kinja;
+        TestHelper.stub(AdZone, 'locationSearch', '?adzone=reductress');
       });
 
       it('returns the forced ad zone param', function () {
-        expect(AdZone.forcedAdZone()).to.be.null;
+        expect(AdZone.forcedAdZone()).to.equal('reductress');
       });
     });
 
