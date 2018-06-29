@@ -202,17 +202,6 @@ describe('TargetingPairs', function() {
       });
     });
 
-    context('forced adzone exists but missing scope.kinja', function () {
-      beforeEach(function () {
-        delete window.kinja;
-      });
-
-      it('returns an object with a pageOptions.forcedAdZone property', function () {
-        var pairs =  TargetingPairs.getTargetingPairs('advertiser');
-        expect(pairs.pageOptions.forcedAdZone).to.equal('advertiser');
-      });
-    });
-
     context('without forced ad zone', function() {
       it('sets forced ad zone as false', function() {
         var pairs =  TargetingPairs.getTargetingPairs();
@@ -222,6 +211,17 @@ describe('TargetingPairs', function() {
 
     context('with forced ad zone', function() {
       it('uses forced ad zone', function() {
+        var pairs =  TargetingPairs.getTargetingPairs('advertiser');
+        expect(pairs.pageOptions.forcedAdZone).to.equal('advertiser');
+      });
+    });
+
+    context('forced adzone exists but missing scope.kinja', function () {
+      beforeEach(function () {
+        delete window.kinja;
+      });
+
+      it('returns an object with a pageOptions.forcedAdZone property', function () {
         var pairs =  TargetingPairs.getTargetingPairs('advertiser');
         expect(pairs.pageOptions.forcedAdZone).to.equal('advertiser');
       });
