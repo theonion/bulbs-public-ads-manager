@@ -13,7 +13,7 @@ var TargetingPairs = {
   *
   * @param Window scope the window to use for the kinja meta info
   */
-  getCategories: function(scope) {
+  getCategories: function (scope) {
     var categoryMeta = scope.kinja.categoryMeta || {},
       postMeta = scope.kinja.postMeta || {};
 
@@ -25,7 +25,7 @@ var TargetingPairs = {
   *
   * @param Window scope the window to use for the kinja meta info
   */
-  getTags: function(scope) {
+  getTags: function (scope) {
     var tagMeta = scope.kinja.tagMeta || scope.kinja.postMeta || {};
 
     return (tagMeta.tags || '').split(',');
@@ -37,7 +37,7 @@ var TargetingPairs = {
    * @param Window scope the window to use for the kinja meta info.
    *
    */
-  buildTargetingPairs: function(scope, positionTargeting) {
+  buildTargetingPairs: function (scope, positionTargeting) {
     var kinjaMeta = scope.kinja.meta,
       post = scope.kinja.postMeta || {},
       content = scope.kinja.postContentRatings || [],
@@ -80,7 +80,10 @@ var TargetingPairs = {
    * @param Window scope the window to use for the kinja meta info.
    *
    */
-  getTargetingPairs: function(forcedAdZone, positionTargeting) {
+  getTargetingPairs: function (forcedAdZone, positionTargeting) {
+    if (forcedAdZone && !window.kinja) {
+      return { pageOptions : { forcedAdZone : forcedAdZone} };
+    }
     if (!window.kinja) {
       return {};
     }
