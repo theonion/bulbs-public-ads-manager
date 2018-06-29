@@ -216,6 +216,17 @@ describe('TargetingPairs', function() {
       });
     });
 
+    context('forced adzone exists but missing scope.kinja', function () {
+      beforeEach(function () {
+        delete window.kinja;
+      });
+
+      it('returns an object with a pageOptions.forcedAdZone property', function () {
+        var pairs =  TargetingPairs.getTargetingPairs('advertiser');
+        expect(pairs.pageOptions.forcedAdZone).to.equal('advertiser');
+      });
+    });
+
     context('missing scope.kinja', function() {
       beforeEach(function() {
         delete window.kinja
