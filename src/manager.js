@@ -118,7 +118,7 @@ AdManager.prototype.initGoogleTag = function () {
   this.googletag.pubads().addEventListener('impressionViewable', adManager.onImpressionViewable);
   this.googletag.pubads().addEventListener('slotOnload', adManager.onSlotOnload);
 
-  this.targeting = global.TARGETING || TargetingPairs.getTargetingPairs(AdZone.forcedAdZone()).pageOptions;
+  this.targeting = utils.extend(global.TARGETING || {}, TargetingPairs.getTargetingPairs(AdZone.forcedAdZone()).pageOptions);
 
   this.setPageTargeting();
 
