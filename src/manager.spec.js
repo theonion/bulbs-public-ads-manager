@@ -179,6 +179,19 @@ describe('AdManager', function() {
       adManager.initGoogleTag();
     });
 
+    context('TARGETING global, and a forced ad zone', function () {
+      beforeEach(function() {
+        window.TARGETING = { 'dfpcontentid': 'foo-bar-baz' };
+        TestHelper.stub(AdZone, 'forcedAdZone').returns('adtest');
+        adManager.initGoogleTag();
+      });
+
+      it('merges pre-existing contextual targeting with forced ad zone', function() {
+        expect(adManager.targeting.dfpcontentid).to.equal('foo-bar-baz');
+        expect(adManager.targeting.forcedAdZone).to.equal('adtest');
+      });
+    });
+
     it('- enable single request mode when option enabled, otherwise disable it', function() {
       expect(adManager.googletag.pubads().enableSingleRequest.called).to.be.false;
       adManager.options.enableSRA = true;
