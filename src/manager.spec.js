@@ -44,17 +44,16 @@ describe('AdManager', function() {
     });
 
     context('> base defaults', function() {
-      it('- no IAS support by default', function() {
-        expect(adManager.options.iasEnabled).to.be.false;
+      it('- IAS supported by default', function() {
+        expect(adManager.options.iasEnabled).to.be.true;
       });
       it('- reloads on resize', function() {
         expect(adManager.options.doReloadOnResize).to.be.true;
       });
     });
 
-    context('> IAS enabled', function () {
+    context('> IAS functions correctly', function () {
       var adManagerTestOptions = {
-        iasEnabled: true,
         iasPubId: 123456,
         dfpSiteCode: 'fmg.onion',
         adUnits: adUnits
@@ -78,9 +77,11 @@ describe('AdManager', function() {
         adManager = AdManagerWrapper.init({
           doReloadOnResize: false,
           dfpSiteCode: 'fmg.onion',
+          iasEnabled: false,
           adUnits: adUnits
          });
         expect(adManager.options.doReloadOnResize).to.be.false;
+        expect(adManager.options.iasEnabled).to.be.false;
       });
     });
 
@@ -1540,7 +1541,8 @@ describe('AdManager', function() {
 
     it('- calls googletag.pubads().refresh directly when no units are configured for prebid', function() {
       TestHelper.stub(adManager.googletag, 'pubads').returns({
-        refresh: sinon.spy()
+        refresh: sinon.spy(),
+        getSlots: function() {return []}
       });
 
       adManager.refreshSlots([adSlot1]);
