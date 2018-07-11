@@ -14,7 +14,7 @@ var AdManager = function (options) {
     debug: false,
     dfpId: 4246,
     iasPubId: 927245,
-    iasEnabled: Feature.isOn('bulbs_ias'),
+    iasEnabled: true,
     iasTimeout: 200,
     amazonEnabled: true,
     prebidEnabled: false,
