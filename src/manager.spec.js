@@ -1413,18 +1413,19 @@ describe('AdManager', function() {
   });
 
   describe('#refreshSlot', function() {
-    var adSlot, stubSlot;
+    var adSlot, stubSlot, baseContainer;
 
     beforeEach(function() {
       var setupRefs = adSlotSetup();
       adSlot = setupRefs.adSlot1;
       stubSlot = setupRefs.stubSlot;
+      baseContainer = setupRefs.baseContainer;
       TestHelper.stub(adManager, 'refreshSlots');
       adManager.options.amazonEnabled = false;
     });
 
     afterEach(function() {
-      document.body.innerHTML = "";
+      $(baseContainer).remove();
     });
 
     it('- loads the DFP slot matching up with the DOM element id', function() {
@@ -1436,18 +1437,20 @@ describe('AdManager', function() {
   });
 
   describe('#refreshSlots', function() {
-      afterEach(function() {
-        document.body.innerHTML = "";
-      });
 
     context('> prebidEnabled', function(){
-      var adSlot;
+      var adSlot, baseContainer;
       beforeEach(function(){
         var setupRefs = adSlotSetup();
         adSlot = setupRefs.adSlot1;
+        baseContainer = setupRefs.baseContainer;
         adManager.options.amazonEnabled = false;
 
         TestHelper.stub(adManager, 'prebidRefresh');
+      });
+
+      afterEach(function() {
+        $(baseContainer).remove();
       });
 
       it('- calls refreshPrebid when prebid is enabled', function() {
@@ -1465,10 +1468,15 @@ describe('AdManager', function() {
     });
 
     context('> iasEnabled', function(){
-      var adSlot;
+      var adSlot, baseContainer;
       beforeEach(function(){
         var setupRefs = adSlotSetup();
         adSlot = setupRefs.adSlot1;
+        baseContainer = setupRefs.baseContainer;
+      });
+
+      afterEach(function() {
+        $(baseContainer).remove();
       });
 
       it('- calls fetchIasTargeting when enabled', function() {

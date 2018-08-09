@@ -1,7 +1,10 @@
 describe('Experiments', function() {
   var Experiments;
+  var Feature;
 
   beforeEach(function() {
+    Feature = require('./Feature');
+    Feature.features = null;
     Experiments = require('./Experiments');
   });
 
@@ -20,6 +23,12 @@ describe('Experiments', function() {
 
       it('returns letter A', function () {
         expect(Experiments.getExperimentVariation()).to.equal('A');
+      });
+
+      it('returns number instead of letter, if enable_experiments enabled', () => {
+        sinon.stub(Feature, 'isOn').returns(true);
+        expect(Experiments.getExperimentVariation()).to.equal(0);
+        Feature.isOn.restore();
       });
     });
 

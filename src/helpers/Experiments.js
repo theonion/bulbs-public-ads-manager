@@ -2,6 +2,8 @@
 
 'use strict';
 
+var Feature = require('./Feature');
+
 var Experiments = {
   getVariation: function (scope) {
     if (typeof(scope.gaVariation) !== 'undefined') {
@@ -23,7 +25,12 @@ var Experiments = {
   getExperimentVariation: function(scope) {
     var expScope = scope || window,
       variation = this.getVariation(expScope);
-    return (variation !== null && variation >= 0 && variation < 26) ? String.fromCharCode(variation + 65) : null;
+
+    if (Feature.isOn('enable_experiments')) {
+      return (variation !== null && variation >= 0 && variation < 16) ? variation : null;
+    } else {
+      return (variation !== null && variation >= 0 && variation < 26) ? String.fromCharCode(variation + 65) : null;
+    }
   },
 
  /**

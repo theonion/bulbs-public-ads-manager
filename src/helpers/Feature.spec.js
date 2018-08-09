@@ -4,6 +4,7 @@ describe('Feature', function() {
   describe('#isOn', function() {
     beforeEach(function() {
       Feature = require('./Feature');
+      Feature.features = null;
       document.body.classList.add('f_testfeature_on');
     });
 
