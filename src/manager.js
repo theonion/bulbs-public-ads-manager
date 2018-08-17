@@ -465,6 +465,9 @@ AdManager.prototype.setSlotTargeting = function (element, slot, adUnitConfig) {
   if (element.dataset.targeting) {
     slotTargeting = JSON.parse(element.dataset.targeting);
   }
+  if (element.dataset.adIndex) {
+    slotTargeting = utils.extend(slotTargeting, {ad_index: element.dataset.adIndex})
+  }
 
   slotTargeting = utils.extend(slotTargeting, kinjaPairs);
 
