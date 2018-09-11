@@ -17,6 +17,7 @@ var AdManager = function (options) {
     iasEnabled: true,
     iasTimeout: 200,
     amazonEnabled: true,
+    indexExchangeEnabled: true,
     prebidEnabled: false,
     prebidTimeout: 1000,
     enableSRA: false
@@ -135,7 +136,9 @@ AdManager.prototype.initGoogleTag = function () {
 AdManager.prototype.fetchAmazonBids = function (elementId, gptSizes, slotName) {
   var adUnitPath = this.getAdUnitCode(),
     slotUnit = adUnitPath + '_' + slotName,
-    timeoutAmount = 1000;
+    index
+    timeoutAmount = 1000,
+    indexExchangeEnabled = this.options.indexExchangeEnabled;
   if (Feature.isOn('ads_a9_timeout')) {
     timeoutAmount = 300;
   }
@@ -149,9 +152,15 @@ AdManager.prototype.fetchAmazonBids = function (elementId, gptSizes, slotName) {
   }, callback = function (bids) {
     /* Your callback method, in this example it triggers the first DFP request
     for googletag's disableInitialLoad integration after bids have been set */
-    window.headertag.cmd.push(function () {
-      window.apstag.setDisplayBids();
-    });
+    if (indexExchangeEnabled) {
+      window.headertag.cmd.push(function () {
+        window.apstag.setDisplayBids();
+      });
+    } else {
+      window.googletag.cmd.push(function () {
+        window.apstag.setDisplayBids();
+      });
+    }
   });
 };
 
@@ -639,7 +648,7 @@ AdManager.prototype.loadAds = function (element, updateCorrelator, useScopedSele
       }
     }
 
-    if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true) {
+    if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true || !this.options.indexExchangeEnabled) {
       this.googletag.display(thisEl.id);
     } else {
       window.headertag.display(thisEl.id);
@@ -741,7 +750,7 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
   }
 
   var useIAS = typeof this.__iasPET !== 'undefined' && this.options.iasEnabled;
-  var useIndex = typeof window.headertag !== 'undefined' && window.headertag.apiReady === true;
+  var useIndex = typeof window.headertag !== 'undefined' && window.headertag.apiReady === true && this.options.indexExchangeEnabled;
   var usePrebid = typeof window.pbjs !== 'undefined' && this.options.prebidEnabled;
 
   if (useIAS) {
