@@ -458,15 +458,11 @@ AdManager.prototype.slotInfo = function () {
  * @returns undefined
 */
 AdManager.prototype.setSlotTargeting = function (element, slot, adUnitConfig) {
-  var slotTargeting = {};
-  var positionTargeting = adUnitConfig.pos || adUnitConfig.slotName || element.dataset.adUnit;
+  var slotTargeting = element.dataset.targeting ? JSON.parse(element.dataset.targeting) : {};
+  var positionTargeting = adUnitConfig.pos || slotTargeting.pos || adUnitConfig.slotName || element.dataset.adUnit;
   var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone(), positionTargeting).slotOptions;
 
-  if (element.dataset.targeting) {
-    slotTargeting = JSON.parse(element.dataset.targeting);
-  }
-
-  slotTargeting = utils.extend(slotTargeting, kinjaPairs);
+  slotTargeting = utils.extend(kinjaPairs, slotTargeting);
 
   for (var customKey in slotTargeting) {
     if (slotTargeting[customKey]) {

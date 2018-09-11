@@ -17,4 +17,13 @@ describe('Utils', function () {
     utils.dispatchEvent(element, 'coolEvent');
     expect(spy).to.have.been.called;
   });
+
+  context('#extend', function() {
+    it('extends an object', function() {
+      var extendedObject = { foo: '1', bar: '2' };
+      var objectWithOverrides = { foo: '3' };
+
+      expect(utils.extend(extendedObject, objectWithOverrides).foo).to.equal('3');
+    });
+  });
 });

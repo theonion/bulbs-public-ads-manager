@@ -926,6 +926,28 @@ describe('AdManager', function() {
       });
     });
 
+    context('> element has dataset targeting, with overridden pos value', function() {
+      beforeEach(function() {
+        elementTargeting = JSON.stringify({
+          dfp_content_id: 12345,
+          dfp_feature: 'american-voices',
+          pos: 'overridden_pos'
+        });
+        $(adSlot1).attr('data-targeting', elementTargeting);
+        TargetingPairs.getTargetingPairs.returns({
+          slotOptions: {
+            pos: 'original_pos'
+          }
+        });
+        adManager.setSlotTargeting(adSlot1, stubSlot, { pos: 'original_pos' });
+      });
+
+      it('- sets all the targeting', function() {
+        expect(stubSlot.setTargeting.callCount).to.equal(3);
+        expect(stubSlot.setTargeting.calledWith('pos', 'overridden_pos')).to.be.true;
+      });
+    });
+
     context('> element has no dataset targeting', function() {
       beforeEach(function() {
         adManager.setSlotTargeting(adSlot1, stubSlot, {});
