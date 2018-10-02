@@ -143,7 +143,7 @@ AdManager.prototype.fetchAmazonBids = function (slotsToFetch) {
   }
 
   slots = slotsToFetch.filter(function (slot) {
-    return !slot.getOutOfPage();
+    return !slot.getOutOfPage() && slot.activeSizes[0] !== 'fluid';
   }).map(function (slot) {
     return {
       slotId: slot.getSlotElementId(),
