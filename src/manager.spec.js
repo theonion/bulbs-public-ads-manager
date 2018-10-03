@@ -1395,7 +1395,7 @@ describe('AdManager', function() {
       var fetchedSlots = window.apstag.fetchBids.args[0][0].slots;
 
       expect(fetchedSlots.length).to.equal(1);
-      expect(fetchedSlots[0].slotId).to.equal(slots[0].getSlotElementId());
+      expect(fetchedSlots[0].slotID).to.equal(slots[0].getSlotElementId());
       expect(fetchedSlots[0].sizes).to.equal(slots[0].activeSizes);
       expect(fetchedSlots[0].slotName).to.equal('/4246/fmg.onion_' + slots[0].slotName);
     });
@@ -1412,7 +1412,7 @@ describe('AdManager', function() {
       var fetchedSlots = window.apstag.fetchBids.args[0][0].slots;
 
       expect(fetchedSlots.length).to.equal(1);
-      expect(fetchedSlots[0].slotId).to.equal(slots[0].getSlotElementId());
+      expect(fetchedSlots[0].slotID).to.equal(slots[0].getSlotElementId());
     });
 
     it('- does not include slots which currently have no allowed creative sizes based on the current viewport', function () {
@@ -1427,7 +1427,7 @@ describe('AdManager', function() {
       var fetchedSlots = window.apstag.fetchBids.args[0][0].slots;
 
       expect(fetchedSlots.length).to.equal(1);
-      expect(fetchedSlots[0].slotId).to.equal(slots[0].getSlotElementId());
+      expect(fetchedSlots[0].slotID).to.equal(slots[0].getSlotElementId());
     });
 
     it('- does not include native slots (sizes `fluid`)', function () {
@@ -1442,7 +1442,7 @@ describe('AdManager', function() {
       var fetchedSlots = window.apstag.fetchBids.args[0][0].slots;
 
       expect(fetchedSlots.length).to.equal(1);
-      expect(fetchedSlots[0].slotId).to.equal(slots[0].getSlotElementId());
+      expect(fetchedSlots[0].slotID).to.equal(slots[0].getSlotElementId());
     });
 
     it('- sets targeting once bids are returned from apstag api', function (done) {

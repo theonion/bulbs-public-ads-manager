@@ -146,7 +146,7 @@ AdManager.prototype.fetchAmazonBids = function (slotsToFetch) {
     return !slot.getOutOfPage() && slot.activeSizes[0] !== 'fluid' && slot.activeSizes.length > 0;
   }).map(function (slot) {
     return {
-      slotId: slot.getSlotElementId(),
+      slotID: slot.getSlotElementId(),
       sizes: slot.activeSizes,
       slotName: adUnitPath + '_' + slot.slotName
     };
