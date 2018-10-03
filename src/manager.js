@@ -138,7 +138,7 @@ AdManager.prototype.fetchAmazonBids = function (slotsToFetch) {
     indexExchangeEnabled = this.options.indexExchangeEnabled,
     slots;
 
-  if (typeof(slotsToFetch) === 'undefined' || slotsToFetch.length < 1) {
+  if (typeof(slotsToFetch) === 'undefined') {
     return;
   }
 
@@ -151,6 +151,10 @@ AdManager.prototype.fetchAmazonBids = function (slotsToFetch) {
       slotName: adUnitPath + '_' + slot.slotName
     };
   });
+
+  if (slots.length < 1) {
+    return;
+  }
 
   if (this.options.debug) {
     console.info("Fetching a9 bid requests for slots: ", slots);

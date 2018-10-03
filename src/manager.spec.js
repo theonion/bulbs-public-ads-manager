@@ -1430,6 +1430,17 @@ describe('AdManager', function() {
       expect(fetchedSlots[0].slotID).to.equal(slots[0].getSlotElementId());
     });
 
+    it('- does not call fetchBids if none of the slots passed in have valid sizes for the viewport', function () {
+      slots = [{
+          getSlotElementId: function () { return 'dfp-ad-20'; },
+          getOutOfPage: function () { return false; },
+          activeSizes: [],
+          slotName: 'non-viewport-slot'
+      }];
+      adManager.fetchAmazonBids(slots);
+      expect(window.apstag.fetchBids.called).to.be.false;
+    });
+
     it('- does not include native slots (sizes `fluid`)', function () {
       slots.push({
           getSlotElementId: function () { return 'dfp-ad-20'; },
