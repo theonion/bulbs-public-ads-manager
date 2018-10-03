@@ -152,6 +152,10 @@ AdManager.prototype.fetchAmazonBids = function (slotsToFetch) {
     };
   });
 
+  if (this.options.debug) {
+    console.info("Fetching a9 bid requests for slots: ", slots);
+  }
+
   window.apstag.fetchBids({
     slots: slots,
     timeout: 300
