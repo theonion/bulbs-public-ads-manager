@@ -1415,6 +1415,21 @@ describe('AdManager', function() {
       expect(fetchedSlots[0].slotId).to.equal(slots[0].getSlotElementId());
     });
 
+    it('- does not include slots which currently have no allowed creative sizes based on the current viewport', function () {
+      slots.push({
+          getSlotElementId: function () { return 'dfp-ad-20'; },
+          getOutOfPage: function () { return false; },
+          activeSizes: [],
+          slotName: 'non-viewport-slot'
+      });
+      adManager.fetchAmazonBids(slots);
+      expect(window.apstag.fetchBids.called).to.be.true;
+      var fetchedSlots = window.apstag.fetchBids.args[0][0].slots;
+
+      expect(fetchedSlots.length).to.equal(1);
+      expect(fetchedSlots[0].slotId).to.equal(slots[0].getSlotElementId());
+    });
+
     it('- does not include native slots (sizes `fluid`)', function () {
       slots.push({
           getSlotElementId: function () { return 'dfp-ad-20'; },
