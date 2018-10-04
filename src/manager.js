@@ -133,23 +133,40 @@ AdManager.prototype.initGoogleTag = function () {
  *
  * @returns undefined
 */
-AdManager.prototype.fetchAmazonBids = function (elementId, gptSizes, slotName) {
+AdManager.prototype.fetchAmazonBids = function (slotsToFetch) {
   var adUnitPath = this.getAdUnitCode(),
-    slotUnit = adUnitPath + '_' + slotName,
-    timeoutAmount = 300,
-    indexExchangeEnabled = this.options.indexExchangeEnabled;
+    indexExchangeEnabled = this.options.indexExchangeEnabled,
+    slots;
+
+  if (typeof(slotsToFetch) === 'undefined') {
+    return;
+  }
+
+  slots = slotsToFetch.filter(function (slot) {
+    return !slot.getOutOfPage() && slot.activeSizes[0] !== 'fluid' && slot.activeSizes.length > 0;
+  }).map(function (slot) {
+    return {
+      slotID: slot.getSlotElementId(),
+      sizes: slot.activeSizes,
+      slotName: adUnitPath + '_' + slot.slotName
+    };
+  });
+
+  if (slots.length < 1) {
+    return;
+  }
+
+  if (this.options.debug) {
+    console.info("Fetching a9 bid requests for slots: ", slots);
+  }
 
   window.apstag.fetchBids({
-    slots: [{
-      slotID: elementId,
-      sizes: gptSizes,
-      slotName: slotUnit
-    }],
-    timeout: timeoutAmount
+    slots: slots,
+    timeout: 300
   }, callback = function (bids) {
     /* Your callback method, in this example it triggers the first DFP request
     for googletag's disableInitialLoad integration after bids have been set */
-    if (indexExchangeEnabled) {
+    if (indexExchangeEnabled && typeof(window.headertag) !== 'undefined') {
       window.headertag.cmd.push(function () {
         window.apstag.setDisplayBids();
       });
@@ -548,6 +565,8 @@ AdManager.prototype.configureAd = function (element) {
     slot.prebid = adUnitConfig.prebid;
   }
 
+  slot.slotName = adUnitConfig.slotName;
+
   this.slots[element.id] = slot;
 
   return slot;
@@ -622,23 +641,6 @@ AdManager.prototype.loadAds = function (element, updateCorrelator, useScopedSele
 
     if (slot && slot.eagerLoad) {
       slotsToLoad.push(slot);
-    }
-
-    if (this.options.amazonEnabled && !adUnitConfig.outOfPage) {
-      /**
-       * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters
-       * inside the ad config.
-       * This method is undocumented, and could be removed. When not available, fall back to all sizes
-       * specified in the ad unit itself.
-       * This is not optimal, as sizes which cannot be displayed due to the viewport dimensions will be
-       * requested from A9. It is thus used as a fallback.
-       * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
-      */
-      activeSizes = slot.activeSizes
-
-      if (adUnitConfig.amazonEnabled && activeSizes && activeSizes.length) {
-        this.fetchAmazonBids(thisEl.id, activeSizes, adUnitConfig.slotName);
-      }
     }
 
     if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true || !this.options.indexExchangeEnabled) {
@@ -745,6 +747,11 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
   var useIAS = typeof this.__iasPET !== 'undefined' && this.options.iasEnabled;
   var useIndex = typeof window.headertag !== 'undefined' && window.headertag.apiReady === true && this.options.indexExchangeEnabled;
   var usePrebid = typeof window.pbjs !== 'undefined' && this.options.prebidEnabled;
+  var useAmazon = typeof window.apstag !== 'undefined' && this.options.amazonEnabled;
+
+  if (useAmazon) {
+    this.fetchAmazonBids(slotsToLoad);
+  }
 
   if (useIAS) {
     this.fetchIasTargeting();
