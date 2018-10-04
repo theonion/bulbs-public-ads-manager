@@ -170,7 +170,6 @@ describe('AdManager', function() {
         refresh: sinon.spy(),
         clear: sinon.spy(),
         setTargeting: sinon.spy(),
-        updateCorrelator: sinon.spy(),
         enableAsyncRendering: sinon.spy()
       });
       TestHelper.stub(adManager, 'setPageTargeting');
@@ -204,12 +203,8 @@ describe('AdManager', function() {
       expect(adManager.googletag.pubads().disableInitialLoad.called).to.be.true;
     });
 
-    it('- enables async rendering to avoid page blocking and allow the manual use of `updateCorrelator`', function() {
+    it('- enables async rendering to avoid page blocking', function() {
       expect(adManager.googletag.pubads().enableAsyncRendering.called).to.be.true;
-    });
-
-    it('- always updates the correlator automatically whenever the ad lib is loaded', function() {
-      expect(adManager.googletag.pubads().updateCorrelator.called).to.be.true;
     });
 
     it('- sets up custom slot render ended callback', function() {
@@ -390,9 +385,6 @@ describe('AdManager', function() {
 
   describe('#reloadAds', function() {
     beforeEach(function() {
-      TestHelper.stub(adManager.googletag, 'pubads').returns({
-        updateCorrelator: sinon.spy()
-      });
       TestHelper.stub(adManager, 'unloadAds');
       TestHelper.stub(adManager, 'loadAds');
       adManager.reloadAds('domElement');
@@ -401,10 +393,6 @@ describe('AdManager', function() {
     it('- unloads and reloads ads', function() {
       expect(adManager.unloadAds.calledWith('domElement')).to.be.true;
       expect(adManager.loadAds.calledWith('domElement')).to.be.true;
-    });
-
-    it('- updates the correlator so it is treated like a new pageview request', function() {
-      expect(googletag.pubads().updateCorrelator.called).to.be.true;
     });
   });
 
@@ -1101,7 +1089,6 @@ describe('AdManager', function() {
         enableSingleRequest: sinon.spy(),
         disableInitialLoad: sinon.spy(),
         addEventListener: sinon.spy(),
-        updateCorrelator: sinon.spy(),
         refresh: sinon.spy(),
         clear: sinon.spy(),
         setTargeting: sinon.spy()
@@ -1274,16 +1261,6 @@ describe('AdManager', function() {
 
       it('- does not try to refresh pubads across the board', function() {
         expect(adManager.googletag.pubads().refresh.called).to.be.false;
-      });
-    });
-
-    context('> update correlator true', function() {
-      beforeEach(function() {
-        adManager.loadAds(undefined, true);
-      });
-
-      it('- updates the correlator', function() {
-        expect(adManager.googletag.pubads().updateCorrelator.called).to.be.true;
       });
     });
 

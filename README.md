@@ -1,5 +1,5 @@
 # bulbs-public-ads-manager
-Ads manager for public side of sites. Fills in ad slots. 
+Ads manager for public side of sites. Fills in ad slots.
 See a [simple visual overview](https://docs.google.com/drawings/d/1zwLspXOvd5nVZUH3F_UpoDxqp5ou72XzfyA2QVMlAg0) of the programmatic ad process.
 
 ## Setup
@@ -25,7 +25,7 @@ See a [simple visual overview](https://docs.google.com/drawings/d/1zwLspXOvd5nVZ
 
 `google gpt` - The main google library that provides access to the DFP ad server.
 
-`index exchange` - Header bidding wrapper. This library wraps functions contained within google gpt. It conducts a front-end auction where ad networks compete for the best price. Once each price, the price is appended to the corresponding ad call, which directs the request to the correct campaign in DFP. Each price range for each bidder maps to line item creative inside google DFP. 
+`index exchange` - Header bidding wrapper. This library wraps functions contained within google gpt. It conducts a front-end auction where ad networks compete for the best price. Once each price, the price is appended to the corresponding ad call, which directs the request to the correct campaign in DFP. Each price range for each bidder maps to line item creative inside google DFP.
 
 These price-based lines are auto generated ahead of time through index exchange via the google DFP API. These lines are created at the time of integration and aren't generally modified unless there's a major change to index's internal API.
 
@@ -36,10 +36,6 @@ These price-based lines are auto generated ahead of time through index exchange 
 ### Features and Terminology
 
 `SRA` - Single request Architecture. Allows multiple ad request to be consolidated into the same http request. The benefits of this are both load time performance as elimination of async issues pertaining to the order in which ads are returned. According to google, SRA is the only way to guarantee roadblock delivery. Additional docs [here](https://support.google.com/dfp_premium/answer/177277?hl=en)
-
-`Correlator` - A correlator is a randomly generated number which is sent alongside each ad request. Ad requests made within a 30 second window keep the same correlator. This value is used to tie ad impressions to a single pageview. This becomes most relevant when roadblocks (aka takeovers) are in play. If a multiple-ad takeover is delivered through DFP, the correlator will tie together each request to ensure that ads are delivered together.
-
-The downside to this is that ad requests with mathching correlators can only deliver each creative contained in the corresponding line item once. So for example if a direct (takeover) campaign contains only 2 ads, but a page has 4 ad slots on it, 2 of the ad slots won't deliver an ad.
 
 `eagerLoad` - Indicates that an ad request is made immediately on page load. The opposite of this is often called dynamically loaded or waypoint loaded.
 
@@ -56,11 +52,11 @@ $ npm test
 ```
 
 Tests will run on travis-ci as part of the pull request process.
-The tests are primarily comprised of:  
+The tests are primarily comprised of:
 - [Sinon Mocks And Stubs](http://sinonjs.org/releases/v5.1.0/)
-- [Chai's BDD style of assertions](http://www.chaijs.com/api/bdd/)  
+- [Chai's BDD style of assertions](http://www.chaijs.com/api/bdd/)
 - inside of a [Mocha framework](https://mochajs.org/#interfaces)
-- run with [Karma v0.13](https://karma-runner.github.io/0.13/index.html)  
+- run with [Karma v0.13](https://karma-runner.github.io/0.13/index.html)
 
 We try to maintain code coverage as new functions are added.
 

@@ -109,7 +109,6 @@ AdManager.prototype.initGoogleTag = function () {
   var adManager = this;
   this.googletag.pubads().disableInitialLoad();
   this.googletag.pubads().enableAsyncRendering();
-  this.googletag.pubads().updateCorrelator();
 
   if (this.options.enableSRA) {
     this.googletag.pubads().enableSingleRequest();
@@ -247,7 +246,6 @@ AdManager.prototype.setUtmTargeting = function () {
  * @returns undefined
 */
 AdManager.prototype.reloadAds = function (element) {
-  this.googletag.pubads().updateCorrelator();
   this.unloadAds(element);
   this.loadAds(element);
 };
@@ -577,10 +575,9 @@ AdManager.prototype.unpause = function () {
  * Loads all ads
  *
  * @param {Element} optional element to scope where to load ads in the document
- * @param {updateCorrelator} optional flag to force an update of the correlator value
  * @returns undefined
 */
-AdManager.prototype.loadAds = function (element, updateCorrelator, useScopedSelector) {
+AdManager.prototype.loadAds = function (element, useScopedSelector) {
   if (this.paused || !this.initialized) {
     return;
   }
@@ -590,10 +587,6 @@ AdManager.prototype.loadAds = function (element, updateCorrelator, useScopedSele
 
   if (!this.googletag.pubadsReady) {
     this.googletag.enableServices();
-  }
-
-  if (updateCorrelator) {
-    this.googletag.pubads().updateCorrelator();
   }
 
   for (var i = 0; i < ads.length; i++) {
@@ -751,11 +744,11 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
   }
 
   if (useIndex) {
-    window.headertag.pubads().refresh(slotsToLoad, {changeCorrelator: false});
+    window.headertag.pubads().refresh(slotsToLoad);
   } else if (usePrebid) {
     this.prebidRefresh(slotsToLoad);
   } else {
-    this.googletag.pubads().refresh(slotsToLoad, {changeCorrelator: false});
+    this.googletag.pubads().refresh(slotsToLoad);
   }
 };
 
