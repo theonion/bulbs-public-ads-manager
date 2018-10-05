@@ -27,6 +27,7 @@ var AdManager = function (options) {
   /* adUnits comes from ad-units.js */
   this.adUnits = options.adUnits;
   this.slots = {};
+  this.countsByAdSlot = {};
   this.adId = 0;
   this.initialized = false;
   this.viewportWidth = 0;
@@ -482,10 +483,14 @@ AdManager.prototype.slotInfo = function () {
 */
 AdManager.prototype.setSlotTargeting = function (element, slot, adUnitConfig) {
   var slotTargeting = element.dataset.targeting ? JSON.parse(element.dataset.targeting) : {};
-  var positionTargeting = adUnitConfig.pos || slotTargeting.pos || adUnitConfig.slotName || element.dataset.adUnit;
-  var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone(), positionTargeting).slotOptions;
+  slotTargeting.pos = slotTargeting.pos || adUnitConfig.pos || adUnitConfig.slotName || element.dataset.adUnit;
+  var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone(), slotTargeting.pos).slotOptions;
+  var adSlotCount = (this.countsByAdSlot[slotTargeting.pos] || 0) + 1;
 
   slotTargeting = utils.extend(kinjaPairs, slotTargeting);
+
+  slotTargeting.ad_index = adSlotCount;
+  this.countsByAdSlot[slotTargeting.pos] = adSlotCount;
 
   for (var customKey in slotTargeting) {
     if (slotTargeting[customKey]) {

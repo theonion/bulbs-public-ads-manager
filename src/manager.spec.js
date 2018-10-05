@@ -24,6 +24,7 @@ describe('AdManager', function() {
       adUnits: adUnits
     });
     adManager.googletag.cmd = [];
+    adManager.countsByAdSlot = {};
   });
 
   afterEach(function() {
@@ -876,6 +877,7 @@ describe('AdManager', function() {
       adSlot1 = document.createElement('div');
       adSlot1.id = 'dfp-ad-1';
       adSlot1.className = 'dfp';
+      adSlot1.setAttribute('data-ad-unit', 'header');
       container1.appendChild(adSlot1);
       document.body.appendChild(container1);
 
@@ -903,7 +905,9 @@ describe('AdManager', function() {
       });
 
       it('- sets targeting for each slot option', function() {
-        expect(stubSlot.setTargeting.callCount).to.equal(2);
+        expect(stubSlot.setTargeting.callCount).to.equal(4);
+        expect(stubSlot.setTargeting.calledWith('pos', 'header')).to.be.true;
+        expect(stubSlot.setTargeting.calledWith('ad_index', '1')).to.be.true;
         expect(stubSlot.setTargeting.calledWith('postId', '1234')).to.be.true;
         expect(stubSlot.setTargeting.calledWith('page', 'permalink')).to.be.true;
       });
@@ -920,7 +924,9 @@ describe('AdManager', function() {
       });
 
       it('- sets all the targeting', function() {
-        expect(stubSlot.setTargeting.callCount).to.equal(2);
+        expect(stubSlot.setTargeting.callCount).to.equal(4);
+        expect(stubSlot.setTargeting.calledWith('pos', 'header')).to.be.true;
+        expect(stubSlot.setTargeting.calledWith('ad_index', '1')).to.be.true;
         expect(stubSlot.setTargeting.calledWith('dfp_content_id', '12345')).to.be.true;
         expect(stubSlot.setTargeting.calledWith('dfp_feature', 'american-voices')).to.be.true;
       });
@@ -943,7 +949,8 @@ describe('AdManager', function() {
       });
 
       it('- sets all the targeting', function() {
-        expect(stubSlot.setTargeting.callCount).to.equal(3);
+        expect(stubSlot.setTargeting.callCount).to.equal(4);
+        expect(stubSlot.setTargeting.calledWith('ad_index', '1')).to.be.true;
         expect(stubSlot.setTargeting.calledWith('pos', 'overridden_pos')).to.be.true;
       });
     });
@@ -953,8 +960,28 @@ describe('AdManager', function() {
         adManager.setSlotTargeting(adSlot1, stubSlot, {});
       });
 
-      it('- sets no targeting', function() {
-        expect(stubSlot.setTargeting.callCount).to.equal(0);
+      it('- sets at least the pos value', function() {
+        expect(stubSlot.setTargeting.callCount).to.equal(2);
+        expect(stubSlot.setTargeting.calledWith('ad_index', '1')).to.be.true;
+        expect(stubSlot.setTargeting.calledWith('pos', 'header')).to.be.true;
+      });
+    });
+
+    context('> ad index targeting', function() {
+      it('- sets ad index targeting to 1, if first ad on the page', function() {
+        adManager.countsByAdSlot = {};
+        adManager.setSlotTargeting(adSlot1, stubSlot, {});
+        expect(stubSlot.setTargeting.callCount).to.equal(2);
+        expect(stubSlot.setTargeting.calledWith('ad_index', '1')).to.be.true;
+      });
+
+      it('- sets ad index targeting to 2, if second ad on page', function() {
+        adManager.countsByAdSlot = {
+          header: 1
+        };
+        adManager.setSlotTargeting(adSlot1, stubSlot, {});
+        expect(stubSlot.setTargeting.callCount).to.equal(2);
+        expect(stubSlot.setTargeting.calledWith('ad_index', '2')).to.be.true;
       });
     });
   });
