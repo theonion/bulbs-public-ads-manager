@@ -740,7 +740,6 @@ AdManager.prototype.fetchIasTargeting = function () {
  * @returns undefined
 */
 AdManager.prototype.setIndexTargetingForSlots = function (slots) {
-  debugger
   for (var i = 0; i < slots.length; i++) {
     var adSlotPosition = slots[i].getTargeting('pos');
 
