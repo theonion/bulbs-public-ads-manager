@@ -1,7 +1,11 @@
+/* globals define, window*/
+
+'use strict';
+
 var Feature = require('./Feature');
 
-class Experiments {
-  static getVariation(scope) {
+var Experiments = {
+  getVariation: function (scope) {
     if (typeof(scope.gaVariation) !== 'undefined') {
       return scope.gaVariation;
     } else if (scope.cxApi) {
@@ -9,15 +13,16 @@ class Experiments {
     } else {
       return null;
     }
-  }
+  },
 
- /**
-  * Retrieves the current Google Experiments variation.
-  * This is a letter from A-C or null if the user is not participating.
-  *
-  * @returns {String};
-  */
-  static getExperimentVariation(scope) {
+   /**
+    * Retrieves the current Google Experiments variation.
+    * This is a letter from A-C or null if the user is not participating.
+    *
+    * @returns {String};
+    */
+
+  getExperimentVariation: function(scope) {
     var expScope = scope || window,
       variation = this.getVariation(expScope);
 
@@ -26,17 +31,17 @@ class Experiments {
     } else {
       return (variation !== null && variation >= 0 && variation < 26) ? String.fromCharCode(variation + 65) : null;
     }
-  }
+  },
 
  /**
   * Retrieves the current Google Experiments ID.
   *
   * @returns String;
   */
-  static getExperimentId(scope) {
+  getExperimentId: function(scope) {
     var expScope = scope || window;
     return (expScope.gaExperimentId !== undefined) ? expScope.gaExperimentId : null;
   }
-}
 
+}
 module.exports = Experiments;
