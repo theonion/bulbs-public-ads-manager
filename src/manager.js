@@ -485,12 +485,8 @@ AdManager.prototype.setSlotTargeting = function (element, slot, adUnitConfig) {
   var slotTargeting = element.dataset.targeting ? JSON.parse(element.dataset.targeting) : {};
   slotTargeting.pos = slotTargeting.pos || adUnitConfig.pos || adUnitConfig.slotName || element.dataset.adUnit;
   var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone(), slotTargeting.pos).slotOptions;
-  var adSlotCount = (this.countsByAdSlot[slotTargeting.pos] || 0) + 1;
 
   slotTargeting = utils.extend(kinjaPairs, slotTargeting);
-
-  slotTargeting.ad_index = adSlotCount;
-  this.countsByAdSlot[slotTargeting.pos] = adSlotCount;
 
   for (var customKey in slotTargeting) {
     if (slotTargeting[customKey]) {
@@ -701,11 +697,10 @@ AdManager.prototype.refreshSlot = function (domElement) {
   }
 
   var slot = this.slots[domElement.id];
-  var ads = this.findAds(domElement);
 
   if (slot) {
     domElement.setAttribute('data-ad-load-state', 'loading');
-    this.refreshSlots([slot], ads);
+    this.refreshSlots([slot]);
   }
 };
 
@@ -738,16 +733,36 @@ AdManager.prototype.fetchIasTargeting = function () {
 };
 
 /**
+ * Sets a targeting key-value on the slot based on how many
+ * of these slots are already on the page, starting at 1
+ *
+ * @param {slotsToLoad} One or many slots to set index targeting
+ * @returns undefined
+*/
+AdManager.prototype.setIndexTargetingForSlots = function (slots) {
+  debugger
+  for (var i = 0; i < slots.length; i++) {
+    var adSlotPosition = slots[i].getTargeting('pos');
+
+    var adSlotCount = (this.countsByAdSlot[adSlotPosition] || 0) + 1;
+
+    slots[i].setTargeting('ad_index', adSlotCount.toString());
+    this.countsByAdSlot[adSlotPosition] = adSlotCount;
+  }
+};
+
+/**
  * Fetches a new ad for each slot passed in
  *
  * @param {slotsToLoad} One or many slots to fetch new ad for
- * @param {domElement} DOM element containing the DFP ad
  * @returns undefined
 */
 AdManager.prototype.refreshSlots = function (slotsToLoad) {
   if (slotsToLoad.length === 0) {
     return;
   }
+
+  this.setIndexTargetingForSlots(slotsToLoad);
 
   var useIAS = typeof this.__iasPET !== 'undefined' && this.options.iasEnabled;
   var useIndex = typeof window.headertag !== 'undefined' && window.headertag.apiReady === true && this.options.indexExchangeEnabled;
