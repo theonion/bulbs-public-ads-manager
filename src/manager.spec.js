@@ -885,12 +885,24 @@ describe('AdManager', function() {
 
       TestHelper.stub(TargetingPairs, 'getTargetingPairs').returns({});
       TestHelper.stub(AdZone, 'forcedAdZone').returns('');
+      TestHelper.stub(adManager, 'setIndexTargetingForSlots');
 
       stubSlot = { setTargeting: sinon.spy() };
     });
 
     afterEach(function() {
       $(container1).remove();
+    });
+
+    context('> always', function() {
+      beforeEach(function() {
+        TargetingPairs.getTargetingPairs.returns({});
+        adManager.setSlotTargeting(adSlot1, stubSlot, {});
+      });
+
+      it('sets ad index targeting for the slot', function() {
+        expect(adManager.setIndexTargetingForSlots.calledWith([stubSlot])).to.be.true;
+      });
     });
 
     context('> kinja targeting pairs', function() {
@@ -1584,32 +1596,6 @@ describe('AdManager', function() {
   });
 
   describe('#refreshSlots', function() {
-    beforeEach(function() {
-      TestHelper.stub(adManager, 'setIndexTargetingForSlots');
-    });
-
-    context('> always', function() {
-      var adSlot, baseContainer;
-      beforeEach(function(){
-        var setupRefs = adSlotSetup();
-        adSlot = setupRefs.adSlot1;
-        baseContainer = setupRefs.baseContainer;
-        adManager.options.amazonEnabled = false;
-
-        TestHelper.stub(adManager, 'prebidRefresh');
-        TestHelper.stub(adManager, 'fetchAmazonBids');
-      });
-
-      afterEach(function() {
-        $(baseContainer).remove();
-      });
-
-      it('always sets index targeting when an ad refresh is triggered', function() {
-        adManager.refreshSlots([adSlot]);
-        expect(adManager.setIndexTargetingForSlots.calledWith([adSlot])).to.be.true;
-      });
-    });
-
     context('> prebidEnabled', function(){
       var adSlot, baseContainer, stubSlot;
       beforeEach(function(){

@@ -493,6 +493,8 @@ AdManager.prototype.setSlotTargeting = function (element, slot, adUnitConfig) {
       slot.setTargeting(customKey, slotTargeting[customKey].toString());
     }
   }
+
+  this.setIndexTargetingForSlots([slot]);
 };
 
 AdManager.prototype.getAdUnitCode = function () {
@@ -760,8 +762,6 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
   if (slotsToLoad.length === 0) {
     return;
   }
-
-  this.setIndexTargetingForSlots(slotsToLoad);
 
   var useIAS = typeof this.__iasPET !== 'undefined' && this.options.iasEnabled;
   var useIndex = typeof window.headertag !== 'undefined' && window.headertag.apiReady === true && this.options.indexExchangeEnabled;
