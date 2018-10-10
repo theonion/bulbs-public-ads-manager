@@ -1,11 +1,9 @@
 const Experiments = require('./Experiments');
 const Feature = require('./Feature');
 
-describe('Experiments', function() {
-  beforeEach(function() {
-    Feature.features = null;
-  });
+jest.mock('./Feature');
 
+describe('Experiments', function() {
   describe('#getExperimentVariation', function() {
     describe('uses window gaVariation if available', function() {
       beforeEach(function() {
@@ -24,9 +22,8 @@ describe('Experiments', function() {
       });
 
       it('returns number instead of letter, if enable_experiments enabled', () => {
-        sinon.stub(Feature, 'isOn').returns(true);
+        Feature.isOn.mockResolvedValueOnce(true);
         expect(Experiments.getExperimentVariation()).toEqual(0);
-        Feature.isOn.restore();
       });
     });
 
@@ -34,7 +31,7 @@ describe('Experiments', function() {
       beforeEach(function() {
         window.gaExperimentId = '1234';
         window.cxApi = {
-          getChosenVariation: sinon.stub().returns(1)
+          getChosenVariation: () => 1
         };
       });
 
