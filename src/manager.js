@@ -27,6 +27,7 @@ var AdManager = function (options) {
   /* adUnits comes from ad-units.js */
   this.adUnits = options.adUnits;
   this.slots = {};
+  this.countsByAdSlot = {};
   this.adId = 0;
   this.initialized = false;
   this.viewportWidth = 0;
@@ -482,8 +483,8 @@ AdManager.prototype.slotInfo = function () {
 */
 AdManager.prototype.setSlotTargeting = function (element, slot, adUnitConfig) {
   var slotTargeting = element.dataset.targeting ? JSON.parse(element.dataset.targeting) : {};
-  var positionTargeting = adUnitConfig.pos || slotTargeting.pos || adUnitConfig.slotName || element.dataset.adUnit;
-  var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone(), positionTargeting).slotOptions;
+  slotTargeting.pos = slotTargeting.pos || adUnitConfig.pos || adUnitConfig.slotName || element.dataset.adUnit;
+  var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone(), slotTargeting.pos).slotOptions;
 
   slotTargeting = utils.extend(kinjaPairs, slotTargeting);
 
@@ -492,6 +493,8 @@ AdManager.prototype.setSlotTargeting = function (element, slot, adUnitConfig) {
       slot.setTargeting(customKey, slotTargeting[customKey].toString());
     }
   }
+
+  this.setIndexTargetingForSlots([slot]);
 };
 
 AdManager.prototype.getAdUnitCode = function () {
@@ -696,11 +699,10 @@ AdManager.prototype.refreshSlot = function (domElement) {
   }
 
   var slot = this.slots[domElement.id];
-  var ads = this.findAds(domElement);
 
   if (slot) {
     domElement.setAttribute('data-ad-load-state', 'loading');
-    this.refreshSlots([slot], ads);
+    this.refreshSlots([slot]);
   }
 };
 
@@ -733,10 +735,27 @@ AdManager.prototype.fetchIasTargeting = function () {
 };
 
 /**
+ * Sets a targeting key-value on the slot based on how many
+ * of these slots are already on the page, starting at 1
+ *
+ * @param {slotsToLoad} One or many slots to set index targeting
+ * @returns undefined
+*/
+AdManager.prototype.setIndexTargetingForSlots = function (slots) {
+  for (var i = 0; i < slots.length; i++) {
+    var adSlotPosition = slots[i].getTargeting('pos');
+
+    var adSlotCount = (this.countsByAdSlot[adSlotPosition] || 0) + 1;
+
+    slots[i].setTargeting('ad_index', adSlotCount.toString());
+    this.countsByAdSlot[adSlotPosition] = adSlotCount;
+  }
+};
+
+/**
  * Fetches a new ad for each slot passed in
  *
  * @param {slotsToLoad} One or many slots to fetch new ad for
- * @param {domElement} DOM element containing the DFP ad
  * @returns undefined
 */
 AdManager.prototype.refreshSlots = function (slotsToLoad) {
