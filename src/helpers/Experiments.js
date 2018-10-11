@@ -1,4 +1,4 @@
-/* globals define, window*/
+/* globals window*/
 
 'use strict';
 
@@ -15,21 +15,21 @@ var Experiments = {
     }
   },
 
-   /**
-    * Retrieves the current Google Experiments variation.
-    * This is a letter from A-C or null if the user is not participating.
-    *
-    * @returns {String};
-    */
-
-  getExperimentVariation: function(scope) {
+ /**
+  * Retrieves the current Google Experiments variation.
+  * This is a letter from A-C or null if the user is not participating.
+  *
+  * @returns {String};
+  */
+  getExperimentVariation: function (scope) {
     var expScope = scope || window,
-      variation = this.getVariation(expScope);
+      variation = this.getVariation(expScope),
+      variationIsValid = variation !== null && variation >= 0;
 
     if (Feature.isOn('enable_experiments')) {
-      return (variation !== null && variation >= 0 && variation < 16) ? variation : null;
+      return (variationIsValid && variation < 16) ? variation : null;
     } else {
-      return (variation !== null && variation >= 0 && variation < 26) ? String.fromCharCode(variation + 65) : null;
+      return (variationIsValid && variation < 26) ? String.fromCharCode(variation + 65) : null;
     }
   },
 
@@ -38,7 +38,7 @@ var Experiments = {
   *
   * @returns String;
   */
-  getExperimentId: function(scope) {
+  getExperimentId: function (scope) {
     var expScope = scope || window;
     return (expScope.gaExperimentId !== undefined) ? expScope.gaExperimentId : null;
   }
