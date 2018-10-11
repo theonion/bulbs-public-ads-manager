@@ -6,7 +6,7 @@
   "scripts": {
     "test": "yarn run jest && yarn run karma",
     "lint": "./node_modules/.bin/eslint src resources",
-    "jest": "NODE_ENV=test node_modules/.bin/jest",
+    "jest": "NODE_ENV=test ./node_modules/.bin/jest",
     "karma": "./node_modules/.bin/karma start karma.conf.js"
   },
   "devDependencies": {
