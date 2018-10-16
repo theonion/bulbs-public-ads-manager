@@ -1406,6 +1406,8 @@ describe('AdManager', function() {
         }
       };
 
+      headertag.apiReady = true;
+
       window.googletag = {
         cmd: {
           push: function () {
