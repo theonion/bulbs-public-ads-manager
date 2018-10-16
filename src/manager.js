@@ -167,7 +167,7 @@ AdManager.prototype.fetchAmazonBids = function (slotsToFetch) {
   }, callback = function (bids) {
     /* Your callback method, in this example it triggers the first DFP request
     for googletag's disableInitialLoad integration after bids have been set */
-    if (indexExchangeEnabled && typeof(window.headertag) !== 'undefined') {
+    if (indexExchangeEnabled && typeof(window.headertag) !== 'undefined' && window.headertag.apiReady) {
       window.headertag.cmd.push(function () {
         window.apstag.setDisplayBids();
       });
