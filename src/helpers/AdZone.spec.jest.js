@@ -92,7 +92,7 @@ describe('AdZone', function() {
       it('returns blog rule forced ad zone', function() {
         const windowStub = {
           location: {
-            search: '?adzone=reductress'
+            search: ''
           }
         };
 
@@ -102,7 +102,7 @@ describe('AdZone', function() {
       it('returns blog rule forced ad zone only if no - non collapse', function() {
         const windowStub = {
           location: {
-            search: '?adzone=reductress'
+            search: ''
           }
         };
 
