@@ -27,6 +27,7 @@ var AdManager = function (options) {
   /* adUnits comes from ad-units.js */
   this.adUnits = options.adUnits;
   this.slots = {};
+  this.countsByAdSlot = {};
   this.adId = 0;
   this.initialized = false;
   this.viewportWidth = 0;
@@ -133,23 +134,40 @@ AdManager.prototype.initGoogleTag = function () {
  *
  * @returns undefined
 */
-AdManager.prototype.fetchAmazonBids = function (elementId, gptSizes, slotName) {
+AdManager.prototype.fetchAmazonBids = function (slotsToFetch) {
   var adUnitPath = this.getAdUnitCode(),
-    slotUnit = adUnitPath + '_' + slotName,
-    timeoutAmount = 300,
-    indexExchangeEnabled = this.options.indexExchangeEnabled;
+    indexExchangeEnabled = this.options.indexExchangeEnabled,
+    slots;
+
+  if (typeof(slotsToFetch) === 'undefined') {
+    return;
+  }
+
+  slots = slotsToFetch.filter(function (slot) {
+    return !slot.getOutOfPage() && slot.activeSizes[0] !== 'fluid' && slot.activeSizes.length > 0;
+  }).map(function (slot) {
+    return {
+      slotID: slot.getSlotElementId(),
+      sizes: slot.activeSizes,
+      slotName: adUnitPath + '_' + slot.slotName
+    };
+  });
+
+  if (slots.length < 1) {
+    return;
+  }
+
+  if (this.options.debug) {
+    console.info("Fetching a9 bid requests for slots: ", slots);
+  }
 
   window.apstag.fetchBids({
-    slots: [{
-      slotID: elementId,
-      sizes: gptSizes,
-      slotName: slotUnit
-    }],
-    timeout: timeoutAmount
+    slots: slots,
+    timeout: 300
   }, callback = function (bids) {
     /* Your callback method, in this example it triggers the first DFP request
     for googletag's disableInitialLoad integration after bids have been set */
-    if (indexExchangeEnabled) {
+    if (indexExchangeEnabled && typeof(window.headertag) !== 'undefined') {
       window.headertag.cmd.push(function () {
         window.apstag.setDisplayBids();
       });
@@ -475,8 +493,8 @@ AdManager.prototype.slotInfo = function () {
 */
 AdManager.prototype.setSlotTargeting = function (element, slot, adUnitConfig) {
   var slotTargeting = element.dataset.targeting ? JSON.parse(element.dataset.targeting) : {};
-  var positionTargeting = adUnitConfig.pos || slotTargeting.pos || adUnitConfig.slotName || element.dataset.adUnit;
-  var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone(), positionTargeting).slotOptions;
+  slotTargeting.pos = slotTargeting.pos || adUnitConfig.pos || adUnitConfig.slotName || element.dataset.adUnit;
+  var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone(), slotTargeting.pos).slotOptions;
 
   slotTargeting = utils.extend(kinjaPairs, slotTargeting);
 
@@ -485,6 +503,8 @@ AdManager.prototype.setSlotTargeting = function (element, slot, adUnitConfig) {
       slot.setTargeting(customKey, slotTargeting[customKey].toString());
     }
   }
+
+  this.setIndexTargetingForSlots([slot]);
 };
 
 AdManager.prototype.getAdUnitCode = function () {
@@ -557,6 +577,8 @@ AdManager.prototype.configureAd = function (element) {
     // set prebid properties, if any, so they're available inside refreshSlots()
     slot.prebid = adUnitConfig.prebid;
   }
+
+  slot.slotName = adUnitConfig.slotName;
 
   this.slots[element.id] = slot;
 
@@ -634,23 +656,6 @@ AdManager.prototype.loadAds = function (element, updateCorrelator, useScopedSele
       slotsToLoad.push(slot);
     }
 
-    if (this.options.amazonEnabled && !adUnitConfig.outOfPage) {
-      /**
-       * Try to use the gpt slot.getSizes method to retrieve the active sizes given the viewport parameters
-       * inside the ad config.
-       * This method is undocumented, and could be removed. When not available, fall back to all sizes
-       * specified in the ad unit itself.
-       * This is not optimal, as sizes which cannot be displayed due to the viewport dimensions will be
-       * requested from A9. It is thus used as a fallback.
-       * See Docs here https://developers.google.com/doubleclick-gpt/reference#googletagslot
-      */
-      activeSizes = slot.activeSizes
-
-      if (adUnitConfig.amazonEnabled && activeSizes && activeSizes.length) {
-        this.fetchAmazonBids(thisEl.id, activeSizes, adUnitConfig.slotName);
-      }
-    }
-
     if (typeof window.headertag === 'undefined' || window.headertag.apiReady !== true || !this.options.indexExchangeEnabled) {
       this.googletag.display(thisEl.id);
     } else {
@@ -704,11 +709,10 @@ AdManager.prototype.refreshSlot = function (domElement) {
   }
 
   var slot = this.slots[domElement.id];
-  var ads = this.findAds(domElement);
 
   if (slot) {
     domElement.setAttribute('data-ad-load-state', 'loading');
-    this.refreshSlots([slot], ads);
+    this.refreshSlots([slot]);
 
     if (this.adUnits.units[domElement.dataset.adUnit] && this.adUnits.units[domElement.dataset.adUnit].onRefresh) {
       this.adUnits.units[domElement.dataset.adUnit].onRefresh();
@@ -745,10 +749,27 @@ AdManager.prototype.fetchIasTargeting = function () {
 };
 
 /**
+ * Sets a targeting key-value on the slot based on how many
+ * of these slots are already on the page, starting at 1
+ *
+ * @param {slotsToLoad} One or many slots to set index targeting
+ * @returns undefined
+*/
+AdManager.prototype.setIndexTargetingForSlots = function (slots) {
+  for (var i = 0; i < slots.length; i++) {
+    var adSlotPosition = slots[i].getTargeting('pos');
+
+    var adSlotCount = (this.countsByAdSlot[adSlotPosition] || 0) + 1;
+
+    slots[i].setTargeting('ad_index', adSlotCount.toString());
+    this.countsByAdSlot[adSlotPosition] = adSlotCount;
+  }
+};
+
+/**
  * Fetches a new ad for each slot passed in
  *
  * @param {slotsToLoad} One or many slots to fetch new ad for
- * @param {domElement} DOM element containing the DFP ad
  * @returns undefined
 */
 AdManager.prototype.refreshSlots = function (slotsToLoad) {
@@ -759,6 +780,11 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
   var useIAS = typeof this.__iasPET !== 'undefined' && this.options.iasEnabled;
   var useIndex = typeof window.headertag !== 'undefined' && window.headertag.apiReady === true && this.options.indexExchangeEnabled;
   var usePrebid = typeof window.pbjs !== 'undefined' && this.options.prebidEnabled;
+  var useAmazon = typeof window.apstag !== 'undefined' && this.options.amazonEnabled;
+
+  if (useAmazon) {
+    this.fetchAmazonBids(slotsToLoad);
+  }
 
   if (useIAS) {
     this.fetchIasTargeting();

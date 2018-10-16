@@ -1,13 +1,9 @@
+const Experiments = require('./Experiments');
+const Feature = require('./Feature');
+
+jest.mock('./Feature');
+
 describe('Experiments', function() {
-  var Experiments;
-  var Feature;
-
-  beforeEach(function() {
-    Feature = require('./Feature');
-    Feature.features = null;
-    Experiments = require('./Experiments');
-  });
-
   describe('#getExperimentVariation', function() {
     describe('uses window gaVariation if available', function() {
       beforeEach(function() {
@@ -22,13 +18,12 @@ describe('Experiments', function() {
       });
 
       it('returns letter A', function () {
-        expect(Experiments.getExperimentVariation()).to.equal('A');
+        expect(Experiments.getExperimentVariation()).toEqual('A');
       });
 
       it('returns number instead of letter, if enable_experiments enabled', () => {
-        sinon.stub(Feature, 'isOn').returns(true);
-        expect(Experiments.getExperimentVariation()).to.equal(0);
-        Feature.isOn.restore();
+        Feature.isOn.mockResolvedValueOnce(true);
+        expect(Experiments.getExperimentVariation()).toEqual(0);
       });
     });
 
@@ -36,22 +31,22 @@ describe('Experiments', function() {
       beforeEach(function() {
         window.gaExperimentId = '1234';
         window.cxApi = {
-        	getChosenVariation: sinon.stub().returns(1)
+          getChosenVariation: () => 1
         };
       });
 
       it('returns letter B', function() {
-        expect(Experiments.getExperimentVariation()).to.equal('B');
+        expect(Experiments.getExperimentVariation()).toEqual('B');
       });
     });
 
     describe('no chosen variation', function() {
-			beforeEach(function() {
+      beforeEach(function() {
         window.cxApi = undefined;
       });
 
       it('returns null', function() {
-        expect(Experiments.getExperimentVariation()).to.be.null;
+        expect(Experiments.getExperimentVariation()).toEqual(null);
       });
     });
   });
@@ -67,22 +62,22 @@ describe('Experiments', function() {
       });
 
       it('checks for scope on window by default', function() {
-        expect(Experiments.getExperimentId()).to.equal('456');
+        expect(Experiments.getExperimentId()).toEqual('456');
       });
     });
 
     describe('overridden scope', function() {
-    	var scopeOverride;
+      var scopeOverride;
 
       it('uses overridden scope if available', function() {
-        expect(Experiments.getExperimentId({ gaExperimentId: '123' })).to.equal('123');
+        expect(Experiments.getExperimentId({ gaExperimentId: '123' })).toEqual('123');
       });
     });
 
     describe('no experiment id', function() {
-    	it('should be null', function() {
-	      expect(Experiments.getExperimentId()).to.be.null;
-    	});
+      it('should be null', function() {
+        expect(Experiments.getExperimentId()).toEqual.null;
+      });
     });
   });
 });

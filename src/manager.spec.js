@@ -24,6 +24,7 @@ describe('AdManager', function() {
       adUnits: adUnits
     });
     adManager.googletag.cmd = [];
+    adManager.countsByAdSlot = {};
   });
 
   afterEach(function() {
@@ -880,6 +881,7 @@ describe('AdManager', function() {
       adSlot1 = document.createElement('div');
       adSlot1.id = 'dfp-ad-1';
       adSlot1.className = 'dfp';
+      adSlot1.setAttribute('data-ad-unit', 'header');
       container1.appendChild(adSlot1);
       document.body.appendChild(container1);
 
@@ -887,12 +889,24 @@ describe('AdManager', function() {
 
       TestHelper.stub(TargetingPairs, 'getTargetingPairs').returns({});
       TestHelper.stub(AdZone, 'forcedAdZone').returns('');
+      TestHelper.stub(adManager, 'setIndexTargetingForSlots');
 
       stubSlot = { setTargeting: sinon.spy() };
     });
 
     afterEach(function() {
       $(container1).remove();
+    });
+
+    context('> always', function() {
+      beforeEach(function() {
+        TargetingPairs.getTargetingPairs.returns({});
+        adManager.setSlotTargeting(adSlot1, stubSlot, {});
+      });
+
+      it('sets ad index targeting for the slot', function() {
+        expect(adManager.setIndexTargetingForSlots.calledWith([stubSlot])).to.be.true;
+      });
     });
 
     context('> kinja targeting pairs', function() {
@@ -907,7 +921,8 @@ describe('AdManager', function() {
       });
 
       it('- sets targeting for each slot option', function() {
-        expect(stubSlot.setTargeting.callCount).to.equal(2);
+        expect(stubSlot.setTargeting.callCount).to.equal(3);
+        expect(stubSlot.setTargeting.calledWith('pos', 'header')).to.be.true;
         expect(stubSlot.setTargeting.calledWith('postId', '1234')).to.be.true;
         expect(stubSlot.setTargeting.calledWith('page', 'permalink')).to.be.true;
       });
@@ -924,7 +939,8 @@ describe('AdManager', function() {
       });
 
       it('- sets all the targeting', function() {
-        expect(stubSlot.setTargeting.callCount).to.equal(2);
+        expect(stubSlot.setTargeting.callCount).to.equal(3);
+        expect(stubSlot.setTargeting.calledWith('pos', 'header')).to.be.true;
         expect(stubSlot.setTargeting.calledWith('dfp_content_id', '12345')).to.be.true;
         expect(stubSlot.setTargeting.calledWith('dfp_feature', 'american-voices')).to.be.true;
       });
@@ -957,9 +973,36 @@ describe('AdManager', function() {
         adManager.setSlotTargeting(adSlot1, stubSlot, {});
       });
 
-      it('- sets no targeting', function() {
-        expect(stubSlot.setTargeting.callCount).to.equal(0);
+      it('- sets at least the pos value', function() {
+        expect(stubSlot.setTargeting.callCount).to.equal(1);
+        expect(stubSlot.setTargeting.calledWith('pos', 'header')).to.be.true;
       });
+    });
+  });
+
+  describe('#setIndexTargetingForSlots', function() {
+    var slot;
+
+    beforeEach(function() {
+      adManager.countsByAdSlot = {};
+      slot = {
+        getTargeting: function (key) {
+          return 'header';
+        },
+        setTargeting: function () {}
+      };
+      TestHelper.stub(slot, 'setTargeting');
+    });
+
+    it('sets an ad_index to 1 for first on the page', function() {
+      adManager.setIndexTargetingForSlots([slot]);
+      expect(slot.setTargeting.calledWith('ad_index', '1')).to.be.true;
+    });
+
+    it('increments current ad index for subsequent ad requests', function() {
+      adManager.countsByAdSlot = { 'header': 1 };
+      adManager.setIndexTargetingForSlots([slot]);
+      expect(slot.setTargeting.calledWith('ad_index', '2')).to.be.true;
     });
   });
 
@@ -1030,6 +1073,10 @@ describe('AdManager', function() {
 
       it('- defines activeSizes mapped to the google tag object', function() {
         expect(slotStub.activeSizes).to.deep.equal(sizes);
+      });
+
+      it('- defines slotName to be used in a9 amazon header bidding', function() {
+        expect(slotStub.slotName).to.equal('header');
       });
 
       it('- returns the configured slot and adds it to the slots object', function() {
@@ -1114,7 +1161,7 @@ describe('AdManager', function() {
       TestHelper.stub(adManager.googletag, 'enableServices');
       TestHelper.stub(adManager, 'fetchAmazonBids');
 
-      it('- no call to fetchAmazonBids if parameter amazonEnalbed is false', function() {
+      it('- no call to fetchAmazonBids if parameter amazonEnabled is false', function() {
         expect(adManager.fetchAmazonBids.calledOnce).to.be.true;
         adManager.options.amazonEnabled = false;
         adManager.initGoogleTag();
@@ -1345,23 +1392,43 @@ describe('AdManager', function() {
   });
 
   describe('#fetchAmazonBids', function () {
+    var slots;
 
     beforeEach(function() {
      var headertag = window.headertag = {};
       sandbox = sinon.sandbox.create();
       window.apstag = {
         fetchBids: function () {
-      this.callArg(callback)
-    }
+          this.callArg(callback);
+        },
+        setDisplayBids: function () {}
       };
 
       headertag.cmd = {
         push: function() {
-         window.apstag.setDisplayBids()
+          window.apstag.setDisplayBids();
         }
       };
 
-      sandbox.stub(window.headertag.cmd, 'push')
+      window.googletag = {
+        cmd: {
+          push: function () {
+            window.apstag.setDisplayBids();
+          }
+        }
+      };
+
+      slots = [
+        {
+          getSlotElementId: function () { return 'dfp-ad-1'; },
+          getOutOfPage: function () { return false; },
+          activeSizes: [[728, 90]],
+          slotName: 'header'
+        }
+      ];
+
+      sandbox.stub(window.headertag.cmd, 'push');
+      sandbox.stub(window.googletag.cmd, 'push');
       sandbox.stub(window.apstag, 'fetchBids');
     });
 
@@ -1370,19 +1437,85 @@ describe('AdManager', function() {
     });
 
     it('- call to apstag functions if apstag is defined', function () {
-      adManager.fetchAmazonBids();
+      adManager.fetchAmazonBids(slots);
       expect(window.apstag.fetchBids.called).to.be.true;
+      var fetchedSlots = window.apstag.fetchBids.args[0][0].slots;
+
+      expect(fetchedSlots.length).to.equal(1);
+      expect(fetchedSlots[0].slotID).to.equal(slots[0].getSlotElementId());
+      expect(fetchedSlots[0].sizes).to.equal(slots[0].activeSizes);
+      expect(fetchedSlots[0].slotName).to.equal('/4246/fmg.onion_' + slots[0].slotName);
     });
 
-    it('- fetches bids from apstag api', function (done) {
-      adManager.fetchAmazonBids();
+    it('- does not include out of page slots', function () {
+      slots.push({
+          getSlotElementId: function () { return 'dfp-ad-20'; },
+          getOutOfPage: function () { return true; },
+          activeSizes: [[728, 90]],
+          slotName: 'out-of-page'
+      });
+      adManager.fetchAmazonBids(slots);
+      expect(window.apstag.fetchBids.called).to.be.true;
+      var fetchedSlots = window.apstag.fetchBids.args[0][0].slots;
+
+      expect(fetchedSlots.length).to.equal(1);
+      expect(fetchedSlots[0].slotID).to.equal(slots[0].getSlotElementId());
+    });
+
+    it('- does not include slots which currently have no allowed creative sizes based on the current viewport', function () {
+      slots.push({
+          getSlotElementId: function () { return 'dfp-ad-20'; },
+          getOutOfPage: function () { return false; },
+          activeSizes: [],
+          slotName: 'non-viewport-slot'
+      });
+      adManager.fetchAmazonBids(slots);
+      expect(window.apstag.fetchBids.called).to.be.true;
+      var fetchedSlots = window.apstag.fetchBids.args[0][0].slots;
+
+      expect(fetchedSlots.length).to.equal(1);
+      expect(fetchedSlots[0].slotID).to.equal(slots[0].getSlotElementId());
+    });
+
+    it('- does not call fetchBids if none of the slots passed in have valid sizes for the viewport', function () {
+      slots = [{
+          getSlotElementId: function () { return 'dfp-ad-20'; },
+          getOutOfPage: function () { return false; },
+          activeSizes: [],
+          slotName: 'non-viewport-slot'
+      }];
+      adManager.fetchAmazonBids(slots);
+      expect(window.apstag.fetchBids.called).to.be.false;
+    });
+
+    it('- does not include native slots (sizes `fluid`)', function () {
+      slots.push({
+          getSlotElementId: function () { return 'dfp-ad-20'; },
+          getOutOfPage: function () { return false; },
+          activeSizes: ['fluid'],
+          slotName: 'native'
+      });
+      adManager.fetchAmazonBids(slots);
+      expect(window.apstag.fetchBids.called).to.be.true;
+      var fetchedSlots = window.apstag.fetchBids.args[0][0].slots;
+
+      expect(fetchedSlots.length).to.equal(1);
+      expect(fetchedSlots[0].slotID).to.equal(slots[0].getSlotElementId());
+    });
+
+    it('- sets targeting once bids are returned from apstag api', function (done) {
+      adManager.fetchAmazonBids(slots);
       callback();
       expect(window.headertag.cmd.push.calledOnce).to.be.true;
       done();
     });
 
-    it('- no call to apstag functions if apstag is undefined', function () {
-      expect(window.apstag.fetchBids.called).to.be.false;
+    it('- sets targeting using googletag if Index not on page once bids are returned from apstag api', function (done) {
+      delete window.headertag;
+      adManager.fetchAmazonBids(slots);
+      callback();
+      expect(window.googletag.cmd.push.calledOnce).to.be.true;
+      done();
     });
   });
 
@@ -1406,7 +1539,11 @@ describe('AdManager', function() {
       activeSizes: [[300, 250]],
       getSlotElementId: function() {
         return adSlot1.id;
-      }
+      },
+      getTargeting: function () {
+        return '';
+      },
+      setTargeting: function () {}
     };
     variableReferences = {
       baseContainer: baseContainer,
@@ -1457,22 +1594,23 @@ describe('AdManager', function() {
     it('- loads the DFP slot matching up with the DOM element id', function() {
 
       adManager.refreshSlot(adSlot);
-      expect(adManager.refreshSlots.calledWith([stubSlot], [adSlot])).to.be.true;
+      expect(adManager.refreshSlots.calledWith([stubSlot])).to.be.true;
     });
 
   });
 
   describe('#refreshSlots', function() {
-
     context('> prebidEnabled', function(){
-      var adSlot, baseContainer;
+      var adSlot, baseContainer, stubSlot;
       beforeEach(function(){
         var setupRefs = adSlotSetup();
         adSlot = setupRefs.adSlot1;
+        stubSlot = setupRefs.stubSlot;
         baseContainer = setupRefs.baseContainer;
         adManager.options.amazonEnabled = false;
 
         TestHelper.stub(adManager, 'prebidRefresh');
+        TestHelper.stub(adManager, 'fetchAmazonBids');
       });
 
       afterEach(function() {
@@ -1481,23 +1619,58 @@ describe('AdManager', function() {
 
       it('- calls refreshPrebid when prebid is enabled', function() {
         adManager.options.prebidEnabled = true;
-        adManager.refreshSlots([adSlot]);
+        adManager.refreshSlots([stubSlot]);
         expect(adManager.prebidRefresh.called).to.be.true;
       });
 
       it('- does not call refreshPrebid when prebid is disabled', function() {
         adManager.options.prebidEnabled = false;
-        adManager.refreshSlots([adSlot]);
+        adManager.refreshSlots([stubSlot]);
         expect(adManager.prebidRefresh.called).to.be.false;
       });
 
     });
 
-    context('> iasEnabled', function(){
-      var adSlot, baseContainer;
+    context('> amazonEnabled', function() {
+      var adSlot, stubSlot, baseContainer;
       beforeEach(function(){
         var setupRefs = adSlotSetup();
         adSlot = setupRefs.adSlot1;
+        stubSlot = setupRefs.stubSlot;
+        baseContainer = setupRefs.baseContainer;
+      });
+
+      afterEach(function() {
+        $(baseContainer).remove();
+      });
+
+      it('- calls fetchAmazonBids when enabled', function() {
+        adManager = AdManagerWrapper.init({ amazonEnabled: true });
+        TestHelper.stub(adManager, 'fetchAmazonBids');
+        TestHelper.stub(adManager, 'setIndexTargetingForSlots');
+
+        adManager.refreshSlots([stubSlot]);
+
+        expect(adManager.fetchAmazonBids.called).to.be.true;
+      });
+
+      it('- does not calls fetchIasTargeting when enabled', function() {
+        adManager = AdManagerWrapper.init({ amazonEnabled: false });
+        TestHelper.stub(adManager, 'fetchAmazonBids');
+        TestHelper.stub(adManager, 'setIndexTargetingForSlots');
+
+        adManager.refreshSlots([stubSlot]);
+
+        expect(adManager.fetchAmazonBids.called).to.be.false;
+      });
+    });
+
+    context('> iasEnabled', function(){
+      var adSlot, stubSlot, baseContainer;
+      beforeEach(function(){
+        var setupRefs = adSlotSetup();
+        adSlot = setupRefs.adSlot1;
+        stubSlot = setupRefs.stubSlot;
         baseContainer = setupRefs.baseContainer;
       });
 
@@ -1507,25 +1680,29 @@ describe('AdManager', function() {
 
       it('- calls fetchIasTargeting when enabled', function() {
         adManager = AdManagerWrapper.init({ iasEnabled: true });
+        TestHelper.stub(adManager, 'fetchAmazonBids');
         TestHelper.stub(adManager, 'fetchIasTargeting');
+        TestHelper.stub(adManager, 'setIndexTargetingForSlots');
 
-        adManager.refreshSlots([adSlot]);
+        adManager.refreshSlots([stubSlot]);
 
         expect(adManager.fetchIasTargeting.called).to.be.true;
       });
 
       it('- does not calls fetchIasTargeting when enabled', function() {
         adManager = AdManagerWrapper.init({ iasEnabled: false });
+        TestHelper.stub(adManager, 'fetchAmazonBids');
         TestHelper.stub(adManager, 'fetchIasTargeting');
+        TestHelper.stub(adManager, 'setIndexTargetingForSlots');
 
-        adManager.refreshSlots([adSlot]);
+        adManager.refreshSlots([stubSlot]);
 
         expect(adManager.fetchIasTargeting.called).to.be.false;
       });
     });
   });
 
-  describe('#refreshPrebid', function() {
+  describe('#prebidRefresh', function() {
     var baseContainer, container1, adSlot1, stubSlot, pbjs;
 
     beforeEach(function() {
@@ -1554,7 +1731,11 @@ describe('AdManager', function() {
           activeSizes: [[300, 250]],
           getSlotElementId: function() {
             return adSlot1.id;
-          }
+          },
+          getTargeting: function () {
+            return '';
+          },
+          setTargeting: function () {}
         };
 
         adManager.slots = {
@@ -1578,8 +1759,8 @@ describe('AdManager', function() {
         refresh: sinon.spy(),
         getSlots: function() {return []}
       });
-
-      adManager.refreshSlots([adSlot1]);
+      stubSlot.prebid = false;
+      adManager.refreshSlots([stubSlot]);
       googletag.cmd[0](); // let the googletag queue run one step
       expect(googletag.pubads.called).to.be.true;
       expect(pbjs.requestBids.called).to.be.false;
