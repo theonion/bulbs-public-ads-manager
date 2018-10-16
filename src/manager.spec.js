@@ -529,6 +529,8 @@ describe('AdManager', function() {
 
     it('- emits a dfpImpressionViewable event', function() {
       expect(eventSpy).to.have.been.called;
+      TestHelper.stub(adManager.adUnits.units.header, 'onImpressionViewable');
+      adManager.onImpressionViewable(event);
     });
   });
 
@@ -559,6 +561,8 @@ describe('AdManager', function() {
       eventSpy = sinon.spy();
       adElement.addEventListener('dfpSlotOnload', eventSpy);
       adManager.onSlotRenderEnded(event);
+      adManager.onImpressionViewable(event);
+      adManager.onSlotOnload(event);
     });
 
     afterEach(function() {

@@ -1,7 +1,11 @@
 'use strict';
 
+function noop () { }
+
 var AdUnits = {
-  headerSlotRenderEnded: function () {}
+  headerSlotRenderEnded: noop,
+  headerSlotImpressionViewable: noop,
+  headerSlotOnLoad: noop
 };
 
 AdUnits.units = {
@@ -22,6 +26,8 @@ AdUnits.units = {
       [[0, 0], [[1,1], [320, 50], [300, 250], [1280, 720]]]
     ],
     onSlotRenderEnded: AdUnits.headerSlotRenderEnded,
+    onImpressionViewable: AdUnits.headerSlotImpressionViewable,
+    onLoad: AdUnits.headerSlotOnLoad,
     'prebid': {
       'bids': [
         {
