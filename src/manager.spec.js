@@ -531,6 +531,12 @@ describe('AdManager', function() {
     it('- emits a dfpImpressionViewable event', function() {
       expect(eventSpy).to.have.been.called;
     });
+
+    it('- should invoke optional onImpressionViewable callback if provided', function () {
+      TestHelper.stub(adManager.adUnits.units.header, 'onImpressionViewable');
+      adManager.onImpressionViewable(event);
+      expect(adManager.adUnits.units.header.onImpressionViewable.called).to.be.true;
+    });
   });
 
   describe('#onSlotOnload', function() {
@@ -568,6 +574,12 @@ describe('AdManager', function() {
 
     it('- emits a dfpSlotOnload event', function() {
       expect(eventSpy).to.have.been.called;
+    });
+
+    it('- should invoke optional onLoad callback if provided', function () {
+      TestHelper.stub(adManager.adUnits.units.header, 'onLoad');
+      adManager.onSlotOnload(event);
+      expect(adManager.adUnits.units.header.onLoad.called).to.be.true;
     });
   });
 
@@ -1527,6 +1539,7 @@ describe('AdManager', function() {
     adSlot1 = document.createElement('div');
     adSlot1.id = 'dfp-ad-1';
     adSlot1.className = 'dfp';
+    adSlot1.dataset.adUnit = 'header';
     container1.appendChild(adSlot1);
     baseContainer.appendChild(container1);
     document.body.appendChild(baseContainer);
@@ -1593,6 +1606,12 @@ describe('AdManager', function() {
 
       adManager.refreshSlot(adSlot);
       expect(adManager.refreshSlots.calledWith([stubSlot])).to.be.true;
+    });
+
+    it('- should invoke optional callback onRefresh if provided', function () {
+      TestHelper.stub(adManager.adUnits.units.header, 'onRefresh');
+      adManager.refreshSlot(adSlot);
+      expect(adManager.adUnits.units.header.onRefresh.called).to.be.true;
     });
 
   });
