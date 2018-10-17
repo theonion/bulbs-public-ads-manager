@@ -715,7 +715,7 @@ AdManager.prototype.refreshSlot = function (domElement) {
     this.refreshSlots([slot]);
 
     if (this.adUnits.units[domElement.dataset.adUnit] && this.adUnits.units[domElement.dataset.adUnit].onRefresh) {
-      this.adUnits.units[domElement.dataset.adUnit].onRefresh();
+      this.adUnits.units[domElement.dataset.adUnit].onRefresh(slot, domElement);
     }
   }
 };
