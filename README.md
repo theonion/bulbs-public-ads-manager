@@ -84,12 +84,6 @@ gulp build --modules=aolBidAdapter,openxBidAdapter,rubiconBidAdapter,appnexusBid
 ```
 
 
-### Testing Prebid Examples
-
-There is an `examples` directory which contains a test page, ad map, minimal webpack file needed to build a standalone test page running on a local server.
-
-
-
 ## Creating a new release
 
 * inside of your ```bower.json``` and ```package.json``` files update the version in accordance with [semver](http://semver.org/)
