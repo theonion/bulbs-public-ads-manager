@@ -10,7 +10,7 @@ describe('AdZone', function() {
           }
         };
 
-        expect(AdZone.getQueryParameter(windowStub, 'adzone')).toEqual('foo');
+        expect(AdZone.getQueryParameter('adzone', windowStub)).toEqual('foo');
       });
     });
 
@@ -22,7 +22,7 @@ describe('AdZone', function() {
           }
         };
 
-        expect(AdZone.getQueryParameter(windowStub, 'missing')).toEqual('');
+        expect(AdZone.getQueryParameter('missing', windowStub)).toEqual('');
       });
 
       it('returns an empty string if completely empty params', function() {
@@ -32,7 +32,7 @@ describe('AdZone', function() {
           }
         };
 
-        expect(AdZone.getQueryParameter(windowStub, 'missing')).toEqual('');
+        expect(AdZone.getQueryParameter('missing', windowStub)).toEqual('');
       });
     });
   });

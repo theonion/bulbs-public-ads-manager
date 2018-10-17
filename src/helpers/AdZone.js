@@ -4,7 +4,7 @@ var AdZone = {
   *
   * @returns {String};
  */
-  getQueryParameter: function (scope, name) {
+  getQueryParameter: function (name, scope) {
     var regexS = '[\\?&]' + name + '=([^&#]*)';
     var regex = new RegExp(regexS);
     var results = regex.exec((scope || window).location.search);
@@ -23,7 +23,7 @@ var AdZone = {
   * @returns String;
  */
   forcedAdZone: function (scope) {
-    var paramZone = this.getQueryParameter(scope, 'adzone');
+    var paramZone = this.getQueryParameter('adzone', scope);
 
     if (paramZone) {
       return paramZone;
