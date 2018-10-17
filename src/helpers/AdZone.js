@@ -1,19 +1,13 @@
 var AdZone = {
-
-  // Primarily for test stubbing purposes
-  locationSearch: function() {
-    return window.location.search;
-  },
-  
  /**
   * Derives the query string parameter from window.location
   *
   * @returns {String};
  */
-  getQueryParameter: function(name) {
+  getQueryParameter: function (name, scope) {
     var regexS = '[\\?&]' + name + '=([^&#]*)';
     var regex = new RegExp(regexS);
-    var results = regex.exec(this.locationSearch());
+    var results = regex.exec((scope || window).location.search);
     var retval = '';
 
     if (results) {
@@ -22,17 +16,19 @@ var AdZone = {
 
     return retval;
   },
-  
+
  /**
   * Retrieves the adzone from the list of query params
   *
   * @returns String;
  */
-  forcedAdZone: function () {
-    var paramZone = this.getQueryParameter('adzone');
+  forcedAdZone: function (scope) {
+    var paramZone = this.getQueryParameter('adzone', scope);
+
     if (paramZone) {
       return paramZone;
     }
+
     if (!window.kinja) {
       return null;
     }
@@ -47,4 +43,5 @@ var AdZone = {
     return forceCollapseZone || postZone;
   }
 };
+
 module.exports = AdZone;
