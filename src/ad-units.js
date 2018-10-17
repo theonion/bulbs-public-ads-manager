@@ -3,9 +3,7 @@
 function noop () { }
 
 var AdUnits = {
-  headerSlotRenderEnded: noop,
-  headerSlotImpressionViewable: noop,
-  headerSlotOnLoad: noop
+  optionalCallback: function () {}
 };
 
 AdUnits.units = {
@@ -25,9 +23,10 @@ AdUnits.units = {
       [[728, 0], [[1,1], [728, 90], [1280, 720]]],
       [[0, 0], [[1,1], [320, 50], [300, 250], [1280, 720]]]
     ],
-    onSlotRenderEnded: AdUnits.headerSlotRenderEnded,
-    onImpressionViewable: AdUnits.headerSlotImpressionViewable,
-    onLoad: AdUnits.headerSlotOnLoad,
+    onSlotRenderEnded: AdUnits.optionalCallback,
+    onImpressionViewable: AdUnits.optionalCallback,
+    onLoad: AdUnits.optionalCallback,
+    onRefresh: AdUnits.optionalCallback,
     'prebid': {
       'bids': [
         {
