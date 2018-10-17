@@ -215,7 +215,7 @@ describe('TargetingPairs', function() {
 
     describe('forced adzone exists but missing scope.kinja', function () {
       beforeEach(function () {
-        delete window.kinja;
+        window.kinja = null;
       });
 
       it('returns an object with a pageOptions.forcedAdZone property', function () {
@@ -226,7 +226,7 @@ describe('TargetingPairs', function() {
 
     describe('missing scope.kinja', function() {
       beforeEach(function() {
-        delete window.kinja;
+        window.kinja = null;
       });
 
       it('returns an empty object and doesn\'t call buildTargetingPairs', function() {
