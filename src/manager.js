@@ -1,4 +1,7 @@
+var Cookie = require('js-cookie');
+
 require('./dfp');
+
 var utils = require('./utils');
 var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');

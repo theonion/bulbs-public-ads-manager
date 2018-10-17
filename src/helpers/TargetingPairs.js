@@ -38,7 +38,7 @@ var TargetingPairs = {
    *
    */
   buildTargetingPairs: function (scope, positionTargeting) {
-    var kinjaMeta = scope.kinja.meta,
+    var kinjaMeta = scope.kinja.meta || {},
       post = scope.kinja.postMeta || {},
       content = scope.kinja.postContentRatings || [],
       experimentVariation = Experiments.getExperimentVariation(scope),
@@ -61,7 +61,7 @@ var TargetingPairs = {
     targeting.pageOptions = {
       tags: this.getTags(scope),
       category: this.getCategories(scope),
-      blogName: kinjaMeta.blog.name,
+      blogName: (kinjaMeta.blog || {}).name,
       ksg: (scope.Krux && scope.Krux.segments) ? scope.Krux.segments : undefined,
       kuid: (scope.Krux && scope.Krux.user) ? scope.Krux.user : undefined
     };
