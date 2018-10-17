@@ -21,9 +21,9 @@
     "package.json"
   ],
   "dependencies": {
-    "bulbs-public-ads-manager": "https://github.com/theonion/bulbs-public-ads-manager.git#9.10.1"
+    "bulbs-public-ads-manager": "https://github.com/theonion/bulbs-public-ads-manager.git#9.10.0"
   },
   "resolutions": {
-    "bulbs-public-ads-manager": "9.10.1"
+    "bulbs-public-ads-manager": "9.10.0"
   }
 }
