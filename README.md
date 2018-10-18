@@ -1,12 +1,13 @@
 # bulbs-public-ads-manager
-Ads manager for public side of sites. Fills in ad slots. 
+
+Ads manager for public side of sites. Fills in ad slots.
 See a [simple visual overview](https://docs.google.com/drawings/d/1zwLspXOvd5nVZUH3F_UpoDxqp5ou72XzfyA2QVMlAg0) of the programmatic ad process.
 
 ## Setup
 
-1. Install via bower, ```<version>``` being the version to depend on:
+1. Install via yarn, ```<version>``` being the version to depend on:
   ```bash
-  $ bower install --save https://github.com/theonion/bulbs-public-ads-manager.git\#\<version>
+  $ yarn add https://github.com/theonion/bulbs-public-ads-manager.git\#\<version>
   ```
 
 1. Require and initialize the ads manager code via a browserified file (path may differ
@@ -25,7 +26,7 @@ See a [simple visual overview](https://docs.google.com/drawings/d/1zwLspXOvd5nVZ
 
 `google gpt` - The main google library that provides access to the DFP ad server.
 
-`index exchange` - Header bidding wrapper. This library wraps functions contained within google gpt. It conducts a front-end auction where ad networks compete for the best price. Once each price, the price is appended to the corresponding ad call, which directs the request to the correct campaign in DFP. Each price range for each bidder maps to line item creative inside google DFP. 
+`index exchange` - Header bidding wrapper. This library wraps functions contained within google gpt. It conducts a front-end auction where ad networks compete for the best price. Once each price, the price is appended to the corresponding ad call, which directs the request to the correct campaign in DFP. Each price range for each bidder maps to line item creative inside google DFP.
 
 These price-based lines are auto generated ahead of time through index exchange via the google DFP API. These lines are created at the time of integration and aren't generally modified unless there's a major change to index's internal API.
 
@@ -56,11 +57,11 @@ $ npm test
 ```
 
 Tests will run on travis-ci as part of the pull request process.
-The tests are primarily comprised of:  
+The tests are primarily comprised of:
 - [Sinon Mocks And Stubs](http://sinonjs.org/releases/v5.1.0/)
-- [Chai's BDD style of assertions](http://www.chaijs.com/api/bdd/)  
+- [Chai's BDD style of assertions](http://www.chaijs.com/api/bdd/)
 - inside of a [Mocha framework](https://mochajs.org/#interfaces)
-- run with [Karma v0.13](https://karma-runner.github.io/0.13/index.html)  
+- run with [Karma v0.13](https://karma-runner.github.io/0.13/index.html)
 
 We try to maintain code coverage as new functions are added.
 
@@ -83,16 +84,9 @@ Build the prebid.js binary, including only the specified adapters
 gulp build --modules=aolBidAdapter,openxBidAdapter,rubiconBidAdapter,appnexusBidAdapter,yieldmoBidAdapter
 ```
 
-
-### Testing Prebid Examples
-
-There is an `examples` directory which contains a test page, ad map, minimal webpack file needed to build a standalone test page running on a local server.
-
-
-
 ## Creating a new release
 
-* inside of your ```bower.json``` and ```package.json``` files update the version in accordance with [semver](http://semver.org/)
+* Update the version in ```package.json``` accordance with [semver](http://semver.org/)
 * Create a tag for your release
 ```bash
 $ git tag <tag version number>

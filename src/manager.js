@@ -310,6 +310,11 @@ AdManager.prototype.onSlotRenderEnded = function (event) {
 AdManager.prototype.onImpressionViewable = function (event) {
   var slotId = event.slot.getSlotId().getDomId();
   var element = document.getElementById(slotId);
+
+  if (this.adUnits.units[element.dataset.adUnit].onImpressionViewable) {
+    this.adUnits.units[element.dataset.adUnit].onImpressionViewable(event, element);
+  }
+  
   utils.dispatchEvent(element, 'dfpImpressionViewable');
 };
 
@@ -322,6 +327,11 @@ AdManager.prototype.onImpressionViewable = function (event) {
 AdManager.prototype.onSlotOnload = function (event) {
   var slotId = event.slot.getSlotId().getDomId();
   var element = document.getElementById(slotId);
+
+  if (this.adUnits.units[element.dataset.adUnit].onLoad) {
+    this.adUnits.units[element.dataset.adUnit].onLoad(event, element);
+  }
+
   utils.dispatchEvent(element, 'dfpSlotOnload');
 };
 
@@ -706,6 +716,10 @@ AdManager.prototype.refreshSlot = function (domElement) {
   if (slot) {
     domElement.setAttribute('data-ad-load-state', 'loading');
     this.refreshSlots([slot]);
+
+    if (this.adUnits.units[domElement.dataset.adUnit] && this.adUnits.units[domElement.dataset.adUnit].onRefresh) {
+      this.adUnits.units[domElement.dataset.adUnit].onRefresh(slot, domElement);
+    }
   }
 };
 
