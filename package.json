@@ -1,7 +1,7 @@
 {
   "name": "bulbs-public-ads-manager",
-  "version": "8.2.0",
-  "description": "Do not install via npm.",
+  "version": "9.11.0",
+  "description": "Ads manager for public side.",
   "private": false,
   "scripts": {
     "test": "yarn run jest && yarn run karma",
@@ -10,7 +10,6 @@
     "karma": "./node_modules/.bin/karma start karma.conf.js"
   },
   "devDependencies": {
-    "bower": "^1.7.9",
     "browserify": "^11.0.1",
     "chai": "^3.2.0",
     "eslint": "^1.2.1",
