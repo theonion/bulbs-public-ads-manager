@@ -288,11 +288,11 @@ AdManager.prototype.onSlotRenderEnded = function (event) {
   if (event.isEmpty) {
     element.setAttribute('data-ad-load-state', 'empty');
   } else {
-    if (this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
-      this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded(event, element);
-    }
-
     element.setAttribute('data-ad-load-state', 'loaded');
+  }
+
+  if (this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
+    this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded(event, element);
   }
 
   utils.dispatchEvent(element, 'dfpSlotRenderEnded');
