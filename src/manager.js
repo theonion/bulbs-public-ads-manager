@@ -123,7 +123,9 @@ AdManager.prototype.initGoogleTag = function () {
   this.googletag.pubads().addEventListener('impressionViewable', adManager.onImpressionViewable);
   this.googletag.pubads().addEventListener('slotOnload', adManager.onSlotOnload);
 
-  this.targeting = utils.extend(global.TARGETING || {}, TargetingPairs.getTargetingPairs(AdZone.forcedAdZone()).pageOptions);
+  var targetingPairsForAdzone = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone());
+
+  this.targeting = utils.extend(global.TARGETING || {}, (targetingPairsForAdzone || {}).pageOptions);
 
   this.setPageTargeting();
 
@@ -314,7 +316,7 @@ AdManager.prototype.onImpressionViewable = function (event) {
   if (this.adUnits.units[element.dataset.adUnit].onImpressionViewable) {
     this.adUnits.units[element.dataset.adUnit].onImpressionViewable(event, element);
   }
-  
+
   utils.dispatchEvent(element, 'dfpImpressionViewable');
 };
 
