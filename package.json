@@ -1,6 +1,6 @@
 {
   "name": "bulbs-public-ads-manager",
-  "version": "9.11.0",
+  "version": "9.11.1",
   "description": "Ads manager for public side.",
   "private": false,
   "scripts": {

@@ -293,14 +293,14 @@ AdManager.prototype.onSlotRenderEnded = function (event) {
   if (event.isEmpty) {
     element.setAttribute('data-ad-load-state', 'empty');
   } else {
-
-    if (this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
-      this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded(event, element);
-    }
-
     element.setAttribute('data-ad-load-state', 'loaded');
-    utils.dispatchEvent(element, 'dfpSlotRenderEnded');
   }
+
+  if (this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded) {
+    this.adUnits.units[element.dataset.adUnit].onSlotRenderEnded(event, element);
+  }
+
+  utils.dispatchEvent(element, 'dfpSlotRenderEnded');
 };
 
 /**
@@ -715,7 +715,7 @@ AdManager.prototype.refreshSlot = function (domElement) {
 
   var slot = this.slots[domElement.id];
 
-  if (slot) {
+  if (slot && slot.activeSizes && slot.activeSizes.length) {
     domElement.setAttribute('data-ad-load-state', 'loading');
     this.refreshSlots([slot]);
 
