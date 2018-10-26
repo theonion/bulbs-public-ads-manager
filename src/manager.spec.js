@@ -484,14 +484,14 @@ describe('AdManager', function() {
       expect(eventSpy.called).to.be.true;
     });
 
-    it('- does not dispatch slot render end, does not call callback when ad comes back empty', function() {
+    it('- dispatches slot render end, calls callback even when ad comes back empty', function() {
       event.isEmpty = true;
 
       adManager.onSlotRenderEnded(event);
 
       expect($(adElement).data('ad-load-state')).to.equal('empty');
-      expect(adManager.adUnits.units.header.onSlotRenderEnded.called).to.be.false;
-      expect(eventSpy.called).to.be.false;
+      expect(adManager.adUnits.units.header.onSlotRenderEnded.called).to.be.true;
+      expect(eventSpy.called).to.be.true;
     });
   });
 
