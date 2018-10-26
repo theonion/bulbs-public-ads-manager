@@ -155,7 +155,7 @@ describe('AdManager', function() {
       expect(adManager.reloadAds).toHaveBeenCalled();
     });
 
-    // TODO: this is a valid failure?
+    // TODO: this is a valid failure
     xit('- does not reload ads if the viewport has not changed', function() {
       adManager.oldViewportWidth = window.document.body.clientWidth;
       adManager.handleWindowResize();
