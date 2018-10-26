@@ -710,7 +710,7 @@ AdManager.prototype.refreshSlot = function (domElement) {
 
   var slot = this.slots[domElement.id];
 
-  if (slot) {
+  if (slot && slot.activeSizes && slot.activeSizes.length) {
     domElement.setAttribute('data-ad-load-state', 'loading');
     this.refreshSlots([slot]);
 
