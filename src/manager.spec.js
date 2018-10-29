@@ -1554,7 +1554,8 @@ describe('AdManager', function() {
       getTargeting: function () {
         return '';
       },
-      setTargeting: function () {}
+      setTargeting: function () {},
+      getOutOfPage: function () { return false; }
     };
     variableReferences = {
       baseContainer: baseContainer,
