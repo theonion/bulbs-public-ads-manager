@@ -1628,7 +1628,7 @@ describe('AdManager', function() {
   	});
 
   	context('always', function() {
-  		var adSlot, stubSlot, baseContainer;
+      var adSlot, stubSlot, baseContainer;
 
       beforeEach(function(){
         var setupRefs = adSlotSetup();
