@@ -1629,27 +1629,28 @@ describe('AdManager', function() {
 
   	context('always', function() {
   		var adSlot, stubSlot, baseContainer;
-	      beforeEach(function(){
-	        var setupRefs = adSlotSetup();
-	        adSlot = setupRefs.adSlot1;
-	        stubSlot = setupRefs.stubSlot;
-	        baseContainer = setupRefs.baseContainer;
-	      });
 
-	      afterEach(function() {
-	        $(baseContainer).remove();
-	      });
+      beforeEach(function(){
+        var setupRefs = adSlotSetup();
+        adSlot = setupRefs.adSlot1;
+        stubSlot = setupRefs.stubSlot;
+        baseContainer = setupRefs.baseContainer;
+      });
 
-	    it('always updates the correlator', function() {
-	   		   adManager = AdManagerWrapper.init({ iasEnabled: true });
-		        TestHelper.stub(adManager, 'fetchAmazonBids');
-		        TestHelper.stub(adManager, 'fetchIasTargeting');
-		        TestHelper.stub(adManager, 'setIndexTargetingForSlots');
+      afterEach(function() {
+        $(baseContainer).remove();
+      });
 
-		        adManager.refreshSlots([stubSlot]);
+      it('always updates the correlator', function() {
+        adManager = AdManagerWrapper.init({ iasEnabled: true });
+        TestHelper.stub(adManager, 'fetchAmazonBids');
+        TestHelper.stub(adManager, 'fetchIasTargeting');
+        TestHelper.stub(adManager, 'setIndexTargetingForSlots');
 
-		        expect(adManager.googletag.pubads().updateCorrelator.called).to.be.true;
-	    });
+        adManager.refreshSlots([stubSlot]);
+
+        expect(adManager.googletag.pubads().updateCorrelator.called).to.be.true;
+      });
   	});
 
     context('> prebidEnabled', function(){
