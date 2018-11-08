@@ -1651,7 +1651,7 @@ describe('AdManager', function() {
 
         expect(adManager.googletag.pubads().updateCorrelator.called).to.be.true;
       });
-  	});
+    });
 
     context('> prebidEnabled', function(){
       var adSlot, baseContainer, stubSlot;
