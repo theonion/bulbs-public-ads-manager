@@ -3,17 +3,13 @@ var Cookie = require('js-cookie');
 var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
 var MockGoogleTag = require('../resources/test/mock-google-tag');
+var TestHelper = require('../resources/test/mock-google-tag');
 var utils = require('./utils');
 var AdManagerWrapper = require('./manager');
 var adUnits = require('./ad-units');
 
 jest.mock('./helpers/AdZone');
 jest.mock('./helpers/TargetingPairs');
-
-var TestHelper = {
-  spyOn: () => {},
-  stub: () => {}
-};
 
 describe('AdManager', function() {
   var adManager;
