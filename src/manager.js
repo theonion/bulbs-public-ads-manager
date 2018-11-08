@@ -777,6 +777,8 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
     return;
   }
 
+  this.googletag.pubads().updateCorrelator();
+
   var useIAS = typeof this.__iasPET !== 'undefined' && this.options.iasEnabled;
   var useIndex = typeof window.headertag !== 'undefined' && window.headertag.apiReady === true && this.options.indexExchangeEnabled;
   var usePrebid = typeof window.pbjs !== 'undefined' && this.options.prebidEnabled;
