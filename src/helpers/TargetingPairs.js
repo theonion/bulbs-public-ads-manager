@@ -45,12 +45,12 @@ var TargetingPairs = {
         var readingListItem = adContainer.closest('.js_reading-list-item');
         if (readingListItem) {
           var currentPostId = readingListItem.dataset.postId;
-          return readingListPostIds.indexOf(currentPostId) + 1;
+          return readingListPostIds.indexOf(currentPostId) + 2;
         }
       }
     }
 
-    return 'none';
+    return 1;
   },
 
   /**
