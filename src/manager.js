@@ -494,7 +494,7 @@ AdManager.prototype.slotInfo = function () {
 AdManager.prototype.setSlotTargeting = function (element, slot, adUnitConfig) {
   var slotTargeting = element.dataset.targeting ? JSON.parse(element.dataset.targeting) : {};
   slotTargeting.pos = slotTargeting.pos || adUnitConfig.pos || adUnitConfig.slotName || element.dataset.adUnit;
-  var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone(), slotTargeting.pos).slotOptions;
+  var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone(), slotTargeting.pos, element).slotOptions;
 
   slotTargeting = utils.extend(kinjaPairs, slotTargeting);
 

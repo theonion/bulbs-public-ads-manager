@@ -235,5 +235,20 @@ describe('TargetingPairs', function() {
         expect(spy).not.toHaveBeenCalled();
       });
     });
+
+    describe('article positioning', function() {
+      beforeEach(function() {
+        window.document.body.innerHTML = `
+          <div class='js_reading-list-item' data-post-id='1' >
+            <div class='ad-container' />
+          </div>
+        `;
+      });
+
+      it('returns the index of the article in reading list', function() {
+        var childElement = document.body.getElementsByClassName('ad-container')[0];
+        expect(TargetingPairs.getArticlePosition(childElement, {})).toEqual(1);
+      });
+    });
   });
 });
