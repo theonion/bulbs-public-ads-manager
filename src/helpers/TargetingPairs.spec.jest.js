@@ -247,7 +247,7 @@ describe('TargetingPairs', function() {
 
       it('returns the index of the article in reading list', function() {
         var childElement = document.body.getElementsByClassName('ad-container')[0];
-        expect(TargetingPairs.getArticlePosition(childElement, {})).toEqual('none');
+        expect(TargetingPairs.getArticlePosition(childElement, {})).toEqual(1);
       });
     });
   });
