@@ -72,7 +72,7 @@ var TargetingPairs = {
     // Begin slot level params AKA 'scp'
     targeting.slotOptions = {
       // Standard targeting options
-      articlePosition,
+      article_position: articlePosition,
       pos: positionTargeting || null,
       postId: post ? post.postId : null,
       socialReferrer: SocialReferrer.getSocialReferrer(),
