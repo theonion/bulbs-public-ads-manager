@@ -38,11 +38,15 @@ var TargetingPairs = {
   * @param object kinjaMeta kinja-specific post meta
   */
   getArticlePosition: function (adContainer, kinjaMeta) {
-    if (document && adContainer && kinjaMeta.pageType === "permalink" && !kinjaMeta.post.isFeatured) {
+    if (document && adContainer && kinjaMeta.pageType === "permalink" && !(kinjaMeta.post && kinjaMeta.post.isFeatured)) {
       var readingListPostIds = Array.from(document.getElementsByClassName('js_reading-list-item')).map(post => post.dataset.postId);
+      
       if (readingListPostIds.length > 0) {
-        var currentPostId = adContainer.closest('.js_reading-list-item').dataset.postId;
-        return readingListPostIds.indexOf(currentPostId) + 1;
+        var readingListItem = adContainer.closest('.js_reading-list-item');
+        if (readingListItem) {
+          var currentPostId = readingListItem.dataset.postId;
+          return readingListPostIds.indexOf(currentPostId) + 1;
+        }
       }
     }
 
