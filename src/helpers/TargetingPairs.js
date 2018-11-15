@@ -32,47 +32,23 @@ var TargetingPairs = {
   },
 
   /**
-  * Gets index of article position in reading list
-  *
-  * @param HTMLElement adContainer the ad container currently being filled
-  * @param object kinjaMeta kinja-specific post meta
-  */
-  getArticlePosition: function (adContainer, kinjaMeta) {
-    if (document && adContainer && kinjaMeta.pageType === "permalink" && !(kinjaMeta.post && kinjaMeta.post.isFeatured)) {
-      var readingListPostIds = Array.from(document.getElementsByClassName('js_reading-list-item')).map(post => post.dataset.postId);
-      
-      if (readingListPostIds.length > 0) {
-        var readingListItem = adContainer.closest('.js_reading-list-item');
-        if (readingListItem) {
-          var currentPostId = readingListItem.dataset.postId;
-          return readingListPostIds.indexOf(currentPostId) + 2;
-        }
-      }
-    }
-
-    return 1;
-  },
-
-  /**
    * Constructs associative array of targeting pairs from post meta
    *
    * @param Window scope the window to use for the kinja meta info.
    *
    */
-  buildTargetingPairs: function (scope, positionTargeting, adContainer) {
+  buildTargetingPairs: function (scope, positionTargeting) {
     var kinjaMeta = scope.kinja.meta,
       post = scope.kinja.postMeta || {},
       content = scope.kinja.postContentRatings || [],
       experimentVariation = Experiments.getExperimentVariation(scope),
       experimentId = Experiments.getExperimentId(scope),
       socialTargeting, key,
-      targeting = {},
-      articlePosition = TargetingPairs.getArticlePosition(adContainer, kinjaMeta);
+      targeting = {};
 
     // Begin slot level params AKA 'scp'
     targeting.slotOptions = {
       // Standard targeting options
-      article_position: articlePosition,
       pos: positionTargeting || null,
       postId: post ? post.postId : null,
       socialReferrer: SocialReferrer.getSocialReferrer(),
@@ -102,10 +78,9 @@ var TargetingPairs = {
    *
    * @param string forcedAdZone forced ad zone, if any
    * @param Window scope the window to use for the kinja meta info.
-   * @param element adContainer optional ad container to determine positioning
    *
    */
-  getTargetingPairs: function (forcedAdZone, positionTargeting, adContainer) {
+  getTargetingPairs: function (forcedAdZone, positionTargeting) {
     if (forcedAdZone && !window.kinja) {
       return { pageOptions : { forcedAdZone : forcedAdZone} };
     }
@@ -113,7 +88,7 @@ var TargetingPairs = {
       return {};
     }
 
-    var targetingOptions = this.buildTargetingPairs(window, positionTargeting, adContainer);
+    var targetingOptions = this.buildTargetingPairs(window, positionTargeting);
 
     targetingOptions.pageOptions.forcedAdZone = forcedAdZone || false;
 
