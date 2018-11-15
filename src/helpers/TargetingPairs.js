@@ -39,8 +39,10 @@ var TargetingPairs = {
   */
   getArticlePosition: function (adContainer, kinjaMeta) {
     if (document && adContainer && kinjaMeta.pageType === "permalink" && !(kinjaMeta.post && kinjaMeta.post.isFeatured)) {
-      var readingListPostIds = Array.from(document.getElementsByClassName('js_reading-list-item')).map(post => post.dataset.postId);
-      
+      var readingListPostIds = Array.from(document.getElementsByClassName('js_reading-list-item')).map(function(post) {
+        return post.dataset.postId;
+      });
+
       if (readingListPostIds.length > 0) {
         var readingListItem = adContainer.closest('.js_reading-list-item');
         if (readingListItem) {
