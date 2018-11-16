@@ -38,7 +38,7 @@ var TargetingPairs = {
   * @param object kinjaMeta kinja-specific post meta
   */
   getArticlePosition: function (adContainer, kinjaMeta) {
-    if (document && adContainer && kinjaMeta.pageType === "permalink" && !(kinjaMeta.post && kinjaMeta.post.isFeatured)) {
+    if (document && adContainer && kinjaMeta.pageType === "permalink" && kinjaMeta.post && !kinjaMeta.post.isFeatured) {
       var readingListPostIds = Array.from(document.getElementsByClassName('js_reading-list-item')).map(function(post) {
         return post.dataset.postId;
       });
