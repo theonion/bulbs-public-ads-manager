@@ -4,17 +4,20 @@ var MockGoogleTag = function MockGoogleTag () {
   this.cmd = [];
 };
 
-MockGoogleTag.prototype.content = function () {
+MockGoogleTag.prototype.content = () => {
   return {
     setContent: jest.fn(),
     addEventListener: jest.fn()
   };
 };
 
-MockGoogleTag.prototype.pubads = function () {
+MockGoogleTag.prototype.pubads = () => {
   return {
     collapseEmptyDivs: jest.fn(),
     enableSingleRequest: jest.fn(),
+    enableAsyncRendering: jest.fn(),
+    updateCorrelator: jest.fn(),
+    setTargeting: jest.fn(),
     disableInitialLoad: jest.fn(),
     addEventListener: jest.fn(),
     refresh: jest.fn(),
@@ -28,7 +31,7 @@ MockGoogleTag.prototype.pubads = function () {
   };
 };
 
-MockGoogleTag.prototype.display = function () {};
+MockGoogleTag.prototype.display = () => {};
 
 MockGoogleTag.prototype.defineSlot = function (adUnitPath, size, elementId) {
 
@@ -38,7 +41,7 @@ MockGoogleTag.prototype.defineSlot = function (adUnitPath, size, elementId) {
     addService: jest.fn(),
     getSlotId: jest.fn().mockImplementation(() => {
       return {
-        getDomId: function () {
+        getDomId: () => {
           return elementId;
         }
       };

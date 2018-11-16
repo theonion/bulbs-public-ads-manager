@@ -1,28 +1,17 @@
-var Cookie = require('js-cookie');
-
-var TargetingPairs = require('./helpers/TargetingPairs');
-var AdZone = require('./helpers/AdZone');
 var MockGoogleTag = require('../resources/test/mock-google-tag');
-var TestHelper = require('../resources/test/mock-google-tag');
-var utils = require('./utils');
 var AdManagerWrapper = require('./manager');
 var adUnits = require('./ad-units');
 
-jest.mock('./helpers/AdZone');
-jest.mock('./helpers/TargetingPairs');
-
-describe('AdManager', function() {
+describe('AdManager', () => {
   var adManager;
 
-  beforeEach(function() {
+  beforeEach(() => {
     window.googletag = new MockGoogleTag();
     window.Bulbs = { settings: { AMAZON_A9_ID: '1234' } };
     window.TARGETING = {
       dfp_site: 'onion',
       dfp_pagetype: 'homepage'
     };
-    TestHelper.spyOn(Cookie, 'set');
-    TestHelper.spyOn(Cookie, 'get');
 
     adManager = AdManagerWrapper.init({
       dfpSiteCode: 'fmg.onion',
@@ -32,28 +21,24 @@ describe('AdManager', function() {
     adManager.countsByAdSlot = {};
   });
 
-  afterEach(function() {
-    Cookie.remove('utmSession');
-  });
-
-  describe('new AdManager', function() {
-    it('- has no slots yet', function() {
+  describe('new AdManager', () => {
+    it('- has no slots yet', () => {
       expect(adManager.slots).toEqual({});
     });
 
-    it('- has a default ad id', function() {
+    it('- has a default ad id', () => {
       expect(adManager.adId).toEqual(0);
     });
 
-    it('- is not initialized', function() {
+    it('- is not initialized', () => {
       expect(adManager.initialized).toEqual(false);
     });
 
-    describe('> base defaults', function() {
-      it('- IAS supported by default', function() {
+    describe('> base defaults', () => {
+      it('- IAS supported by default', () => {
         expect(adManager.options.iasEnabled).toEqual(true);
       });
-      it('- reloads on resize', function() {
+      it('- reloads on resize', () => {
         expect(adManager.options.doReloadOnResize).toEqual(true);
       });
     });
@@ -78,8 +63,8 @@ describe('AdManager', function() {
       });
     });
 
-    describe('> override options', function() {
-      it('- allows override of defaults', function() {
+    describe('> override options', () => {
+      it('- allows override of defaults', () => {
         adManager = AdManagerWrapper.init({
           doReloadOnResize: false,
           dfpSiteCode: 'fmg.onion',
@@ -91,28 +76,27 @@ describe('AdManager', function() {
       });
     });
 
-    describe('> google tag initialization', function() {
-      // TODO - come back to this one later
-      fit('- calls initGoogleTag', function() {
+    describe('> google tag initialization', () => {
+      it('- calls initGoogleTag', () => {
         adManager.googletag.cmd = [];
         adManager = AdManagerWrapper.init({
           dfpSiteCode: 'fmg.onion',
           adUnits: adUnits
         });
+        adManager.initGoogleTag = jest.fn();
         // Call the anonymous function pushed onto the async cmd array
         adManager.googletag.cmd[0]();
-        var spy = jest.spyOn(adManager, 'initGoogleTag');
-        expect(spy).toHaveBeenCalled();
+        expect(adManager.initGoogleTag).toHaveBeenCalled();
       });
     });
   });
 
-  describe('#prebidInit', function() {
+  describe('#prebidInit', () => {
     var pbjs;
-    beforeEach(function() {
+    beforeEach(() => {
       pbjs = window.pbjs = {
         cmd: {
-          push: function() {
+          push: () => {
             pbjs.setConfig();
           }
         },
@@ -120,19 +104,19 @@ describe('AdManager', function() {
       };
     });
 
-    it('- sets prebid sizeConfig if prebid is enabled and sizeConfig exists', function() {
+    it('- sets prebid sizeConfig if prebid is enabled and sizeConfig exists', () => {
       adManager.options.prebidEnabled = true;
       adManager.adUnits.pbjsSizeConfig = {};
       adManager.prebidInit();
       expect(adManager.pbjs.setConfig).toHaveBeenCalledTimes(1);
     });
 
-    it('- does not set sizeConfig if prebid is disabled', function() {
+    it('- does not set sizeConfig if prebid is disabled', () => {
       adManager.prebidInit();
       expect(adManager.pbjs.setConfig).not.toHaveBeenCalled();
     });
 
-    it('- does not set sizeConfig if sizeConfig does not exist', function() {
+    it('- does not set sizeConfig if sizeConfig does not exist', () => {
       adManager.options.prebidEnabled = true;
       adManager.adUnits.pbjsSizeConfig = undefined;
       adManager.prebidInit();
@@ -140,25 +124,25 @@ describe('AdManager', function() {
     });
   });
 
-  describe('#handleWindowResize', function() {
-    beforeEach(function() {
+  describe('#handleWindowResize', () => {
+    beforeEach(() => {
       adManager.oldViewportWidth = window.document.body.clientWidth - 200;
       adManager.reloadAds = jest.fn();
     });
 
-    it('- calls reloadAds if viewport changed', function() {
+    it('- calls reloadAds if viewport changed', () => {
       adManager.handleWindowResize();
       expect(adManager.reloadAds).toHaveBeenCalled();
     });
 
     // TODO: this is a valid failure
-    xit('- does not reload ads if the viewport has not changed', function() {
+    xit('- does not reload ads if the viewport has not changed', () => {
       adManager.oldViewportWidth = window.document.body.clientWidth;
       adManager.handleWindowResize();
       expect(adManager.reloadAds).not.toHaveBeenCalled();
     });
 
-    it('- does not reload ads if the setting is disabled', function() {
+    it('- does not reload ads if the setting is disabled', () => {
       adManager.options.doReloadOnResize = false;
       adManager.handleWindowResize();
       expect(adManager.reloadAds).not.toHaveBeenCalled();
