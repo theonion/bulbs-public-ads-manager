@@ -50,9 +50,13 @@ var TargetingPairs = {
           return readingListPostIds.indexOf(currentPostId) + 2;
         }
       }
+
+      // Starter post
+      return 1;
     }
 
-    return 1;
+    // Not in reading list
+    return 'none';
   },
 
   /**
