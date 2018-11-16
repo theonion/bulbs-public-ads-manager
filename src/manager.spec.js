@@ -1554,7 +1554,8 @@ describe('AdManager', function() {
       getTargeting: function () {
         return '';
       },
-      setTargeting: function () {}
+      setTargeting: function () {},
+      getOutOfPage: function () { return false; }
     };
     variableReferences = {
       baseContainer: baseContainer,
@@ -1617,6 +1618,41 @@ describe('AdManager', function() {
   });
 
   describe('#refreshSlots', function() {
+
+  	beforeEach(function() {
+		TestHelper.stub(adManager.googletag, 'pubads').returns({
+	        updateCorrelator: sinon.spy(),
+	        getSlots: function() {return []},
+	        refresh: sinon.spy()
+	      });
+  	});
+
+  	context('always', function() {
+      var adSlot, stubSlot, baseContainer;
+
+      beforeEach(function(){
+        var setupRefs = adSlotSetup();
+        adSlot = setupRefs.adSlot1;
+        stubSlot = setupRefs.stubSlot;
+        baseContainer = setupRefs.baseContainer;
+      });
+
+      afterEach(function() {
+        $(baseContainer).remove();
+      });
+
+      it('always updates the correlator', function() {
+        adManager = AdManagerWrapper.init({ iasEnabled: true });
+        TestHelper.stub(adManager, 'fetchAmazonBids');
+        TestHelper.stub(adManager, 'fetchIasTargeting');
+        TestHelper.stub(adManager, 'setIndexTargetingForSlots');
+
+        adManager.refreshSlots([stubSlot]);
+
+        expect(adManager.googletag.pubads().updateCorrelator.called).to.be.true;
+      });
+    });
+
     context('> prebidEnabled', function(){
       var adSlot, baseContainer, stubSlot;
       beforeEach(function(){
@@ -1774,7 +1810,8 @@ describe('AdManager', function() {
     it('- calls googletag.pubads().refresh directly when no units are configured for prebid', function() {
       TestHelper.stub(adManager.googletag, 'pubads').returns({
         refresh: sinon.spy(),
-        getSlots: function() {return []}
+        getSlots: function() {return []},
+        updateCorrelator: sinon.spy()
       });
       stubSlot.prebid = false;
       adManager.refreshSlots([stubSlot]);

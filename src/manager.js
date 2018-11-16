@@ -499,7 +499,7 @@ AdManager.prototype.slotInfo = function () {
 AdManager.prototype.setSlotTargeting = function (element, slot, adUnitConfig) {
   var slotTargeting = element.dataset.targeting ? JSON.parse(element.dataset.targeting) : {};
   slotTargeting.pos = slotTargeting.pos || adUnitConfig.pos || adUnitConfig.slotName || element.dataset.adUnit;
-  var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone(), slotTargeting.pos).slotOptions;
+  var kinjaPairs = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone(), slotTargeting.pos, element).slotOptions;
 
   slotTargeting = utils.extend(kinjaPairs, slotTargeting);
 
@@ -715,7 +715,7 @@ AdManager.prototype.refreshSlot = function (domElement) {
 
   var slot = this.slots[domElement.id];
 
-  if (slot && slot.activeSizes && slot.activeSizes.length) {
+  if (slot && (slot.getOutOfPage() || (slot.activeSizes && slot.activeSizes.length))) {
     domElement.setAttribute('data-ad-load-state', 'loading');
     this.refreshSlots([slot]);
 
@@ -781,6 +781,8 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
   if (slotsToLoad.length === 0) {
     return;
   }
+
+  this.googletag.pubads().updateCorrelator();
 
   var useIAS = typeof this.__iasPET !== 'undefined' && this.options.iasEnabled;
   var useIndex = typeof window.headertag !== 'undefined' && window.headertag.apiReady === true && this.options.indexExchangeEnabled;
