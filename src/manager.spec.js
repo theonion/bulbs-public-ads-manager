@@ -1641,7 +1641,7 @@ describe('AdManager', function() {
         $(baseContainer).remove();
       });
 
-      it('always updates the correlator', function() {
+      it('updates the correlator when ad is not eager loaded', function() {
         adManager = AdManagerWrapper.init({ iasEnabled: true });
         TestHelper.stub(adManager, 'fetchAmazonBids');
         TestHelper.stub(adManager, 'fetchIasTargeting');

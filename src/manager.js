@@ -777,7 +777,18 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
     return;
   }
 
-  this.googletag.pubads().updateCorrelator();
+  // If any of the ads are eager loaded, don't update the correlator
+  var updateCorrelator = false;
+  for (var i = 0; i < slotsToLoad.length; i++) {
+    var thisSlot = slotsToLoad[i];
+    if (thisSlot.eagerLoad) {
+      updateCorrelator = true;
+    }
+  }
+
+  if (updateCorrelator) {
+    this.googletag.pubads().updateCorrelator();
+  }
 
   var useIAS = typeof this.__iasPET !== 'undefined' && this.options.iasEnabled;
   var useIndex = typeof window.headertag !== 'undefined' && window.headertag.apiReady === true && this.options.indexExchangeEnabled;
