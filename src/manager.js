@@ -780,9 +780,9 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
   // If any of the ads are eager loaded, don't update the correlator
   var updateCorrelator = true;
   for (var i = 0; i < slotsToLoad.length; i++) {
-    var thisSlot = slotsToLoad[i];
-    if (thisSlot.eagerLoad) {
+    if (slotsToLoad[i].eagerLoad) {
       updateCorrelator = false;
+      break;
     }
   }
 
