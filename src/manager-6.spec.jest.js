@@ -173,7 +173,7 @@ describe('AdManager', function() {
 
   // Setup method utilized by #refreshSlot & #refreshSlots tests
   function adSlotSetup(){
-    var baseContainer, container1, adSlot1, stubSlot, variableReferences;
+    var baseContainer, container1, adSlot1, stubSlot, eagerStubSlot, variableReferences;
     baseContainer = document.createElement('div');
     container1 = document.createElement('div');
     container1.className ='expected';
@@ -181,6 +181,7 @@ describe('AdManager', function() {
     adSlot1 = document.createElement('div');
     adSlot1.id = 'dfp-ad-1';
     adSlot1.className = 'dfp';
+    adSlot1.dataset.adUnit = 'header';
     container1.appendChild(adSlot1);
     baseContainer.appendChild(container1);
     document.body.appendChild(baseContainer);
@@ -195,14 +196,20 @@ describe('AdManager', function() {
       getTargeting: function () {
         return '';
       },
-      setTargeting: function () {}
+      setTargeting: function () {},
+      getOutOfPage: function () { return false; }
     };
+
+    eagerStubSlot = Object.assign({}, stubSlot, { eagerLoad: true });
+
     variableReferences = {
       baseContainer: baseContainer,
       container1: container1,
       adSlot1: adSlot1,
-      stubSlot: stubSlot
+      stubSlot: stubSlot,
+      eagerStubSlot: eagerStubSlot
     }
+
 
     adManager.slots = {
       'dfp-ad-1': stubSlot
@@ -248,9 +255,53 @@ describe('AdManager', function() {
       adManager.refreshSlot(adSlot);
       expect(adManager.refreshSlots).toHaveBeenCalledWith([stubSlot]);
     });
+
+    it('- should invoke optional callback onRefresh if provided', function () {
+      TestHelper.stub(adManager.adUnits.units.header, 'onRefresh');
+      adManager.refreshSlot(adSlot);
+      expect(adManager.adUnits.units.header.onRefresh.called).to.be.true;
+    });
   });
 
   describe('#refreshSlots', function() {
+    context('always', function() {
+      var adSlot, stubSlot, eagerStubSlot, baseContainer;
+
+      beforeEach(function(){
+        var setupRefs = adSlotSetup();
+        adSlot = setupRefs.adSlot1;
+        stubSlot = setupRefs.stubSlot;
+        eagerStubSlot = setupRefs.eagerStubSlot;
+        baseContainer = setupRefs.baseContainer;
+      });
+
+      afterEach(function() {
+        $(baseContainer).remove();
+      });
+
+      it('updates the correlator when ad is not eager loaded', function() {
+        adManager = AdManagerWrapper.init({ iasEnabled: true });
+        TestHelper.stub(adManager, 'fetchAmazonBids');
+        TestHelper.stub(adManager, 'fetchIasTargeting');
+        TestHelper.stub(adManager, 'setIndexTargetingForSlots');
+
+        adManager.refreshSlots([stubSlot]);
+
+        expect(adManager.googletag.pubads().updateCorrelator).toHaveBeenCalled();
+      });
+
+      it('does not update the correlator when ad is eager loaded', function() {
+        adManager = AdManagerWrapper.init({ iasEnabled: true });
+        TestHelper.stub(adManager, 'fetchAmazonBids');
+        TestHelper.stub(adManager, 'fetchIasTargeting');
+        TestHelper.stub(adManager, 'setIndexTargetingForSlots');
+
+        adManager.refreshSlots([eagerStubSlot]);
+
+        expect(adManager.googletag.pubads().updateCorrelator).not.toHaveBeenCalled();
+      });
+    });
+
     describe('> prebidEnabled', function(){
       var adSlot, baseContainer, stubSlot;
       beforeEach(function(){
