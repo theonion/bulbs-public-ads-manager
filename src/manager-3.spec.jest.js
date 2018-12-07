@@ -43,20 +43,22 @@ describe('AdManager', function() {
 
   describe('#reloadAds', function() {
     beforeEach(function() {
-      TestHelper.stub(adManager.googletag, 'pubads').returns({
-        updateCorrelator: sinon.spy()
+      jest.spyOn(adManager.googletag, 'pubads').mockImplementation(() => {
+        return {
+          updateCorrelator: jest.spyOn(googletag, 'pubads')
+        }
       });
-      TestHelper.stub(adManager, 'unloadAds');
-      TestHelper.stub(adManager, 'loadAds');
+      jest.spyOn(adManager, 'unloadAds');
+      jest.spyOn(adManager, 'loadAds');
       adManager.reloadAds('domElement');
     });
 
-    xit('- unloads and reloads ads', function() {
-      expect(adManager.unloadAds.toHaveBeenCalledWith('domElement'));
-      expect(adManager.loadAds.toHaveBeenCalledWith('domElement'));
+    it('- unloads and reloads ads', function() {
+      expect(adManager.unloadAds).toHaveBeenCalledWith('domElement');
+      expect(adManager.loadAds).toHaveBeenCalledWith('domElement');
     });
 
-    xit('- updates the correlator so it is treated like a new pageview request', function() {
+    it('- updates the correlator so it is treated like a new pageview request', function() {
       expect(googletag.pubads().updateCorrelator).toHaveBeenCalled();
     });
   });
@@ -85,65 +87,64 @@ describe('AdManager', function() {
         }
       };
       adManager.rendered = false;
-      TestHelper.stub(adManager.adUnits.units.header, 'onSlotRenderEnded');
-      eventSpy = sinon.spy();
+      eventSpy = jest.spyOn(adManager.adUnits.units.header, 'onSlotRenderEnded');
       adElement.addEventListener('dfpSlotRenderEnded', eventSpy);
     });
 
     afterEach(function() {
       $(adElement).remove();
+      eventSpy.mockReset();
     });
 
-    xit('- sets rendered to true', function() {
+    it('- sets rendered to true', function() {
 
       adManager.onSlotRenderEnded(event);
 
       expect(adManager.rendered).toEqual(true);
     });
 
-    xit('- removes the height property', function() {
+    it('- removes the height property', function() {
 
       adManager.onSlotRenderEnded(event);
 
       expect(adElement.style.height).not.toEqual('250px');
     });
 
-    xit('- removes the width property', function() {
+    it('- removes the width property', function() {
 
       adManager.onSlotRenderEnded(event);
 
       expect(adElement.style.width).not.toEqual('300px');
     });
 
-    xit('- calls custom slot render ended callback if there is one', function() {
+    it('- calls custom slot render ended callback if there is one', function() {
 
       adManager.onSlotRenderEnded(event);
 
-      expect(adManager.adUnits.units.header.onSlotRenderEnded.toHaveBeenCalledWith(event, adElement));
+      expect(eventSpy).toHaveBeenCalledWith(event, adElement);
     });
 
-    xit('- sets loaded state to loaded', function() {
+    it('- sets loaded state to loaded', function() {
 
       adManager.onSlotRenderEnded(event);
 
       expect($(adElement).data('ad-load-state')).toEqual('loaded');
     });
 
-    xit('- emits a dfpSlotRenderEnded event', function() {
+    it('- emits a dfpSlotRenderEnded event', function() {
 
       adManager.onSlotRenderEnded(event);
 
       expect(eventSpy).toHaveBeenCalled();
     });
 
-    xit('- does not dispatch slot render end, does not call callback when ad comes back empty', function() {
+    it('- dispatches slot render end, calls callback even when ad comes back empty', function() {
       event.isEmpty = true;
 
       adManager.onSlotRenderEnded(event);
 
       expect($(adElement).data('ad-load-state')).toEqual('empty');
-      expect(adManager.adUnits.units.header.onSlotRenderEnded).not.toHaveBeenCalled();
-      expect(eventSpy).not.toHaveBeenCalled();
+      expect(eventSpy).toHaveBeenCalled();
     });
   });
 
