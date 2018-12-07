@@ -171,8 +171,7 @@ describe('AdManager', function() {
           getSlotId: getSlotId
         }
       };
-      TestHelper.stub(adManager.adUnits.units.header, 'onSlotRenderEnded');
-      eventSpy = sinon.spy();
+      eventSpy = jest.spyOn(adManager.adUnits.units.header, 'onSlotRenderEnded');
       adElement.addEventListener('dfpImpressionViewable', eventSpy);
       adManager.onSlotRenderEnded(event);
     });
@@ -181,8 +180,14 @@ describe('AdManager', function() {
       $(adElement).remove();
     });
 
-    xit('- emits a dfpImpressionViewable event', function() {
-      expect(eventSpy).to.have.been.called;
+    it('- emits a dfpImpressionViewable event', function() {
+      expect(eventSpy).toHaveBeenCalled();
+    });
+
+    it('- should invoke optional onImpressionViewable callback if provided', function () {
+      jest.spyOn(adManager.adUnits.units.header, 'onImpressionViewable');
+      adManager.onImpressionViewable(event);
+      expect(adManager.adUnits.units.header.onImpressionViewable).toHaveBeenCalled();
     });
   });
 
@@ -209,8 +214,7 @@ describe('AdManager', function() {
           getSlotId: getSlotId
         }
       };
-      TestHelper.stub(adManager.adUnits.units.header, 'onSlotRenderEnded');
-      eventSpy = sinon.spy();
+      eventSpy = jest.spyOn(adManager.adUnits.units.header, 'onSlotRenderEnded');
       adElement.addEventListener('dfpSlotOnload', eventSpy);
       adManager.onSlotRenderEnded(event);
     });
@@ -219,8 +223,14 @@ describe('AdManager', function() {
       $(adElement).remove();
     });
 
-    xit('- emits a dfpSlotOnload event', function() {
-      expect(eventSpy).to.have.been.called;
+    it('- emits a dfpSlotOnload event', function() {
+      expect(eventSpy).toHaveBeenCalled();
+    });
+
+    it('- should invoke optional onLoad callback if provided', function () {
+      jest.spyOn(adManager.adUnits.units.header, 'onLoad');
+      adManager.onSlotOnload(event);
+      expect(adManager.adUnits.units.header.onLoad).toHaveBeenCalled();
     });
   });
 
@@ -229,7 +239,7 @@ describe('AdManager', function() {
       adManager.adId = 0;
     });
 
-    xit('- generates a unique ad id by incrementing adId', function() {
+    it('- generates a unique ad id by incrementing adId', function() {
       expect(adManager.generateId()).toEqual('dfp-ad-1');
       expect(adManager.adId).toEqual(1);
     });
@@ -242,8 +252,8 @@ describe('AdManager', function() {
         [[0, 0], []]
       ];
 
-      xit('- returns an empty []', function() {
-        TestHelper.stub(adManager, 'getClientWidth').returns(1000);
+      it('- returns an empty []', function() {
+        jest.spyOn(adManager, 'getClientWidth').mockImplementation(() => 1000);
         expect(adManager.adUnitSizes(sizeMap)).toEqual([]);
       });
     });
@@ -253,8 +263,8 @@ describe('AdManager', function() {
         [[0, 0], [728, 90]]
       ];
 
-      xit('- returns the sizes', function() {
-        TestHelper.stub(adManager, 'getClientWidth').returns(375); //iPhone
+      it('- returns the sizes', function() {
+        jest.spyOn(adManager, 'getClientWidth').mockImplementation(() => 375) // iPhone
         expect(adManager.adUnitSizes(sizeMap)).toEqual([728, 90]);
       });
     });
@@ -265,13 +275,13 @@ describe('AdManager', function() {
         [[0, 0], []]
       ];
 
-      xit('- returns valid sizes on desktop', function() {
-        TestHelper.stub(adManager, 'getClientWidth').returns(1000);
+      it('- returns valid sizes on desktop', function() {
+        jest.spyOn(adManager, 'getClientWidth').mockImplementation(() => 1000);
         expect(adManager.adUnitSizes(sizeMap)).toEqual([728, 90]);
       });
 
-      xit('- returns no valid sizes on mobile', function() {
-        TestHelper.stub(adManager, 'getClientWidth').returns(320);
+      it('- returns no valid sizes on mobile', function() {
+        jest.spyOn(adManager, 'getClientWidth').mockImplementation(() => 320);
         expect(adManager.adUnitSizes(sizeMap)).toEqual([]);
       });
     });
@@ -282,13 +292,13 @@ describe('AdManager', function() {
         [[0, 0], [300, 250]]
       ];
 
-      xit('- desktop returns []', function() {
-        TestHelper.stub(adManager, 'getClientWidth').returns(1000);
+      it('- desktop returns []', function() {
+        jest.spyOn(adManager, 'getClientWidth').mockImplementation(() => 1000);
         expect(adManager.adUnitSizes(sizeMap)).toEqual([]);
       });
 
-      xit('- mobile returns the sizes', function() {
-        TestHelper.stub(adManager, 'getClientWidth').returns(320);
+      it('- mobile returns the sizes', function() {
+        jest.spyOn(adManager, 'getClientWidth').mockImplementation(() => 320);
         expect(adManager.adUnitSizes(sizeMap)).toEqual([300, 250]);
       });
     });
@@ -299,13 +309,13 @@ describe('AdManager', function() {
         [[0, 0], [[320, 50], 'fluid']]
       ];
 
-      xit('- desktop returns the sizes', function() {
-        TestHelper.stub(adManager, 'getClientWidth').returns(1000);
+      it('- desktop returns the sizes', function() {
+        jest.spyOn(adManager, 'getClientWidth').mockImplementation(() => 1000);
         expect(adManager.adUnitSizes(sizeMap)).toEqual([['fluid'], [300, 250]]);
       });
 
-      xit('- mobile returns the sizes', function() {
-        TestHelper.stub(adManager, 'getClientWidth').returns(320);
+      it('- mobile returns the sizes', function() {
+        jest.spyOn(adManager, 'getClientWidth').mockImplementation(() => 320);
         expect(adManager.adUnitSizes(sizeMap)).toEqual([[320, 50], 'fluid']);
       });
     });
@@ -315,51 +325,51 @@ describe('AdManager', function() {
     var sizeMappingStub;
     beforeEach(function() {
       sizeMappingStub = {
-        addSize: sinon.spy(),
-        build: sinon.spy(),
+        addSize: jest.fn(),
+        build: jest.fn(),
       }
-      TestHelper.stub(window.googletag, 'sizeMapping').returns(sizeMappingStub)
+      jest.spyOn(window.googletag, 'sizeMapping').mockImplementation(() => sizeMappingStub);
     });
 
-    xit('- builds valid gpt sizemap', function() {
+    it('- builds valid gpt sizemap', function() {
       adManager.buildSizeMap([]);
-      expect(window.googletag.sizeMapping().build.calledOnce).toEqual(true);
+      expect(window.googletag.sizeMapping().build).toHaveBeenCalledTimes(1);
     });
 
-    xit("allows ['fluid'] size", function() {
+    it("allows ['fluid'] size", function() {
       var sizeMap = [
         [[0, 0], ['fluid']],
       ];
       adManager.buildSizeMap(sizeMap);
-      expect(window.googletag.sizeMapping().addSize.toHaveBeenCalledWith([0, 0], ['fluid']));
+      expect(window.googletag.sizeMapping().addSize).toHaveBeenCalledWith([0, 0], ['fluid']);
     });
 
-    xit("converts 'fluid' string into ['fluid'] array", function() {
+    it("converts 'fluid' string into ['fluid'] array", function() {
       var sizeMap = [
         [[0, 0], 'fluid'],
       ];
       adManager.buildSizeMap(sizeMap);
-      expect(window.googletag.sizeMapping().addSize.toHaveBeenCalledWith([0, 0], ['fluid']));
+      expect(window.googletag.sizeMapping().addSize).toHaveBeenCalledWith([0, 0], ['fluid']);
     });
 
-    xit("converts [['fluid']] doubly-nested array into ['fluid'] array", function() {
+    it("converts [['fluid']] doubly-nested array into ['fluid'] array", function() {
       // in practice, GPT doesn't allow [['fluid']], although the documentation is ambiguous on whether
       // this is supposed to work: https://developers.google.com/doubleclick-gpt/reference#googletag.GeneralSize
       var sizeMap = [
         [[0, 0], [['fluid']]],
       ];
       adManager.buildSizeMap(sizeMap);
-      expect(window.googletag.sizeMapping().addSize.toHaveBeenCalledWith([0, 0], ['fluid']));
+      expect(window.googletag.sizeMapping().addSize).toHaveBeenCalledWith([0, 0], ['fluid']);
     });
 
-    xit("allows fluid to be mixed with other sizes", function() {
+    it("allows fluid to be mixed with other sizes", function() {
       var sizeMap = [
         [[0, 0], [['fluid'], [300, 250]]],
         [[900, 0], ['fluid', [728, 90]]],
       ];
       adManager.buildSizeMap(sizeMap);
-      expect(window.googletag.sizeMapping().addSize.toHaveBeenCalledWith([0, 0], ['fluid', [300, 250]]));
-      expect(window.googletag.sizeMapping().addSize.toHaveBeenCalledWith([900, 0], ['fluid', [728, 90]]));
+      expect(window.googletag.sizeMapping().addSize).toHaveBeenCalledWith([0, 0], ['fluid', [300, 250]]);
+      expect(window.googletag.sizeMapping().addSize).toHaveBeenCalledWith([900, 0], ['fluid', [728, 90]]);
     });
   });
 
@@ -367,7 +377,7 @@ describe('AdManager', function() {
     beforeEach(function() {
     });
 
-    xit('- filters active gpt sizes  into an array', function() {
+    it('- filters active gpt sizes  into an array', function() {
       expect(adManager.generateId()).toEqual('dfp-ad-1');
       expect(adManager.adId).toEqual(1);
     });
@@ -385,12 +395,12 @@ describe('AdManager', function() {
       $(container).remove();
     });
 
-    xit('- returns true if the container has the dfp class', function() {
+    it('- returns true if the container has the dfp class', function() {
       container.className = 'dfp';
       expect(adManager.isAd(container)).toEqual(true);
     });
 
-    xit('- returns false if the container does not have the dfp class', function() {
+    it('- returns false if the container does not have the dfp class', function() {
       expect(adManager.isAd(container)).toEqual(false);
     });
   });
@@ -438,7 +448,7 @@ describe('AdManager', function() {
         ads = adManager.findAds();
       });
 
-      xit('- returns all ads with `dfp` class', function() {
+      it('- returns all ads with `dfp` class', function() {
         var array = [];
         for(var i = 0; i < ads.length; i++) {
           array.push(ads[i]);
@@ -452,7 +462,7 @@ describe('AdManager', function() {
         ads = adManager.findAds('#dfp-ad-1');
       });
 
-      xit('- should return ads matching query selector', function() {
+      it('- should return ads matching query selector', function() {
         expect(ads.length).toEqual(1);
         expect(ads[0]).toEqual(adSlot1);
       });
@@ -460,11 +470,11 @@ describe('AdManager', function() {
 
     describe('> passed in a non-ad HTMLElement', function() {
       beforeEach(function() {
-        TestHelper.stub(adManager, 'isAd').returns(false);
+        jest.spyOn(adManager, 'isAd').mockImplementation(() => false);
         ads = adManager.findAds(container3);
       });
 
-      xit('- should returns ads within it', function() {
+      it('- should returns ads within it', function() {
         expect(ads.length).toEqual(1);
         expect(ads[0]).toEqual(adSlot3);
       });
@@ -472,11 +482,11 @@ describe('AdManager', function() {
 
     describe('> passed in an ad HTMLElement', function() {
       beforeEach(function() {
-        TestHelper.stub(adManager, 'isAd').returns(true);
+        jest.spyOn(adManager, 'isAd').mockImplementation(() => true);
         ads = adManager.findAds(adSlot1);
       });
 
-      xit('- should return the ad', function() {
+      it('- should return the ad', function() {
         expect(ads.length).toEqual(1);
         expect(ads[0]).toEqual(adSlot1);
       });
@@ -484,12 +494,12 @@ describe('AdManager', function() {
 
     describe('> passed in array of containers', function() {
       beforeEach(function() {
-        TestHelper.stub(adManager, 'isAd').returns(false);
+        jest.spyOn(adManager, 'isAd').mockImplementation(() => false);
         containers = document.getElementsByClassName('expected');
         ads = adManager.findAds(containers);
       });
 
-      xit('- should return ads within all the containers', function() {
+      it('- should return ads within all the containers', function() {
         expect(ads.length).toEqual(2);
         expect(ads[0][0]).toEqual(adSlot1);
         expect(ads[1][0]).toEqual(adSlot3);
@@ -498,12 +508,12 @@ describe('AdManager', function() {
 
     describe('> passed in an element context containing ads', function() {
       beforeEach(function() {
-        TestHelper.stub(adManager, 'isAd').returns(false);
+        jest.spyOn(adManager, 'isAd').mockImplementation(() => false);
         containers = document.getElementsByClassName('expected');
         ads = adManager.findAds(containers, false, true);
       });
 
-      xit('- should return ads within all the containers', function() {
+      it('- should return ads within all the containers', function() {
         expect(ads.length).toEqual(2);
         expect(ads[0][0]).toEqual(adSlot1);
         expect(ads[1][0]).toEqual(adSlot3);
