@@ -181,6 +181,7 @@ describe('AdManager', function() {
     adSlot1 = document.createElement('div');
     adSlot1.id = 'dfp-ad-1';
     adSlot1.className = 'dfp';
+    adSlot1.dataset.adUnit = 'header';
     container1.appendChild(adSlot1);
     baseContainer.appendChild(container1);
     document.body.appendChild(baseContainer);
@@ -252,6 +253,12 @@ describe('AdManager', function() {
     it('- loads the DFP slot matching up with the DOM element id', function() {
       adManager.refreshSlot(adSlot);
       expect(adManager.refreshSlots).toHaveBeenCalledWith([stubSlot]);
+    });
+
+    it('- should invoke optional callback onRefresh if provided', function () {
+      TestHelper.stub(adManager.adUnits.units.header, 'onRefresh');
+      adManager.refreshSlot(adSlot);
+      expect(adManager.adUnits.units.header.onRefresh.called).to.be.true;
     });
   });
 
