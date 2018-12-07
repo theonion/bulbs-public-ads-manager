@@ -11,11 +11,6 @@ var adUnits = require('./ad-units');
 jest.mock('./helpers/AdZone');
 jest.mock('./helpers/TargetingPairs');
 
-var TestHelper = {
-  spyOn: () => {},
-  stub: () => {}
-};
-
 describe('AdManager', function() {
   var adManager;
 
@@ -26,8 +21,8 @@ describe('AdManager', function() {
       dfp_site: 'onion',
       dfp_pagetype: 'homepage'
     };
-    TestHelper.spyOn(Cookie, 'set');
-    TestHelper.spyOn(Cookie, 'get');
+    jest.spyOn(Cookie, 'set');
+    jest.spyOn(Cookie, 'get');
 
     adManager = AdManagerWrapper.init({
       dfpSiteCode: 'fmg.onion',
@@ -43,9 +38,10 @@ describe('AdManager', function() {
 
   describe('#reloadAds', function() {
     beforeEach(function() {
+      var pubads = adManager.googletag.pubads();
       jest.spyOn(adManager.googletag, 'pubads').mockImplementation(() => {
         return {
-          updateCorrelator: jest.spyOn(googletag, 'pubads')
+          updateCorrelator: jest.spyOn(pubads, 'updateCorrelator')
         }
       });
       jest.spyOn(adManager, 'unloadAds');
