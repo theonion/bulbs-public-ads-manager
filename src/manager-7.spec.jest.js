@@ -96,7 +96,8 @@ describe('AdManager', function() {
     xit('- calls googletag.pubads().refresh directly when no units are configured for prebid', function() {
       // adManager.googletag.pubads.mockReturnValue({
       //   refresh: jest.fn(),
-      //   getSlots: function() {return []}
+      //   getSlots: function() {return []},
+      //   updateCorrelator: sinon.spy()
       // });
       stubSlot.prebid = false;
       adManager.refreshSlots([stubSlot]);
