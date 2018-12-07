@@ -1,18 +1,12 @@
 var Cookie = require('js-cookie');
-
-var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
 var MockGoogleTag = require('../resources/test/mock-google-tag');
-var TestHelper = require('../resources/test/test_helper');
 var utils = require('./utils');
 var AdManagerWrapper = require('./manager');
 var adUnits = require('./ad-units');
 
-jest.mock('./helpers/AdZone');
-jest.mock('./helpers/TargetingPairs');
-
 describe('AdManager', function() {
-  var adManager;
+  var adManager, pubads;
 
   beforeEach(function() {
     window.googletag = new MockGoogleTag();
@@ -21,8 +15,9 @@ describe('AdManager', function() {
       dfp_site: 'onion',
       dfp_pagetype: 'homepage'
     };
-    TestHelper.spyOn(Cookie, 'set');
-    TestHelper.spyOn(Cookie, 'get');
+    window.Cookies = Cookie;
+    jest.spyOn(Cookie, 'set');
+    jest.spyOn(Cookie, 'get');
 
     adManager = AdManagerWrapper.init({
       dfpSiteCode: 'fmg.onion',
@@ -30,6 +25,18 @@ describe('AdManager', function() {
     });
     adManager.googletag.cmd = [];
     adManager.countsByAdSlot = {};
+    pubads = adManager.googletag.pubads();
+    adManager.googletag.pubads = jest.fn().mockImplementation(() => ({
+      collapseEmptyDivs: jest.fn(),
+      enableSingleRequest: jest.spyOn(pubads, 'enableSingleRequest'),
+      disableInitialLoad: jest.spyOn(pubads, 'disableInitialLoad'),
+      addEventListener: jest.spyOn(pubads, 'addEventListener'),
+      refresh: jest.fn(),
+      clear: jest.fn(),
+      setTargeting: jest.spyOn(pubads, 'setTargeting'),
+      updateCorrelator: jest.spyOn(pubads, 'updateCorrelator'),
+      enableAsyncRendering: jest.spyOn(pubads, 'enableAsyncRendering')
+    }));
   });
 
   afterEach(function() {
@@ -38,17 +45,6 @@ describe('AdManager', function() {
 
   describe('#initGoogleTag', function() {
     beforeEach(function() {
-      adManager.googletag.pubads = jest.fn().mockImplementation(() => ({
-        collapseEmptyDivs: jest.fn(),
-        enableSingleRequest: jest.fn(),
-        disableInitialLoad: jest.fn(),
-        addEventListener: jest.fn(),
-        refresh: jest.fn(),
-        clear: jest.fn(),
-        setTargeting: jest.fn(),
-        updateCorrelator: jest.fn(),
-        enableAsyncRendering: jest.fn()
-      }));
       adManager.setPageTargeting = jest.fn();
       adManager.loadAds = jest.fn();
       adManager.googletag.enableServices = jest.fn();
@@ -59,9 +55,9 @@ describe('AdManager', function() {
     describe('TARGETING global, and a forced ad zone', function () {
       it('merges pre-existing contextual targeting with forced ad zone', function() {
         window.TARGETING = { dfpcontentid: 'foo-bar-baz' };
-        AdZone.forcedAdZone.mockReturnValue('adtest');
-
+        jest.spyOn(AdZone, 'forcedAdZone').mockImplementation(() => 'adtest');
         adManager.initGoogleTag();
+
         expect(adManager.targeting.dfpcontentid).toEqual('foo-bar-baz');
         expect(adManager.targeting.forcedAdZone).toEqual('adtest');
       });
@@ -107,16 +103,13 @@ describe('AdManager', function() {
     });
 
     it('- loads ads initially', function() {
-      expect(adManager.loadAds.calledOnce).toEqual(true);
+      expect(adManager.loadAds).toHaveBeenCalledTimes(1);
     });
 
-
-
     it('- merges global TARGETING with ad unit dfp site param', function() {
-      expect(adManager.targeting).toEqual({
-        dfp_site: 'onion',
-        dfp_pagetype: 'homepage'
-      });
+      jest.mock('./helpers/TargetingPairs');
+      expect(adManager.targeting).toHaveProperty('dfp_site', 'onion');
+      expect(adManager.targeting).toHaveProperty('dfp_pagetype', 'homepage');
     });
   });
 
@@ -126,9 +119,6 @@ describe('AdManager', function() {
         dfp_site: 'onion',
         dfp_pagetype: 'home'
       };
-      TestHelper.stub(adManager.googletag, 'pubads', {
-        setTargeting: jest.fn()
-      });
       adManager.setPageTargeting();
     });
 
@@ -156,7 +146,7 @@ describe('AdManager', function() {
 
     describe('> UTM parameters are present', function() {
       beforeEach(function() {
-        TestHelper.stub(adManager, 'setUtmTargeting');
+        jest.spyOn(adManager, 'setUtmTargeting');
         adManager.setPageTargeting();
       });
 
@@ -169,15 +159,13 @@ describe('AdManager', function() {
 
   describe('#setUtmTargeting', function() {
     beforeEach(function() {
-      // TestHelper.stub(adManager.googletag, 'pubads', {
-      //   setTargeting: jest.fn()
-      // });
+      jest.spyOn(adManager, 'setUtmTargeting');
     });
 
     describe('> with UTM params', function() {
       beforeEach(function() {
         Cookie.remove('utmSession')
-        TestHelper.stub(adManager, 'searchString', '?utm_source=Facebook&utm_medium=cpc&utm_campaign=foobar');
+        jest.spyOn(adManager, 'searchString').mockImplementation(() => '?utm_source=Facebook&utm_medium=cpc&utm_campaign=foobar');
         adManager.setUtmTargeting();
       });
 
@@ -203,7 +191,7 @@ describe('AdManager', function() {
 
     describe('> without UTM params', function() {
       beforeEach(function() {
-        TestHelper.stub(adManager, 'searchString', '');
+        jest.spyOn(adManager, 'searchString').mockImplementation(() => '');
         adManager.setUtmTargeting();
       });
 
@@ -214,7 +202,7 @@ describe('AdManager', function() {
 
     describe('> cookied UTM params', function() {
       beforeEach(function() {
-        TestHelper.stub(adManager, 'searchString', '');
+        jest.spyOn(adManager, 'searchString').mockImplementation(() => '');
         Cookie.set('utmSession', {
           utmSource: 'Karma',
           utmMedium: 'cpc',
@@ -238,7 +226,7 @@ describe('AdManager', function() {
 
     describe('> cookied UTM params, but overriding new params', function() {
       beforeEach(function() {
-        TestHelper.stub(adManager, 'searchString', '?utm_source=Facebook&utm_campaign=foobar');
+        jest.spyOn(adManager, 'searchString').mockImplementation(() => '?utm_source=Facebook&utm_campaign=foobar');
         Cookie.set('utmSession', {
           utmSource: 'Karma',
           utmMedium: 'test',
@@ -256,8 +244,8 @@ describe('AdManager', function() {
       });
 
       it('- would not have called setTargeting with old utmMedium param', function() {
-        expect(googletag.pubads().setTargeting.calledTwice).toEqual(true);
-        expect(googletag.pubads().setTargeting).toHaveBeenCalledWith('utm_medium', 'cpc');
+        expect(googletag.pubads().setTargeting).toHaveBeenCalledTimes(2);
+        expect(googletag.pubads().setTargeting).not.toHaveBeenCalledWith('utm_medium', 'cpc');
       });
     });
   });
