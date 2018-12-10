@@ -4,13 +4,13 @@ var promiseStub;
 var eventStub;
 
 eventStub = {
-  preventDefault: sinon.stub(),
-  stopPropagation: sinon.stub(),
-  target: sinon.stub(),
+  preventDefault: jest.fn(),
+  stopPropagation: jest.fn(),
+  target: jest.fn(),
   keyCode: 13 // Send enter keyCode by default
 };
 
-promiseStub = sinon.stub();
+promiseStub = jest.fn();
 promiseStub.abort = function() {};
 promiseStub.fail = function() {};
 promiseStub.done = function() {};
@@ -19,35 +19,35 @@ promiseStub.success = function() {};
 promiseStub.error = function() {};
 promiseStub.then = function() {};
 
-sinon.stub(promiseStub, "abort").returns(promiseStub);
-sinon.stub(promiseStub, "fail").returns(promiseStub);
-sinon.stub(promiseStub, "done").returns(promiseStub);
-sinon.stub(promiseStub, "always").returns(promiseStub);
-sinon.stub(promiseStub, "success").returns(promiseStub);
-sinon.stub(promiseStub, "error").returns(promiseStub);
-sinon.stub(promiseStub, "then").returns(promiseStub);
+jest.fn(promiseStub, "abort").mockReturnValue(promiseStub);
+jest.fn(promiseStub, "fail").mockReturnValue(promiseStub);
+jest.fn(promiseStub, "done").mockReturnValue(promiseStub);
+jest.fn(promiseStub, "always").mockReturnValue(promiseStub);
+jest.fn(promiseStub, "success").mockReturnValue(promiseStub);
+jest.fn(promiseStub, "error").mockReturnValue(promiseStub);
+jest.fn(promiseStub, "then").mockReturnValue(promiseStub);
 
 function spyOn(object, method) {
-  var spy = sinon.spy(object, method);
+  var spy = jest.spyOn(object, method);
   spies.push(spy);
   return spy;
 }
 
 function stub(object, method, retVal) {
-   var stub = sinon.stub(object, method).returns(retVal);
+   var stub = jest.fn(object, method).mockReturnValue(retVal);
    stubs.push(stub);
    return stub;
 }
 
 var TestHelper = {
   spyOn: function(object, method) {
-    var spy = sinon.spy(object, method);
+    var spy = jest.spyOn(object, method);
     spies.push(spy);
     return spy;
   },
 
   stub: function(object, method, retVal) {
-     var stub = sinon.stub(object, method).returns(retVal);
+     var stub = jest.fn(object, method).mockReturnValue(retVal);
      stubs.push(stub);
      return stub;
   },
@@ -73,11 +73,11 @@ beforeEach(function() {
 
 afterEach(function() {
   spies.forEach(function(spy) {
-    spy.restore();
+    // spy.restore();
   });
 
   stubs.forEach(function(stub) {
-    stub.restore();
+    // stub.restore();
   });
 });
 
@@ -117,3 +117,5 @@ if (window.navigator.userAgent.match(/PhantomJS/)) {
     return oldReplaceState(state, title, url);
   };
 }
+
+module.exports = TestHelper;
