@@ -3,7 +3,7 @@ var $ = require('jquery');
 
 var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
-var MockGoogleTag = require('../resources/test/mock-google-tag');
+var MockGoogleTag = require('../resources/test/mock-google-tag-jest');
 var utils = require('./utils');
 var AdManagerWrapper = require('./manager');
 var adUnits = require('./ad-units');

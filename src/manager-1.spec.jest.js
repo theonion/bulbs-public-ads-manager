@@ -1,4 +1,4 @@
-var MockGoogleTag = require('../resources/test/mock-google-tag');
+var MockGoogleTag = require('../resources/test/mock-google-tag-jest');
 var AdManagerWrapper = require('./manager');
 var adUnits = require('./ad-units');
 
