@@ -1,4 +1,3 @@
-var Cookie = require('js-cookie');
 var $ = require('jquery');
 
 var TargetingPairs = require('./helpers/TargetingPairs');
@@ -27,10 +26,6 @@ describe('AdManager', function() {
     });
     adManager.googletag.cmd = [];
     adManager.countsByAdSlot = {};
-  });
-
-  afterEach(function() {
-    Cookie.remove('utmSession');
   });
 
   describe('#prebidRefresh', function() {
