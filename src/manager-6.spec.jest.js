@@ -236,16 +236,15 @@ describe('AdManager', function() {
   });
 
   describe('#refreshSlot', function() {
-    var adSlot, stubSlot, baseContainer, refreshSpy;
+    var adSlot, stubSlot, baseContainer;
 
     beforeEach(function() {
       var setupRefs = adSlotSetup();
       adSlot = setupRefs.adSlot1;
       stubSlot = setupRefs.stubSlot;
       baseContainer = setupRefs.baseContainer;
-      // adManager.refreshSlots = jest.fn();
-      adManager.options.amazonEnabled = false;
-      refreshSpy = jest.spyOn(adManager, 'refreshSlots');
+      adManager.fetchAmazonBids = jest.fn();
+      window.apstag = jest.fn();
     });
 
     afterEach(function() {
@@ -253,6 +252,7 @@ describe('AdManager', function() {
     });
 
     it('- loads the DFP slot matching up with the DOM element id', function() {
+      var refreshSpy = jest.spyOn(adManager, 'refreshSlots');
       adManager.refreshSlot(adSlot);
       expect(refreshSpy).toHaveBeenCalledWith([stubSlot]);
     });
@@ -261,6 +261,18 @@ describe('AdManager', function() {
       var spy = jest.spyOn(adManager.adUnits.units.header, 'onRefresh');
       adManager.refreshSlot(adSlot);
       expect(spy).toHaveBeenCalled();
+    });
+
+    it('- calls fetchAmazonBids if parameter amazonEnabled is true', function() {
+      adManager.options.amazonEnabled = true;
+      adManager.refreshSlot(adSlot);
+      expect(adManager.fetchAmazonBids).toHaveBeenCalled();
+    });
+
+    it('- does not call fetchAmazonBids if parameter amazonEnabled is false', function() {
+      adManager.options.amazonEnabled = false;
+      adManager.refreshSlot(adSlot);
+      expect(adManager.fetchAmazonBids).not.toHaveBeenCalled();
     });
   });
 

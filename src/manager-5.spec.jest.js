@@ -47,7 +47,7 @@ describe('AdManager', function() {
       adManager.pause();
     });
 
-    xit('- pauses any future ad loading', function() {
+    it('- pauses any future ad loading', function() {
       expect(adManager.paused).toEqual(true);
     });
   });
@@ -58,7 +58,7 @@ describe('AdManager', function() {
       adManager.unpause();
     });
 
-    xit('- unpauses any future ad loading', function() {
+    it('- unpauses any future ad loading', function() {
       expect(adManager.paused).toEqual(false);
     });
   });
@@ -75,14 +75,6 @@ describe('AdManager', function() {
       adManager.googletagdisplay = jest.fn();
       adManager.googletagenableServices = jest.fn();
       adManager.fetchAmazonBids = jest.fn();
-
-      // TODO how was this even working before
-      // xit('- no call to fetchAmazonBids if parameter amazonEnabled is false', function() {
-      //   expect(adManager.fetchAmazonBids.calledOnce).toEqual(true);
-      //   adManager.options.amazonEnabled = false;
-      //   adManager.initGoogleTag();
-      //   expect(adManager.fetchAmazonBids.calledTwice).toEqual(false);
-      // });
 
       baseContainer = document.createElement('div');
       container1 = document.createElement('div');
@@ -129,6 +121,7 @@ describe('AdManager', function() {
     });
 
     describe('> with wrapper tag', function() {
+
       let spy;
       beforeEach(function() {
         spy = jest.spyOn(adManager, 'refreshSlot');
