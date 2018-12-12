@@ -244,7 +244,6 @@ describe('AdManager', function() {
       stubSlot = setupRefs.stubSlot;
       baseContainer = setupRefs.baseContainer;
       adManager.fetchAmazonBids = jest.fn();
-      window.apstag = jest.fn();
     });
 
     afterEach(function() {
