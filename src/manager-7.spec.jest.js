@@ -1,20 +1,13 @@
-var Cookie = require('js-cookie');
 var $ = require('jquery');
 
 var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
 var MockGoogleTag = require('../resources/test/mock-google-tag-jest');
-var utils = require('./utils');
 var AdManagerWrapper = require('./manager');
 var adUnits = require('./ad-units');
 
 jest.mock('./helpers/AdZone');
 jest.mock('./helpers/TargetingPairs');
-
-var TestHelper = {
-  spyOn: () => {},
-  stub: () => {}
-};
 
 describe('AdManager', function() {
   var adManager;
@@ -26,8 +19,6 @@ describe('AdManager', function() {
       dfp_site: 'onion',
       dfp_pagetype: 'homepage'
     };
-    TestHelper.spyOn(Cookie, 'set');
-    TestHelper.spyOn(Cookie, 'get');
 
     adManager = AdManagerWrapper.init({
       dfpSiteCode: 'fmg.onion',
@@ -35,10 +26,6 @@ describe('AdManager', function() {
     });
     adManager.googletag.cmd = [];
     adManager.countsByAdSlot = {};
-  });
-
-  afterEach(function() {
-    Cookie.remove('utmSession');
   });
 
   describe('#prebidRefresh', function() {
@@ -87,23 +74,24 @@ describe('AdManager', function() {
       $(baseContainer).remove();
     });
 
-    xit('- calls pbjs.requestBids when adunit-level prebid config is present', function() {
+    it('- calls pbjs.requestBids when adunit-level prebid config is present', function() {
       adManager.prebidRefresh([stubSlot]);
       pbjs.que[0](); // let the pbjs queue run one step
       expect(pbjs.requestBids).toHaveBeenCalled();
     });
 
-    xit('- calls googletag.pubads().refresh directly when no units are configured for prebid', function() {
-      // adManager.googletag.pubads.mockReturnValue({
-      //   refresh: jest.fn(),
-      //   getSlots: function() {return []},
-      //   updateCorrelator: sinon.spy()
-      // });
+    it('- calls googletag.pubads().refresh directly when no units are configured for prebid', function() {
+      pubads = adManager.googletag.pubads();
+      adManager.googletag.pubads = jest.fn().mockImplementation(() => ({
+        refresh: jest.spyOn(pubads, 'refresh'),
+        getSlots: function() {return []},
+        updateCorrelator: jest.spyOn(pubads, 'updateCorrelator')
+      }));
+
       stubSlot.prebid = false;
       adManager.refreshSlots([stubSlot]);
       googletag.cmd[0](); // let the googletag queue run one step
-      expect(googletag.pubads).toHaveBeenCalled();
-      // expect(googletag.pubads().refresh).toHaveBeenCalled(); // shouldn't it be this..?
+      expect(googletag.pubads().refresh).toHaveBeenCalled();
       expect(pbjs.requestBids).not.toHaveBeenCalled();
     });
   });
@@ -112,8 +100,6 @@ describe('AdManager', function() {
     var baseContainer, container1, adSlot1, ads, stubSlot;
 
     beforeEach(function() {
-      TestHelper.stub(adManager, 'refreshSlot');
-
       baseContainer = document.createElement('div');
       container1 = document.createElement('div');
       container1.className ='expected';
@@ -132,17 +118,22 @@ describe('AdManager', function() {
     });
 
     describe('> api is ready', function() {
+      var spy;
+
       beforeEach(function() {
         window.googletag.apiReady = true;
+        spy = jest.spyOn(adManager, 'refreshSlot');
         adManager.asyncRefreshSlot(adSlot1);
       });
 
-      xit('- refreshes the slot right away', function() {
-        expect(adManager.refreshSlot.toHaveBeenCalledWith(adSlot1));
+      it('- refreshes the slot right away', function() {
+        expect(spy).toHaveBeenCalledWith(adSlot1);
       });
     });
 
     describe('> api is not ready', function() {
+      var spy;
+
       beforeEach(function (done) {
         window.googletag.apiReady = false;
         window.googletag.cmd = {
@@ -153,11 +144,12 @@ describe('AdManager', function() {
             }, 50);
           }
         };
+        spy = jest.spyOn(adManager, 'refreshSlot');
         adManager.asyncRefreshSlot(adSlot1);
       });
 
-      xit('- refreshes the slot by way of the `cmd` async queue', function () {
-        expect(adManager.refreshSlot.toHaveBeenCalledWith(adSlot1));
+      it('- refreshes the slot by way of the `cmd` async queue', function () {
+        expect(spy).toHaveBeenCalledWith(adSlot1);
       });
     });
   });
@@ -186,9 +178,9 @@ describe('AdManager', function() {
 
       document.body.appendChild(baseContainer);
 
-      TestHelper.stub(adManager.googletag, 'pubads').returns({
-        clear: jest.fn()
-      });
+      adManager.googletag.pubads = jest.fn().mockImplementation(() => ({
+        clear: jest.spyOn(pubads, 'clear')
+      }));
 
       adManager.slots = {};
       adManager.slots['dfp-ad-1'] = adSlot1;
@@ -205,11 +197,11 @@ describe('AdManager', function() {
         adManager.unloadAds();
       });
 
-      xit('- does not clear anything', function() {
+      it('- does not clear anything', function() {
         expect(adManager.googletag.pubads().clear).not.toHaveBeenCalled();
       });
 
-      xit('- leaves slots intact', function() {
+      it('- leaves slots intact', function() {
         expect(adManager.slots).toEqual({
           'dfp-ad-1': adSlot1,
           'dfp-ad-2': adSlot2
@@ -223,15 +215,15 @@ describe('AdManager', function() {
         adManager.unloadAds();
       });
 
-      xit('- removes all elements from the slots', function() {
+      it('- removes all elements from the slots', function() {
         expect(adManager.slots).toEqual({});
       });
 
-      xit('- clears all slots through the pubads service', function() {
+      it('- clears all slots through the pubads service', function() {
         expect(adManager.googletag.pubads().clear).toHaveBeenCalledWith([adSlot1, adSlot2]);
       });
 
-      xit('- resets the load state attribute', function() {
+      it('- resets the load state attribute', function() {
         expect($(adSlot1).data('ad-load-state')).toEqual('unloaded');
         expect($(adSlot2).data('ad-load-state')).toEqual('unloaded');
       });
@@ -248,11 +240,11 @@ describe('AdManager', function() {
         delete window.dfpSiteSection;
       });
 
-      xit('- returns the bulbs convention', function() {
+      it('- returns the bulbs convention', function() {
         expect(adManager.getAdUnitCode()).toEqual('/4246/fmg.onion');
       });
 
-      xit('- tacks on the dfpSiteSection to the ad unit code if available', function() {
+      it('- tacks on the dfpSiteSection to the ad unit code if available', function() {
         window.dfpSiteSection = 'front';
         expect(adManager.getAdUnitCode()).toEqual('/4246/fmg.onion/front');
       });
@@ -264,14 +256,14 @@ describe('AdManager', function() {
       });
 
       describe('> forced ad zone is set to collapse', function() {
-        xit('- uses collapse sub-level ad unit', function() {
+        it('- uses collapse sub-level ad unit', function() {
           AdZone.forcedAdZone.mockReturnValueOnce('collapse');
           expect(adManager.getAdUnitCode()).toEqual('/4246/fmg.onion/collapse');
         });
       });
 
       describe('> front page, no forced ad zone', function() {
-        xit('- uses front', function() {
+        it('- uses front', function() {
           TargetingPairs.getTargetingPairs.mockReturnValueOnce({
             slotOptions: { page: 'frontpage' }
           });
@@ -280,7 +272,7 @@ describe('AdManager', function() {
       });
 
       describe('> most pages', function() {
-        xit('- uses the page type on meta', function() {
+        it('- uses the page type on meta', function() {
           TargetingPairs.getTargetingPairs.mockReturnValueOnce({
             slotOptions: { page: 'permalink' }
           });
