@@ -1,5 +1,3 @@
-var Cookie = require('js-cookie');
-
 require('./dfp');
 
 var utils = require('./utils');
