@@ -185,12 +185,6 @@ describe('AdManager', function() {
       adManager.onImpressionViewable(event);
       expect(adManager.adUnits.units.header.onImpressionViewable).toHaveBeenCalled();
     });
-
-    xit('- should invoke optional onImpressionViewable callback if provided', function () {
-      TestHelper.stub(adManager.adUnits.units.header, 'onImpressionViewable');
-      adManager.onImpressionViewable(event);
-      expect(adManager.adUnits.units.header.onImpressionViewable).toHaveBeenCalled();
-    });
   });
 
   describe('#onSlotOnload', function() {
@@ -231,12 +225,6 @@ describe('AdManager', function() {
 
     it('- should invoke optional onLoad callback if provided', function () {
       jest.spyOn(adManager.adUnits.units.header, 'onLoad');
-      adManager.onSlotOnload(event);
-      expect(adManager.adUnits.units.header.onLoad).toHaveBeenCalled();
-    });
-
-    xit('- should invoke optional onLoad callback if provided', function () {
-      TestHelper.stub(adManager.adUnits.units.header, 'onLoad');
       adManager.onSlotOnload(event);
       expect(adManager.adUnits.units.header.onLoad).toHaveBeenCalled();
     });
