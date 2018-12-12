@@ -26,7 +26,7 @@ describe('AdManager', function() {
 
   describe('#logMessage', function() {
     beforeEach(function() {
-      jest.spyOn(console, 'warn');
+      console.warn = jest.fn();
       adManager.logMessage('My message', 'warn');
     });
 
