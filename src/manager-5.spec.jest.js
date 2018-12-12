@@ -1,20 +1,8 @@
-var Cookie = require('js-cookie');
 var $ = require('jquery');
 
-var TargetingPairs = require('./helpers/TargetingPairs');
-var AdZone = require('./helpers/AdZone');
 var MockGoogleTag = require('../resources/test/mock-google-tag-jest');
-var utils = require('./utils');
 var AdManagerWrapper = require('./manager');
 var adUnits = require('./ad-units');
-
-jest.mock('./helpers/AdZone');
-jest.mock('./helpers/TargetingPairs');
-
-var TestHelper = {
-  spyOn: () => {},
-  stub: () => {}
-};
 
 describe('AdManager', function() {
   var adManager;
@@ -26,8 +14,6 @@ describe('AdManager', function() {
       dfp_site: 'onion',
       dfp_pagetype: 'homepage'
     };
-    TestHelper.spyOn(Cookie, 'set');
-    TestHelper.spyOn(Cookie, 'get');
 
     adManager = AdManagerWrapper.init({
       dfpSiteCode: 'fmg.onion',
@@ -35,10 +21,18 @@ describe('AdManager', function() {
     });
     adManager.googletag.cmd = [];
     adManager.countsByAdSlot = {};
-  });
-
-  afterEach(function() {
-    Cookie.remove('utmSession');
+    pubads = adManager.googletag.pubads();
+    adManager.googletag.pubads = jest.fn().mockImplementation(() => ({
+      collapseEmptyDivs: jest.fn(),
+      enableSingleRequest: jest.spyOn(pubads, 'enableSingleRequest'),
+      disableInitialLoad: jest.spyOn(pubads, 'disableInitialLoad'),
+      addEventListener: jest.spyOn(pubads, 'addEventListener'),
+      refresh: jest.fn(),
+      clear: jest.fn(),
+      setTargeting: jest.spyOn(pubads, 'setTargeting'),
+      updateCorrelator: jest.spyOn(pubads, 'updateCorrelator'),
+      enableAsyncRendering: jest.spyOn(pubads, 'enableAsyncRendering')
+    }));
   });
 
   describe('#pause', function() {
@@ -64,7 +58,7 @@ describe('AdManager', function() {
   });
 
   describe('#loadAds', function() {
-    var baseContainer, container1, container2, container3, adSlot1, adSlot2, adSlot3, ads;
+    var baseContainer, container1, container2, container3, adSlot1, adSlot2, adSlot3, ads, displaySpy, configureAdSpy, refreshSlotSpy;
 
     beforeEach(function() {
       adManager.paused = false;
@@ -112,7 +106,8 @@ describe('AdManager', function() {
         };
       };
 
-      const spy = jest.spyOn(adManager, 'configureAd');
+      displaySpy = jest.spyOn(adManager.googletag, 'display');
+      configureAdSpy = jest.spyOn(adManager, 'configureAd');
       adManager.refreshSlot = jest.fn();
     });
 
@@ -121,8 +116,8 @@ describe('AdManager', function() {
     });
 
     describe('> with wrapper tag', function() {
+      var spy;
 
-      let spy;
       beforeEach(function() {
         spy = jest.spyOn(adManager, 'refreshSlot');
         window.headertag = {
@@ -132,14 +127,14 @@ describe('AdManager', function() {
         adManager.loadAds();
       });
 
-      xit('- calls wrapper tag instead of googletag', function() {
+      it('- calls wrapper tag instead of googletag', function() {
         expect(window.headertag.display).toHaveBeenCalledTimes(3);
         expect(window.headertag.display).toHaveBeenCalledWith('dfp-ad-1');
         expect(window.headertag.display).toHaveBeenCalledWith('dfp-ad-2');
         expect(window.headertag.display).toHaveBeenCalledWith('dfp-ad-3');
       });
 
-      xit('- triggers refresh of each slot through wrapper tag', function() {
+      it('- triggers refresh of each slot through wrapper tag', function() {
         expect(spy).toHaveBeenCalledTimes(3);
         expect(spy).toHaveBeenCalledWith(adSlot1);
         expect(spy).toHaveBeenCalledWith(adSlot2);
@@ -153,12 +148,11 @@ describe('AdManager', function() {
         adManager.loadAds();
       });
 
-      xit('- displays each ad', function() {
-        adManager.googletag.display = jest.fn();
-        expect(adManager.googletag.display).toHaveBeenCalledTimes(3);
-        expect(adManager.googletag.display).toHaveBeenCalledWith('dfp-ad-1');
-        expect(adManager.googletag.display).toHaveBeenCalledWith('dfp-ad-2');
-        expect(adManager.googletag.display).toHaveBeenCalledWith('dfp-ad-3');
+      it('- displays each ad', function() {
+        expect(displaySpy).toHaveBeenCalledTimes(3);
+        expect(displaySpy).toHaveBeenCalledWith('dfp-ad-1');
+        expect(displaySpy).toHaveBeenCalledWith('dfp-ad-2');
+        expect(displaySpy).toHaveBeenCalledWith('dfp-ad-3');
       });
     });
 
@@ -168,7 +162,7 @@ describe('AdManager', function() {
         adManager.loadAds();
       });
 
-      xit('- does not refresh any slots', function() {
+      it('- does not refresh any slots', function() {
         expect(adManager.googletag.pubads().refresh).not.toHaveBeenCalled();
       });
     });
@@ -179,7 +173,7 @@ describe('AdManager', function() {
         adManager.loadAds();
       });
 
-      xit('- does not refresh any slots', function() {
+      it('- does not refresh any slots', function() {
         expect(adManager.googletag.pubads().refresh).not.toHaveBeenCalled();
       });
     });
@@ -192,7 +186,7 @@ describe('AdManager', function() {
         adManager.loadAds();
       });
 
-      xit('- enables services', function() {
+      it('- enables services', function() {
         expect(adManager.googletag.enableServices).toHaveBeenCalled();
       });
     });
@@ -202,18 +196,19 @@ describe('AdManager', function() {
         $(adSlot1).attr('data-ad-load-state', 'loading');
         $(adSlot2).attr('data-ad-load-state', 'loading');
         $(adSlot3).attr('data-ad-load-state', 'loading');
+        spy = jest.spyOn(adManager.googletag, 'display');
         adManager.loadAds();
       });
 
-      xit('- does not try to configureAd', function() {
+      it('- does not try to configureAd', function() {
         expect(adManager.configureAd).not.toHaveBeenCalled();
       });
 
-      xit('- does not try to trigger display', function() {
-        expect(adManager.googletag.display).not.toHaveBeenCalled();
+      it('- does not try to trigger display', function() {
+        expect(spy).not.toHaveBeenCalled();
       });
 
-      xit('- does not try to refresh pubads across the board', function() {
+      it('- does not try to refresh pubads across the board', function() {
         expect(adManager.googletag.pubads().refresh).not.toHaveBeenCalled();
       });
     });
@@ -226,15 +221,15 @@ describe('AdManager', function() {
         adManager.loadAds();
       });
 
-      xit('- does not try to configureAd', function() {
+      it('- does not try to configureAd', function() {
         expect(adManager.configureAd).not.toHaveBeenCalled();
       });
 
-      xit('- does not try to trigger display', function() {
-        expect(adManager.googletag.display).not.toHaveBeenCalled();
+      it('- does not try to trigger display', function() {
+        expect(displaySpy).not.toHaveBeenCalled();
       });
 
-      xit('- does not try to refresh pubads across the board', function() {
+      it('- does not try to refresh pubads across the board', function() {
         expect(adManager.googletag.pubads().refresh).not.toHaveBeenCalled();
       });
     });
@@ -244,72 +239,62 @@ describe('AdManager', function() {
         adManager.loadAds(undefined, true);
       });
 
-      xit('- updates the correlator', function() {
+      it('- updates the correlator', function() {
         expect(adManager.googletag.pubads().updateCorrelator).toHaveBeenCalled();
       });
     });
 
     describe('> no ads loaded', function() {
-      let spy1;
-      let spy2;
-      let spy3;
       beforeEach(function() {
-        spy1 = jest.spyOn(adManager, 'configureAd');
-        spy2 = jest.spyOn(adManager.googletag, 'display');
-        spy3 = jest.spyOn(adManager, 'refreshSlot');
         adManager.refreshSlot.reset = jest.fn();
+        refreshSlotSpy = jest.spyOn(adManager, 'refreshSlot');
         adManager.loadAds();
       });
 
-      xit('- configures each ad', function() {
-        expect(spy1).toHaveBeenCalledTimes(3);
-        expect(spy1).toHaveBeenCalledWith(adSlot1);
-        expect(spy1).toHaveBeenCalledWith(adSlot2);
-        expect(spy1).toHaveBeenCalledWith(adSlot3);
+      it('- configures each ad', function() {
+        expect(configureAdSpy).toHaveBeenCalledTimes(3);
+        expect(configureAdSpy).toHaveBeenCalledWith(adSlot1);
+        expect(configureAdSpy).toHaveBeenCalledWith(adSlot2);
+        expect(configureAdSpy).toHaveBeenCalledWith(adSlot3);
       });
 
-      xit('- displays each ad', function() {
-        expect(spy2).toHaveBeenCalledTimes(3);
-        expect(spy2).toHaveBeenCalledWith('dfp-ad-1');
-        expect(spy2).toHaveBeenCalledWith('dfp-ad-2');
-        expect(spy2).toHaveBeenCalledWith('dfp-ad-3');
+      it('- displays each ad', function() {
+        expect(displaySpy).toHaveBeenCalledTimes(3);
+        expect(displaySpy).toHaveBeenCalledWith('dfp-ad-1');
+        expect(displaySpy).toHaveBeenCalledWith('dfp-ad-2');
+        expect(displaySpy).toHaveBeenCalledWith('dfp-ad-3');
       });
 
-      xit('- triggers refresh of each slot', function() {
-        expect(spy3).toHaveBeenCalledWith(adSlot1);
-        expect(spy3).toHaveBeenCalledWith(adSlot2);
-        expect(spy3).toHaveBeenCalledWith(adSlot3);
+      it('- triggers refresh of each slot', function() {
+        expect(refreshSlotSpy).toHaveBeenCalledWith(adSlot1);
+        expect(refreshSlotSpy).toHaveBeenCalledWith(adSlot2);
+        expect(refreshSlotSpy).toHaveBeenCalledWith(adSlot3);
       });
     });
 
     describe('> partial ads loaded', function() {
-      let spy1;
-      let spy2;
-      let spy3;
       beforeEach(function() {
-        spy1 = jest.spyOn(adManager, 'configureAd');
-        spy2 = jest.spyOn(adManager.googletag, 'display');
-        spy3 = jest.spyOn(adManager, 'refreshSlot');
         $(adSlot1).attr('data-ad-load-state', 'loaded');
+        refreshSlotSpy = jest.spyOn(adManager, 'refreshSlot');
         adManager.loadAds();
       });
 
-      xit('- configures ads not loaded', function() {
-        expect(spy1).toHaveBeenCalledTimes(2);
-        expect(spy1).toHaveBeenCalledWith(adSlot2);
-        expect(spy1).toHaveBeenCalledWith(adSlot3);
+      it('- configures ads not loaded', function() {
+        expect(configureAdSpy).toHaveBeenCalledTimes(2);
+        expect(configureAdSpy).toHaveBeenCalledWith(adSlot2);
+        expect(configureAdSpy).toHaveBeenCalledWith(adSlot3);
       });
 
-      xit('- displays unloaded ads', function() {
-        expect(spy2).toHaveBeenCalledTimes(2);
-        expect(spy2).toHaveBeenCalledWith('dfp-ad-2');
-        expect(spy2).toHaveBeenCalledWith('dfp-ad-3');
+      it('- displays unloaded ads', function() {
+        expect(displaySpy).toHaveBeenCalledTimes(2);
+        expect(displaySpy).toHaveBeenCalledWith('dfp-ad-2');
+        expect(displaySpy).toHaveBeenCalledWith('dfp-ad-3');
       });
 
-      xit('- triggers refresh of non-loaded slots', function() {
-        expect(spy3).toHaveBeenCalledWith(adSlot1);
-        expect(spy3).toHaveBeenCalledWith(adSlot2);
-        expect(spy3).toHaveBeenCalledWith(adSlot3);
+      it('- triggers refresh of non-loaded slots', function() {
+        expect(refreshSlotSpy).not.toHaveBeenCalledWith(adSlot1);
+        expect(refreshSlotSpy).toHaveBeenCalledWith(adSlot2);
+        expect(refreshSlotSpy).toHaveBeenCalledWith(adSlot3);
       });
     });
   });
