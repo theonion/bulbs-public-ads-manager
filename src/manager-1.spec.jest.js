@@ -126,7 +126,7 @@ describe('AdManager', () => {
 
   describe('#handleWindowResize', () => {
     beforeEach(() => {
-      adManager.oldViewportWidth = window.document.body.clientWidth - 200;
+      adManager.oldViewportWidth = window.innerWidth - 200;
       adManager.reloadAds = jest.fn();
     });
 
@@ -135,9 +135,8 @@ describe('AdManager', () => {
       expect(adManager.reloadAds).toHaveBeenCalled();
     });
 
-    // TODO: this is a valid failure
-    xit('- does not reload ads if the viewport has not changed', () => {
-      adManager.oldViewportWidth = window.document.body.clientWidth;
+    it('- does not reload ads if the viewport has not changed', () => {
+      adManager.oldViewportWidth = window.innerWidth;
       adManager.handleWindowResize();
       expect(adManager.reloadAds).not.toHaveBeenCalled();
     });
