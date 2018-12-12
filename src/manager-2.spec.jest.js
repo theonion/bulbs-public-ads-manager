@@ -53,7 +53,7 @@ describe('AdManager', function() {
     describe('TARGETING global, and a forced ad zone', function () {
       it('merges pre-existing contextual targeting with forced ad zone', function() {
         window.TARGETING = { dfpcontentid: 'foo-bar-baz' };
-        jest.spyOn(AdZone, 'forcedAdZone').mockImplementation(() => 'adtest');
+        AdZone.forcedAdZone = jest.fn().mockImplementation(() => 'adtest');
         adManager.initGoogleTag();
 
         expect(adManager.targeting.dfpcontentid).toEqual('foo-bar-baz');
@@ -158,7 +158,7 @@ describe('AdManager', function() {
     describe('> with UTM params', function() {
       beforeEach(function() {
         Cookie.remove('utmSession')
-        jest.spyOn(adManager, 'searchString').mockImplementation(() => '?utm_source=Facebook&utm_medium=cpc&utm_campaign=foobar');
+        adManager.searchString = jest.fn().mockImplementation(() => '?utm_source=Facebook&utm_medium=cpc&utm_campaign=foobar');
         adManager.setUtmTargeting();
       });
 
