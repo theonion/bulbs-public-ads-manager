@@ -824,6 +824,7 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
  * @returns undefined
 */
 AdManager.prototype.prebidRefresh = function (slots) {
+  this.pbjs = window.pbjs;
   var i,
       hasPrebid,
       pbjsConfig,
