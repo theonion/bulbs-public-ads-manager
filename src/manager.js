@@ -1,4 +1,5 @@
 require('./dfp');
+
 var utils = require('./utils');
 var TargetingPairs = require('./helpers/TargetingPairs');
 var AdZone = require('./helpers/AdZone');
@@ -120,7 +121,9 @@ AdManager.prototype.initGoogleTag = function () {
   this.googletag.pubads().addEventListener('impressionViewable', adManager.onImpressionViewable);
   this.googletag.pubads().addEventListener('slotOnload', adManager.onSlotOnload);
 
-  this.targeting = utils.extend(global.TARGETING || {}, TargetingPairs.getTargetingPairs(AdZone.forcedAdZone()).pageOptions);
+  var targetingPairsForAdzone = TargetingPairs.getTargetingPairs(AdZone.forcedAdZone());
+
+  this.targeting = utils.extend(global.TARGETING || {}, (targetingPairsForAdzone || {}).pageOptions);
 
   this.setPageTargeting();
 
@@ -819,6 +822,7 @@ AdManager.prototype.refreshSlots = function (slotsToLoad) {
  * @returns undefined
 */
 AdManager.prototype.prebidRefresh = function (slots) {
+  this.pbjs = window.pbjs;
   var i,
       hasPrebid,
       pbjsConfig,
