@@ -16,6 +16,15 @@ describe('AdManager', function() {
       dfp_site: 'onion',
       dfp_pagetype: 'homepage'
     };
+    window.pbjs = {
+      cmd: {
+        push: function() {
+          pbjs.setConfig();
+        }
+      },
+      setConfig: sinon.spy(),
+    };
+
     TestHelper.spyOn(Cookies, 'set');
     TestHelper.spyOn(Cookies, 'get');
 
@@ -29,136 +38,6 @@ describe('AdManager', function() {
 
   afterEach(function() {
     Cookies.remove('utmSession');
-  });
-
-  describe('new AdManager', function() {
-    it('- has no slots yet', function() {
-      expect(adManager.slots).to.eql({});
-    });
-
-    it('- has a default ad id', function() {
-      expect(adManager.adId).to.equal(0);
-    });
-
-    it('- is not initialized', function() {
-      expect(adManager.initialized).to.be.false;
-    });
-
-    context('> base defaults', function() {
-      it('- IAS supported by default', function() {
-        expect(adManager.options.iasEnabled).to.be.true;
-      });
-      it('- reloads on resize', function() {
-        expect(adManager.options.doReloadOnResize).to.be.true;
-      });
-    });
-
-    context('> IAS functions correctly', function () {
-      var adManagerTestOptions = {
-        iasPubId: 123456,
-        dfpSiteCode: 'fmg.onion',
-        adUnits: adUnits
-      }
-      it('- constructs the adManager correctly', function () {
-        adManager = AdManagerWrapper.init(adManagerTestOptions);
-        expect(adManager.options.iasEnabled).to.be.true;
-        expect(adManager.options.iasPubId).to.equal(adManagerTestOptions.iasPubId);
-        expect(adManager.__iasPET).to.deep.equal(window.__iasPET);
-      });
-      it('- PET tag initialization', function () {
-        adManager = AdManagerWrapper.init(adManagerTestOptions);
-        expect(window.__iasPET).to.be.a('object');
-        expect(window.__iasPET.queue).to.be.a('array');
-        expect(window.__iasPET.pubId).to.equal(adManagerTestOptions.iasPubId);
-      });
-    });
-
-    context('> override options', function() {
-      it('- allows override of defaults', function() {
-        adManager = AdManagerWrapper.init({
-          doReloadOnResize: false,
-          dfpSiteCode: 'fmg.onion',
-          iasEnabled: false,
-          adUnits: adUnits
-         });
-        expect(adManager.options.doReloadOnResize).to.be.false;
-        expect(adManager.options.iasEnabled).to.be.false;
-      });
-    });
-
-    context('> google tag initialization', function() {
-      beforeEach(function() {
-        adManager.googletag.cmd = [];
-        adManager = AdManagerWrapper.init({
-          dfpSiteCode: 'fmg.onion',
-          adUnits: adUnits
-        });
-        TestHelper.stub(adManager, 'initGoogleTag');
-        // Call the anonymous function pushed onto the async cmd array
-        adManager.googletag.cmd[0]();
-      });
-
-      it('- calls initGoogleTag', function() {
-        expect(adManager.initGoogleTag.called).to.be.true;
-      });
-    });
-  });
-
-  describe('#prebidInit', function() {
-    var pbjs;
-    beforeEach(function() {
-      pbjs = window.pbjs = {
-        cmd: {
-          push: function() {
-            pbjs.setConfig();
-          }
-        },
-        setConfig: sinon.spy(),
-      };
-    });
-
-    it('- sets prebid sizeConfig if prebid is enabled and sizeConfig exists', function() {
-      adManager.options.prebidEnabled = true;
-      adManager.adUnits.pbjsSizeConfig = {};
-      adManager.prebidInit();
-      expect(adManager.pbjs.setConfig.calledOnce).to.be.true;
-    });
-
-    it('- does not set sizeConfig if prebid is disabled', function() {
-      adManager.prebidInit();
-      expect(adManager.pbjs.setConfig.calledOnce).to.be.false;
-    });
-
-    it('- does not set sizeConfig if sizeConfig does not exist', function() {
-      adManager.options.prebidEnabled = true;
-      adManager.adUnits.pbjsSizeConfig = undefined;
-      adManager.prebidInit();
-      expect(adManager.pbjs.setConfig.calledOnce).to.be.false;
-    });
-  });
-
-  describe('#handleWindowResize', function() {
-    beforeEach(function() {
-      adManager.oldViewportWidth = window.document.body.clientWidth - 200;
-      TestHelper.stub(adManager, 'reloadAds');
-    });
-
-    it('- calls reloadAds if viewport changed', function() {
-      adManager.handleWindowResize();
-      expect(adManager.reloadAds.called).to.be.true;
-    });
-
-    it('- does not reload ads if the viewport has not changed', function() {
-      adManager.oldViewportWidth = window.document.body.clientWidth;
-      adManager.handleWindowResize();
-      expect(adManager.reloadAds.called).to.be.false;
-    });
-
-    it('- does not reload ads if the setting is disabled', function() {
-      adManager.options.doReloadOnResize = false;
-      adManager.handleWindowResize();
-      expect(adManager.reloadAds.called).to.be.false;
-    });
   });
 
   describe('#initGoogleTag', function() {
