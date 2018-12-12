@@ -16,8 +16,6 @@ describe('AdManager', function() {
       dfp_pagetype: 'homepage'
     };
     window.Cookies = Cookie;
-    jest.spyOn(Cookie, 'set');
-    jest.spyOn(Cookie, 'get');
 
     adManager = AdManagerWrapper.init({
       dfpSiteCode: 'fmg.onion',
@@ -107,7 +105,6 @@ describe('AdManager', function() {
     });
 
     it('- merges global TARGETING with ad unit dfp site param', function() {
-      jest.mock('./helpers/TargetingPairs');
       expect(adManager.targeting).toHaveProperty('dfp_site', 'onion');
       expect(adManager.targeting).toHaveProperty('dfp_pagetype', 'homepage');
     });
@@ -146,7 +143,7 @@ describe('AdManager', function() {
 
     describe('> UTM parameters are present', function() {
       beforeEach(function() {
-        jest.spyOn(adManager, 'setUtmTargeting');
+        adManager.setUtmTargeting = jest.fn();
         adManager.setPageTargeting();
       });
 
@@ -158,10 +155,6 @@ describe('AdManager', function() {
   });
 
   describe('#setUtmTargeting', function() {
-    beforeEach(function() {
-      jest.spyOn(adManager, 'setUtmTargeting');
-    });
-
     describe('> with UTM params', function() {
       beforeEach(function() {
         Cookie.remove('utmSession')
@@ -191,7 +184,7 @@ describe('AdManager', function() {
 
     describe('> without UTM params', function() {
       beforeEach(function() {
-        jest.spyOn(adManager, 'searchString').mockImplementation(() => '');
+        adManager.searchString = jest.fn();
         adManager.setUtmTargeting();
       });
 
@@ -202,7 +195,7 @@ describe('AdManager', function() {
 
     describe('> cookied UTM params', function() {
       beforeEach(function() {
-        jest.spyOn(adManager, 'searchString').mockImplementation(() => '');
+        adManager.searchString = jest.fn();
         Cookie.set('utmSession', {
           utmSource: 'Karma',
           utmMedium: 'cpc',
@@ -226,7 +219,7 @@ describe('AdManager', function() {
 
     describe('> cookied UTM params, but overriding new params', function() {
       beforeEach(function() {
-        jest.spyOn(adManager, 'searchString').mockImplementation(() => '?utm_source=Facebook&utm_campaign=foobar');
+        adManager.searchString = jest.fn().mockImplementation(() => '?utm_source=Facebook&utm_campaign=foobar');
         Cookie.set('utmSession', {
           utmSource: 'Karma',
           utmMedium: 'test',
