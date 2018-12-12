@@ -45,7 +45,7 @@ describe('AdManager', function() {
 
     beforeEach(function() {
       var headertag = window.headertag || {};
-      
+
       window.apstag = {
         fetchBids: function(slots, callback) {
           callback();
@@ -89,7 +89,6 @@ describe('AdManager', function() {
       });
     });
 
-    // Note, last slotName test was changed 
     it('- call to apstag functions if apstag is defined', function () {
       adManager.fetchAmazonBids(slots);
       expect(fetchBidsSpy).toHaveBeenCalled();
@@ -98,7 +97,7 @@ describe('AdManager', function() {
       expect(fetchedSlots.length).toEqual(1);
       expect(fetchedSlots[0].slotID).toEqual(slots[0].getSlotElementId());
       expect(fetchedSlots[0].sizes).toEqual(slots[0].activeSizes);
-      expect(fetchedSlots[0].slotName).toEqual('/4246/fmg.onion/front_' + slots[0].slotName); // TODO: this was changed?
+      expect(fetchedSlots[0].slotName).toEqual('/4246/fmg.onion_' + slots[0].slotName);
     });
 
     it('- does not include out of page slots', function () {
