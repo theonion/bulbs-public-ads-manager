@@ -83,52 +83,38 @@ describe('AdManager', function() {
     });
 
     it('- sets rendered to true', function() {
-
       adManager.onSlotRenderEnded(event);
-
       expect(adManager.rendered).toEqual(true);
     });
 
     it('- removes the height property', function() {
-
       adManager.onSlotRenderEnded(event);
-
       expect(adElement.style.height).not.toEqual('250px');
     });
 
     it('- removes the width property', function() {
-
       adManager.onSlotRenderEnded(event);
-
       expect(adElement.style.width).not.toEqual('300px');
     });
 
     it('- calls custom slot render ended callback if there is one', function() {
-
       adManager.onSlotRenderEnded(event);
-
       expect(eventSpy).toHaveBeenCalledWith(event, adElement);
     });
 
     it('- sets loaded state to loaded', function() {
-
       adManager.onSlotRenderEnded(event);
-
       expect($(adElement).data('ad-load-state')).toEqual('loaded');
     });
 
     it('- emits a dfpSlotRenderEnded event', function() {
-
       adManager.onSlotRenderEnded(event);
-
       expect(eventSpy).toHaveBeenCalled();
     });
 
     it('- dispatches slot render end, calls callback even when ad comes back empty', function() {
       event.isEmpty = true;
-
       adManager.onSlotRenderEnded(event);
-
       expect($(adElement).data('ad-load-state')).toEqual('empty');
       expect(eventSpy).toHaveBeenCalled();
     });
