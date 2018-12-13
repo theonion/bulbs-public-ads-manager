@@ -32,42 +32,41 @@ describe('AdManager', function() {
     var baseContainer, container1, adSlot1, stubSlot, pbjs;
 
     beforeEach(function() {
-        adManager.pbjs = pbjs = window.pbjs = {
-          que: [],
-          requestBids: jest.fn(),
-          addAdUnits: jest.fn(),
-        };
-        baseContainer = document.createElement('div');
-        container1 = document.createElement('div');
-        container1.className ='expected';
-        container1.id = 'ad-container-1';
-        adSlot1 = document.createElement('div');
-        adSlot1.id = 'dfp-ad-1';
-        adSlot1.className = 'dfp';
-        container1.appendChild(adSlot1);
-        baseContainer.appendChild(container1);
-        adManager.options.amazonEnabled = false;
-        adManager.options.prebidEnabled = true;
+      adManager.pbjs = pbjs = window.pbjs = {
+        que: [],
+        requestBids: jest.fn(),
+        addAdUnits: jest.fn(),
+      };
+      baseContainer = document.createElement('div');
+      container1 = document.createElement('div');
+      container1.className ='expected';
+      container1.id = 'ad-container-1';
+      adSlot1 = document.createElement('div');
+      adSlot1.id = 'dfp-ad-1';
+      adSlot1.className = 'dfp';
+      container1.appendChild(adSlot1);
+      baseContainer.appendChild(container1);
+      adManager.options.amazonEnabled = false;
+      adManager.options.prebidEnabled = true;
 
-        document.body.appendChild(baseContainer);
+      document.body.appendChild(baseContainer);
 
-        stubSlot = {
-          element: adSlot1,
-          prebid: 1,
-          activeSizes: [[300, 250]],
-          getSlotElementId: function() {
-            return adSlot1.id;
-          },
-          getTargeting: function () {
-            return '';
-          },
-          setTargeting: function () {}
-        };
+      stubSlot = {
+        element: adSlot1,
+        prebid: 1,
+        activeSizes: [[300, 250]],
+        getSlotElementId: function() {
+          return adSlot1.id;
+        },
+        getTargeting: function () {
+          return '';
+        },
+        setTargeting: function () {}
+      };
 
-        adManager.slots = {
-          'dfp-ad-1': stubSlot
-        };
-
+      adManager.slots = {
+        'dfp-ad-1': stubSlot
+      };
     });
 
     afterEach(function() {
