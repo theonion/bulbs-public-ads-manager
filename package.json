@@ -4,33 +4,17 @@
   "description": "Ads manager for public side.",
   "private": false,
   "scripts": {
-    "test": "yarn run jest && yarn run karma",
+    "test": "yarn run jest",
     "lint": "./node_modules/.bin/eslint src resources",
-    "jest": "./node_modules/.bin/jest",
-    "karma": "./node_modules/.bin/karma start karma.conf.js"
+    "jest": "./node_modules/.bin/jest"
   },
   "devDependencies": {
-    "browserify": "^11.0.1",
-    "chai": "^3.2.0",
     "eslint": "^1.2.1",
     "jest": "^23.1.0",
     "jquery": "^3.3.1",
-    "js-cookie": "^2.1.4",
-    "karma": "^0.13.15",
-    "karma-browserify": "^5.0.2",
-    "karma-browserstack-launcher": "^0.1.10",
-    "karma-chai": "^0.1.0",
-    "karma-chrome-launcher": "^0.2.2",
-    "karma-fixture": "^0.2.5",
-    "karma-html-reporter": "^0.2.7",
-    "karma-html2js-preprocessor": "^0.1.0",
-    "karma-mocha": "^1.0.1",
-    "karma-sinon": "^1.0.5",
-    "mocha": "^2.2.5",
-    "sinon": "^1.16.0",
-    "watchify": "^3.7.0"
+    "js-cookie": "^2.1.4"
   },
-  "main": "karma.conf.js",
+  "main": "jest.config.js",
   "dependencies": {},
   "repository": {
     "type": "git",

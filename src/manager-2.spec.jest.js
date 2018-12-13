@@ -1,7 +1,6 @@
 var Cookie = require('js-cookie');
 var AdZone = require('./helpers/AdZone');
 var MockGoogleTag = require('../resources/test/mock-google-tag-jest');
-var utils = require('./utils');
 var AdManagerWrapper = require('./manager');
 var adUnits = require('./ad-units');
 

@@ -10,11 +10,10 @@ See a [simple visual overview](https://docs.google.com/drawings/d/1zwLspXOvd5nVZ
   $ yarn add https://github.com/theonion/bulbs-public-ads-manager.git\#\<version>
   ```
 
-1. Require and initialize the ads manager code via a browserified file (path may differ
-  based on configuration):
+1. Require and initialize the ads manager code (path may differ based on configuration):
 
   ```javascript
-  var adsManager = require('./bower_components/bulbs-public-ads-manager/src/manager');
+  var adsManager = require('./node_modules/bulbs-public-ads-manager/src/manager');
 
   adsManager.init(); // Returns a reference to the AdManager if needed further on the page
   ```
@@ -58,10 +57,7 @@ $ npm test
 
 Tests will run on travis-ci as part of the pull request process.
 The tests are primarily comprised of:
-- [Sinon Mocks And Stubs](http://sinonjs.org/releases/v5.1.0/)
-- [Chai's BDD style of assertions](http://www.chaijs.com/api/bdd/)
-- inside of a [Mocha framework](https://mochajs.org/#interfaces)
-- run with [Karma v0.13](https://karma-runner.github.io/0.13/index.html)
+- [Jest Mocks](https://jestjs.io/docs/en/mock-functions)
 
 We try to maintain code coverage as new functions are added.
 
