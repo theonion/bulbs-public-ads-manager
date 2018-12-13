@@ -1,14 +1,10 @@
-var Cookie = require('js-cookie');
 var $ = require('jquery');
 
 var TargetingPairs = require('./helpers/TargetingPairs');
-var AdZone = require('./helpers/AdZone');
 var MockGoogleTag = require('../resources/test/mock-google-tag-jest');
-var utils = require('./utils');
 var AdManagerWrapper = require('./manager');
 var adUnits = require('./ad-units');
 
-jest.mock('./helpers/AdZone');
 jest.mock('./helpers/TargetingPairs');
 
 describe('AdManager', function() {
@@ -21,8 +17,6 @@ describe('AdManager', function() {
       dfp_site: 'onion',
       dfp_pagetype: 'homepage'
     };
-    jest.spyOn(Cookie, 'set');
-    jest.spyOn(Cookie, 'get');
 
     adManager = AdManagerWrapper.init({
       dfpSiteCode: 'fmg.onion',
@@ -30,10 +24,6 @@ describe('AdManager', function() {
     });
     adManager.googletag.cmd = [];
     adManager.countsByAdSlot = {};
-  });
-
-  afterEach(function() {
-    Cookie.remove('utmSession');
   });
 
   describe('#reloadAds', function() {
@@ -93,52 +83,38 @@ describe('AdManager', function() {
     });
 
     it('- sets rendered to true', function() {
-
       adManager.onSlotRenderEnded(event);
-
       expect(adManager.rendered).toEqual(true);
     });
 
     it('- removes the height property', function() {
-
       adManager.onSlotRenderEnded(event);
-
       expect(adElement.style.height).not.toEqual('250px');
     });
 
     it('- removes the width property', function() {
-
       adManager.onSlotRenderEnded(event);
-
       expect(adElement.style.width).not.toEqual('300px');
     });
 
     it('- calls custom slot render ended callback if there is one', function() {
-
       adManager.onSlotRenderEnded(event);
-
       expect(eventSpy).toHaveBeenCalledWith(event, adElement);
     });
 
     it('- sets loaded state to loaded', function() {
-
       adManager.onSlotRenderEnded(event);
-
       expect($(adElement).data('ad-load-state')).toEqual('loaded');
     });
 
     it('- emits a dfpSlotRenderEnded event', function() {
-
       adManager.onSlotRenderEnded(event);
-
       expect(eventSpy).toHaveBeenCalled();
     });
 
     it('- dispatches slot render end, calls callback even when ad comes back empty', function() {
       event.isEmpty = true;
-
       adManager.onSlotRenderEnded(event);
-
       expect($(adElement).data('ad-load-state')).toEqual('empty');
       expect(eventSpy).toHaveBeenCalled();
     });
