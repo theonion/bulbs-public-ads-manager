@@ -1,4 +1,3 @@
-var MockGoogleTag = require('../resources/test/mock-google-tag-jest');
 var AdManagerWrapper = require('./manager');
 var adUnits = require('./ad-units');
 
@@ -6,13 +5,6 @@ describe('AdManager', () => {
   var adManager;
 
   beforeEach(() => {
-    window.googletag = new MockGoogleTag();
-    window.Bulbs = { settings: { AMAZON_A9_ID: '1234' } };
-    window.TARGETING = {
-      dfp_site: 'onion',
-      dfp_pagetype: 'homepage'
-    };
-
     adManager = AdManagerWrapper.init({
       dfpSiteCode: 'fmg.onion',
       adUnits: adUnits
@@ -48,13 +40,15 @@ describe('AdManager', () => {
         iasPubId: 123456,
         dfpSiteCode: 'fmg.onion',
         adUnits: adUnits
-      }
+      };
+
       it('- constructs the adManager correctly', function () {
         adManager = AdManagerWrapper.init(adManagerTestOptions);
         expect(adManager.options.iasEnabled).toEqual(true);
         expect(adManager.options.iasPubId).toEqual(adManagerTestOptions.iasPubId);
         expect(adManager.__iasPET).toEqual(window.__iasPET);
       });
+
       it('- PET tag initialization', function () {
         adManager = AdManagerWrapper.init(adManagerTestOptions);
         expect(typeof window.__iasPET).toEqual('object');
@@ -70,7 +64,7 @@ describe('AdManager', () => {
           dfpSiteCode: 'fmg.onion',
           iasEnabled: false,
           adUnits: adUnits
-         });
+        });
         expect(adManager.options.doReloadOnResize).toEqual(false);
         expect(adManager.options.iasEnabled).toEqual(false);
       });
@@ -92,9 +86,8 @@ describe('AdManager', () => {
   });
 
   describe('#prebidInit', () => {
-    var pbjs;
     beforeEach(() => {
-      pbjs = window.pbjs = {
+      window.pbjs = {
         cmd: {
           push: () => {
             pbjs.setConfig();

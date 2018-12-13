@@ -364,7 +364,7 @@ describe('AdManager', function() {
         expect(spy).toHaveBeenCalled();
       });
 
-      it('- does not calls fetchIasTargeting when enabled', function() {
+      it('- does not call fetchIasTargeting when enabled', function() {
         adManager = AdManagerWrapper.init({ amazonEnabled: false });
         spy = jest.spyOn(adManager, 'fetchAmazonBids');
         adManager.refreshSlots([stubSlot]);
@@ -395,7 +395,7 @@ describe('AdManager', function() {
         expect(spy).toHaveBeenCalled();
       });
 
-      it('- does not calls fetchIasTargeting when enabled', function() {
+      it('- does not call fetchIasTargeting when enabled', function() {
         adManager = AdManagerWrapper.init({ iasEnabled: false });
         spy = jest.spyOn(adManager, 'fetchIasTargeting');
         adManager.refreshSlots([stubSlot]);
