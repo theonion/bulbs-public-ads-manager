@@ -1,9 +1,12 @@
 var $ = require('jquery');
 
+var TargetingPairs = require('./helpers/TargetingPairs');
 var MockGoogleTag = require('../resources/test/mock-google-tag');
 var utils = require('./utils');
 var AdManagerWrapper = require('./manager');
 var adUnits = require('./ad-units');
+
+jest.mock('./helpers/TargetingPairs');
 
 describe('AdManager', function() {
   var adManager;
@@ -49,7 +52,8 @@ describe('AdManager', function() {
 
       adManager.targeting = { dfp_site: 'onion', dfp_pagetype: 'article' };
 
-      jest.spyOn(adManager, 'setIndexTargetingForSlots');
+      jest.spyOn(TargetingPairs, 'getTargetingPairs').mockReturnValue({});
+      adManager.setIndexTargetingForSlots = jest.fn();
       jest.spyOn(adManager, 'setSlotTargeting');
 
       stubSlot = { setTargeting: jest.fn(), getTargeting: jest.fn() };
@@ -82,8 +86,7 @@ describe('AdManager', function() {
       });
 
       it('- sets targeting for each slot option', function() {
-        // TODO: the original spec expected this to be called 3 times
-        expect(stubSlot.setTargeting).toHaveBeenCalledTimes(4);
+        expect(stubSlot.setTargeting).toHaveBeenCalledTimes(3);
         expect(stubSlot.setTargeting).toHaveBeenCalledWith('pos', 'header');
         expect(stubSlot.setTargeting).toHaveBeenCalledWith('postId', '1234');
         expect(stubSlot.setTargeting).toHaveBeenCalledWith('page', 'permalink');
@@ -101,8 +104,7 @@ describe('AdManager', function() {
       });
 
       it('- sets all the targeting', function() {
-        // TODO: the original spec expected this to be called 6 times
-        expect(stubSlot.setTargeting).toHaveBeenCalledTimes(6);
+        expect(stubSlot.setTargeting).toHaveBeenCalledTimes(3);
         expect(stubSlot.setTargeting).toHaveBeenCalledWith('pos', 'header');
         expect(stubSlot.setTargeting).toHaveBeenCalledWith('dfp_content_id', '12345');
         expect(stubSlot.setTargeting).toHaveBeenCalledWith('dfp_feature', 'american-voices');
@@ -128,8 +130,7 @@ describe('AdManager', function() {
       });
 
       it('- sets all the targeting', function() {
-        // TODO: the original spec expected this to be called 3 times
-        expect(stubSlot.setTargeting).toHaveBeenCalledTimes(4);
+        expect(stubSlot.setTargeting).toHaveBeenCalledTimes(3);
         expect(stubSlot.setTargeting).toHaveBeenCalledWith('pos', 'overridden_pos');
       });
     });
@@ -140,8 +141,7 @@ describe('AdManager', function() {
       });
 
       it('- sets at least the pos value', function() {
-        // TODO: the original spec expected this to be called 1 times
-        expect(stubSlot.setTargeting).toHaveBeenCalledTimes(2);
+        expect(stubSlot.setTargeting).toHaveBeenCalledTimes(1);
         expect(stubSlot.setTargeting).toHaveBeenCalledWith('pos', 'header');
       });
     });
