@@ -1,14 +1,10 @@
-var Cookie = require('js-cookie');
 var $ = require('jquery');
 
 var TargetingPairs = require('./helpers/TargetingPairs');
-var AdZone = require('./helpers/AdZone');
 var MockGoogleTag = require('../resources/test/mock-google-tag-jest');
-var utils = require('./utils');
 var AdManagerWrapper = require('./manager');
 var adUnits = require('./ad-units');
 
-jest.mock('./helpers/AdZone');
 jest.mock('./helpers/TargetingPairs');
 
 describe('AdManager', function() {
@@ -21,8 +17,6 @@ describe('AdManager', function() {
       dfp_site: 'onion',
       dfp_pagetype: 'homepage'
     };
-    jest.spyOn(Cookie, 'set');
-    jest.spyOn(Cookie, 'get');
 
     adManager = AdManagerWrapper.init({
       dfpSiteCode: 'fmg.onion',
@@ -30,10 +24,6 @@ describe('AdManager', function() {
     });
     adManager.googletag.cmd = [];
     adManager.countsByAdSlot = {};
-  });
-
-  afterEach(function() {
-    Cookie.remove('utmSession');
   });
 
   describe('#reloadAds', function() {
