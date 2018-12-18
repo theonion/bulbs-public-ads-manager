@@ -1,7 +1,7 @@
 var $ = require('jquery');
 
 var TargetingPairs = require('./helpers/TargetingPairs');
-var MockGoogleTag = require('../resources/test/mock-google-tag-jest');
+var MockGoogleTag = require('../resources/test/mock-google-tag');
 var AdManagerWrapper = require('./manager');
 var adUnits = require('./ad-units');
 
