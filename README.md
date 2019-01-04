@@ -1,3 +1,10 @@
+MOVED :helicopter:
+=======
+
+You can find me at [kinja-mantle/packages/bulbs-public-ads-manager](https://github.com/gawkermedia/kinja-mantle/tree/master/packages/bulbs-public-ads-manager)!
+
+There are standalone features that depend on this repository so it will remain here, but no new changes should be introduced.
+
 # bulbs-public-ads-manager
 
 Ads manager for public side of sites. Fills in ad slots.
