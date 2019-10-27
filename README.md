@@ -78,13 +78,15 @@ Download the latest version of PrebidJS
 ```
 $ git clone https://github.com/prebid/Prebid.js.git
 $ cd Prebid.js
+$ git checkout 1.6.0 # optional
 $ npm install
+$ curl -o modules/criteoBidAdapter.js "https://raw.githubusercontent.com/criteo-forks/Prebid.js/criteo-1.0/modules/criteoBidAdapter.js"
 ```
 
 Build the prebid.js binary, including only the specified adapters
 
 ```
-gulp build --modules=aolBidAdapter,openxBidAdapter,rubiconBidAdapter,appnexusBidAdapter,yieldmoBidAdapter
+gulp build --modules=aolBidAdapter,openxBidAdapter,rubiconBidAdapter,appnexusBidAdapter,yieldmoBidAdapter,criteoBidAdapter
 ```
 
 ## Creating a new release
